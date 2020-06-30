@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="64dp"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:focusable="false"
+    android:focusableInTouchMode="false">
+
+    <LinearLayout
+        android:id="@+id/playlist_item_holder"
+        android:layout_width="0dp"
+        android:layout_height="64dp"
+        android:orientation="vertical"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintRight_toLeftOf="@id/playlist_item_box">
+
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/playlist_item_title"
+        android:layout_width="match_parent"
+        android:layout_height="28dp"
+        android:layout_marginTop="7dp"
+        android:gravity="bottom"
+        android:singleLine="true"
+        android:textColor="@color/colorTextDark"
+        android:textSize="18sp" />
+
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/playlist_item_artist"
+        android:layout_width="fill_parent"
+        android:layout_height="20dp"
+        android:gravity="bottom"
+        android:textColor="#DC000000"
+        android:textSize="14sp" />
+    </LinearLayout>
+
+    <com.google.android.material.checkbox.MaterialCheckBox
+        android:id="@+id/playlist_item_box"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="8dp"
+        android:background="@color/colorTransparent"
+        android:buttonTint="@color/colorSecondaryDark"
+        android:clickable="false"
+        android:duplicateParentState="false"
+        android:focusable="false"
+        android:focusableInTouchMode="false"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+</androidx.constraintlayout.widget.ConstraintLayout>

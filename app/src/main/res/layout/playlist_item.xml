@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="64dp"
+    android:descendantFocusability="blocksDescendants"
+    android:orientation="vertical"
+    android:paddingStart="16dp"
+    android:paddingEnd="16dp"
+    android:focusable="true"
+    android:clickable="true"
+    android:background="?android:attr/selectableItemBackground">
+
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/playlist_title"
+        android:layout_width="match_parent"
+        android:layout_height="28dp"
+        android:layout_marginTop="7dp"
+        android:gravity="bottom"
+        android:singleLine="true"
+        android:textColor="@color/colorTextDark"
+        android:textSize="18sp" />
+
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/playlist_size"
+        android:layout_width="fill_parent"
+        android:layout_height="20dp"
+        android:gravity="bottom"
+        android:textColor="#DC000000"
+        android:textSize="14sp" />
+</LinearLayout>

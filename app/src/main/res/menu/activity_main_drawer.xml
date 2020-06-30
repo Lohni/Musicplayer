@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:showIn="navigation_view">
+
+    <group android:checkableBehavior="single">
+        <item
+            android:icon="@drawable/ic_library_music_black_24dp"
+            android:id="@+id/nav_tracklist"
+            android:title="Tracklist"
+            />
+        <item
+            android:icon="@drawable/ic_playlist_play_black_24dp"
+            android:id="@+id/nav_playlist"
+            android:title="Playlist"/>
+        <item
+            android:icon="@drawable/ic_equalizer_black_24dp"
+            android:id="@+id/nav_equalizer"
+            android:title="Equalizer"/>
+    </group>
+</menu>

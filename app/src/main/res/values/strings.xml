@@ -1,0 +1,31 @@
+<resources>
+    <string name="app_name">MusicPlayer</string>
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+    <string name="nav_header_title">Android Studio</string>
+    <string name="nav_header_subtitle">android.studio@android.com</string>
+    <string name="nav_header_desc">Navigation header</string>
+    <string name="action_settings">Settings</string>
+
+    <string name="menu_home">Home</string>
+    <string name="menu_gallery">Gallery</string>
+    <string name="menu_slideshow">Slideshow</string>
+
+    <string name="home_second">Home Second</string>
+
+
+    <string name="cat_card_action_move_top_left" description="A description of an action that a user of an accessibility service can perform to move the card to the top left corner of the screen. [CHAR LIMIT=25]">Move to top left</string>
+
+
+    <string name="cat_card_action_move_up" description="A description of an action that a user of an accessibility service can perform to swap the card with the one above it. [CHAR LIMIT=25]">Move Up</string>
+    <string name="cat_card_action_move_down" description="A description of an action that a user of an accessibility service can perform to swap the card with the one below it. [CHAR LIMIT=25]">Move Down</string>
+    <string name="cat_card_action_move_top_right" description="A description of an action that a user of an accessibility service can perform to move the card to the top right corner of the screen. [CHAR LIMIT=25]">Move to top right</string>
+    <string name="cat_card_action_move_bottom_left" description="A description of an action that a user of an accessibility service can perform to move the card to the bottom left corner of the screen. [CHAR LIMIT=25]">Move to bottom left</string>
+    <string name="cat_card_action_move_bottom_right" description="A description of an action that a user of an accessibility service can perform to move the card to the bottom right corner of the screen. [CHAR LIMIT=25]">Move to bottom right</string>
+    <string name="cat_card_action_move_center" description="A description of an action that a user of an accessibility service can perform to move the card to the center of the screen. [CHAR LIMIT=25]">Move to center</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+
+
+</resources>
