@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    tools:context=".ui.playlistdetail.PlaylistDetail"
-    android:background="@drawable/background_gradient">
+    tools:context=".ui.playlistdetail.PlaylistDetail">
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/playlistdetail_list"
@@ -13,6 +12,15 @@
         android:layout_height="match_parent"
         android:scrollbars="vertical"
         android:scrollbarThumbVertical="@drawable/custom_scrollbar_thumb"
-        app:layout_constraintHorizontal_bias="0.0" />
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/playlist_detail_snackbar_anchor"/>
 
-</FrameLayout>
+    <View
+        android:id="@+id/playlist_detail_snackbar_anchor"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/playlistdetail_list"/>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

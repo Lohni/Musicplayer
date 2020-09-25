@@ -5,194 +5,171 @@
     android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     tools:context=".ui.expandedplaybackcontrol.ExpandedPlaybackControl"
-    android:background="@drawable/background_expanded_gradient"
     android:clickable="true">
 
-    <LinearLayout
-        android:id="@+id/expanded_control_holder"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="16dp"
-        android:layout_marginEnd="16dp"
-        android:orientation="vertical"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
+    <ImageButton
+        android:id="@+id/expanded_control_collapse"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginStart="8dp"
+        android:background="@drawable/ic_baseline_keyboard_arrow_down_24"
+        android:backgroundTint="@color/colorSecondary"
+        android:elevation="8dp"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
-        <com.google.android.material.textview.MaterialTextView
-            android:id="@+id/expanded_control_title"
-            android:layout_width="match_parent"
-            android:layout_height="25dp"
-            android:layout_gravity="center"
-            android:layout_marginTop="8dp"
-            android:textAlignment="center"
-            android:ellipsize="marquee"
-            android:focusable="true"
-            android:focusableInTouchMode="true"
-            android:marqueeRepeatLimit="marquee_forever"
-            android:scrollHorizontally="true"
-            android:singleLine="true"
-            android:textColor="@color/colorSecondaryLight"
-            android:textSize="20sp"
-            android:transitionName="playback_title"/>
-
-        <com.google.android.material.textview.MaterialTextView
-            android:id="@+id/expanded_control_artist"
-            android:layout_width="wrap_content"
-            android:layout_height="25dp"
-            android:layout_gravity="center"
-            android:layout_marginTop="8dp"
-            android:textAlignment="center"
-            android:textColor="@color/colorSecondaryLight"
-            android:textSize="18sp" />
-    </LinearLayout>
-
-    <androidx.viewpager2.widget.ViewPager2
-        android:id="@+id/expanded_control_viewpager"
+    <FrameLayout
+        android:id="@+id/cover_layout"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        app:layout_constraintBottom_toTopOf="@id/expanded_control_shuffle"
-        app:layout_constraintTop_toBottomOf="@id/expanded_control_holder"
-        android:layout_marginBottom="8dp">
-    </androidx.viewpager2.widget.ViewPager2>
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toTopOf="@+id/control_layout"
+        android:background="@color/colorPrimary">
 
-    <ImageButton
-        android:id="@+id/expanded_control_play"
-        android:layout_width="75dp"
-        android:layout_height="75dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginBottom="16dp"
-        android:background="@drawable/ic_play_arrow_black_24dp"
-        android:backgroundTint="@color/colorSecondaryLight"
+        <com.example.musicplayer.ui.views.AudioVisualizerView
+            android:id="@+id/audioView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"/>
+
+        <androidx.viewpager2.widget.ViewPager2
+            android:id="@+id/expanded_control_viewpager"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_marginBottom="8dp">
+        </androidx.viewpager2.widget.ViewPager2>
+    </FrameLayout>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/control_layout"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/expanded_seekbar"
-        app:rippleColor="#FFFFFF" />
+        app:layout_constraintTop_toBottomOf="@+id/cover_layout"
+        android:background="@color/colorPrimaryDark">
 
-    <ImageButton
-        android:id="@+id/expanded_control_skipback"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
-        android:background="@drawable/ic_skip_previous_black_24dp"
-        android:backgroundTint="@color/colorSecondaryLight"
-        app:layout_constraintBottom_toBottomOf="@id/expanded_control_play"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toLeftOf="@id/expanded_control_play"
-        app:layout_constraintTop_toTopOf="@id/expanded_control_play" />
 
-    <ImageButton
-        android:id="@+id/expanded_control_skipforward"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
-        android:background="@drawable/ic_skip_next_black_24dp"
-        android:backgroundTint="@color/colorSecondaryLight"
-        app:layout_constraintBottom_toBottomOf="@id/expanded_control_play"
-        app:layout_constraintLeft_toRightOf="@id/expanded_control_play"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="@id/expanded_control_play"/>
+        <LinearLayout
+            android:id="@+id/expanded_control_holder"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="16dp"
+            android:layout_marginEnd="16dp"
+            android:orientation="vertical"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
 
-    <com.google.android.material.textview.MaterialTextView
-        android:id="@+id/expanded_current_time"
-        android:layout_width="wrap_content"
-        android:layout_height="20dp"
-        android:layout_marginLeft="24dp"
-        android:gravity="center"
-        android:text="00:00"
-        android:textAllCaps="false"
-        android:textColor="@color/colorSecondaryLight"
-        android:textSize="16sp"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toLeftOf="@+id/expanded_seekbar"
-        app:layout_constraintTop_toTopOf="@id/expanded_seekbar" />
+            <com.google.android.material.textview.MaterialTextView
+                android:id="@+id/expanded_control_title"
+                android:layout_width="match_parent"
+                android:layout_height="25dp"
+                android:layout_gravity="center"
+                android:layout_marginTop="8dp"
+                android:textAlignment="center"
+                android:ellipsize="marquee"
+                android:focusable="true"
+                android:focusableInTouchMode="true"
+                android:marqueeRepeatLimit="marquee_forever"
+                android:scrollHorizontally="true"
+                android:singleLine="true"
+                android:textColor="@color/colorSecondaryLight"
+                android:textSize="20sp"
+                android:transitionName="playback_title"/>
 
-    <SeekBar
-        android:id="@+id/expanded_seekbar"
-        android:layout_width="0dp"
-        android:layout_height="20dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginBottom="8dp"
-        android:progressBackgroundTintMode="src_in"
-        android:progressTint="@color/colorSecondaryLight"
-        android:secondaryProgressTint="@color/colorPrimaryLight"
-        android:thumbTint="@color/colorSecondary"
-        app:layout_constraintBottom_toTopOf="@id/expanded_control_play"
-        app:layout_constraintLeft_toRightOf="@id/expanded_current_time"
-        app:layout_constraintRight_toLeftOf="@id/expanded_absolute_time"
-        app:layout_constraintTop_toBottomOf="@id/expanded_control_shuffle"
-        android:transitionName="playback_seekbar"/>
+            <com.google.android.material.textview.MaterialTextView
+                android:id="@+id/expanded_control_artist"
+                android:layout_width="wrap_content"
+                android:layout_height="25dp"
+                android:layout_gravity="center"
+                android:layout_marginTop="8dp"
+                android:textAlignment="center"
+                android:textColor="@color/colorSecondaryLight"
+                android:textSize="18sp" />
+        </LinearLayout>
 
-    <com.google.android.material.textview.MaterialTextView
-        android:id="@+id/expanded_absolute_time"
-        android:layout_width="wrap_content"
-        android:layout_height="20dp"
-        android:layout_marginRight="24dp"
-        android:gravity="center"
-        android:text="00:00"
-        android:textAllCaps="false"
-        android:textColor="@color/colorSecondaryLight"
-        android:textSize="16sp"
-        app:layout_constraintLeft_toRightOf="@+id/expanded_seekbar"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="@id/expanded_seekbar" />
+        <ImageButton
+            android:id="@+id/expanded_control_play"
+            android:layout_width="75dp"
+            android:layout_height="75dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="16dp"
+            android:background="@drawable/ic_play_arrow_black_24dp"
+            android:backgroundTint="@color/colorSecondaryLight"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/expanded_seekbar"
+            app:rippleColor="#FFFFFF" />
 
-    <ImageButton
-        android:id="@+id/expanded_control_shuffle"
-        android:layout_width="40dp"
-        android:layout_height="40dp"
-        android:layout_marginBottom="8dp"
-        android:adjustViewBounds="true"
-        android:background="@drawable/custom_button_background"
-        android:backgroundTint="#00A7C0CD"
-        android:paddingStart="9dp"
-        android:paddingTop="9dp"
-        android:paddingEnd="9dp"
-        android:paddingBottom="9dp"
-        android:scaleType="fitCenter"
-        android:src="@drawable/ic_shuffle_black_24dp"
-        android:tint="@color/colorSecondaryLight"
-        app:layout_constraintBottom_toTopOf="@id/expanded_seekbar"
-        app:layout_constraintLeft_toRightOf="@id/expanded_control_skipback"
-        app:layout_constraintRight_toLeftOf="@id/expanded_control_play"
-        app:layout_constraintTop_toBottomOf="@id/expanded_control_viewpager" />
+        <ImageButton
+            android:id="@+id/expanded_control_skipback"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:background="@drawable/ic_skip_previous_black_24dp"
+            android:backgroundTint="@color/colorSecondaryLight"
+            app:layout_constraintBottom_toBottomOf="@id/expanded_control_play"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toLeftOf="@id/expanded_control_play"
+            app:layout_constraintTop_toTopOf="@id/expanded_control_play" />
 
-    <ImageButton
-        android:id="@+id/expanded_control_loop"
-        android:layout_width="40dp"
-        android:layout_height="40dp"
-        android:adjustViewBounds="true"
-        android:background="@drawable/custom_button_background"
-        android:backgroundTint="#00FFFFFF"
-        android:paddingStart="9dp"
-        android:paddingTop="9dp"
-        android:paddingEnd="9dp"
-        android:paddingBottom="9dp"
-        android:scaleType="fitCenter"
-        android:src="@drawable/ic_loop_black_24dp"
-        android:tint="@color/colorSecondaryLight"
-        app:layout_constraintLeft_toRightOf="@id/expanded_control_shuffle"
-        app:layout_constraintRight_toLeftOf="@id/expanded_control_repeat"
-        app:layout_constraintTop_toTopOf="@id/expanded_control_shuffle" />
+        <ImageButton
+            android:id="@+id/expanded_control_skipforward"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:background="@drawable/ic_skip_next_black_24dp"
+            android:backgroundTint="@color/colorSecondaryLight"
+            app:layout_constraintBottom_toBottomOf="@id/expanded_control_play"
+            app:layout_constraintLeft_toRightOf="@id/expanded_control_play"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toTopOf="@id/expanded_control_play"/>
 
-    <ImageButton
-        android:id="@+id/expanded_control_repeat"
-        android:layout_width="40dp"
-        android:layout_height="40dp"
-        android:layout_marginBottom="8dp"
-        android:adjustViewBounds="true"
-        android:background="@drawable/custom_button_background"
-        android:backgroundTint="#00FFFFFF"
-        android:paddingStart="9dp"
-        android:paddingTop="9dp"
-        android:paddingEnd="9dp"
-        android:paddingBottom="9dp"
-        android:scaleType="fitCenter"
-        android:src="@drawable/ic_repeat_black_24dp"
-        android:tint="@color/colorSecondaryLight"
-        app:layout_constraintBottom_toTopOf="@id/expanded_seekbar"
-        app:layout_constraintLeft_toRightOf="@id/expanded_control_play"
-        app:layout_constraintRight_toLeftOf="@id/expanded_control_skipforward"
-        app:layout_constraintTop_toBottomOf="@id/expanded_control_viewpager" />
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/expanded_current_time"
+            android:layout_width="wrap_content"
+            android:layout_height="20dp"
+            android:layout_marginLeft="24dp"
+            android:gravity="center"
+            android:text="00:00"
+            android:textAllCaps="false"
+            android:textColor="@color/colorSecondaryLight"
+            android:textSize="16sp"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toLeftOf="@+id/expanded_seekbar"
+            app:layout_constraintTop_toTopOf="@id/expanded_seekbar" />
+
+        <SeekBar
+            android:id="@+id/expanded_seekbar"
+            android:layout_width="0dp"
+            android:layout_height="20dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="8dp"
+            android:progressBackgroundTintMode="src_in"
+            android:progressTint="@color/colorSecondaryLight"
+            android:secondaryProgressTint="@color/colorPrimaryLight"
+            android:thumbTint="@color/colorSecondary"
+            app:layout_constraintBottom_toTopOf="@id/expanded_control_play"
+            app:layout_constraintLeft_toRightOf="@id/expanded_current_time"
+            app:layout_constraintRight_toLeftOf="@id/expanded_absolute_time"
+            app:layout_constraintTop_toBottomOf="@id/expanded_control_holder"
+            android:transitionName="playback_seekbar"/>
+
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/expanded_absolute_time"
+            android:layout_width="wrap_content"
+            android:layout_height="20dp"
+            android:layout_marginRight="24dp"
+            android:gravity="center"
+            android:text="00:00"
+            android:textAllCaps="false"
+            android:textColor="@color/colorSecondaryLight"
+            android:textSize="16sp"
+            app:layout_constraintLeft_toRightOf="@+id/expanded_seekbar"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toTopOf="@id/expanded_seekbar" />
+
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

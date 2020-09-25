@@ -1,22 +1,15 @@
 package com.example.musicplayer.ui.playlist;
 
 
-import android.content.ClipData;
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.Paint;
-import android.graphics.PorterDuff;
-import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
-import android.os.Build;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
-import androidx.core.graphics.drawable.DrawableCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.DividerItemDecoration;
@@ -24,7 +17,6 @@ import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import android.provider.Settings;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -36,6 +28,8 @@ import com.example.musicplayer.MainActivity;
 import com.example.musicplayer.R;
 import com.example.musicplayer.adapter.PlaylistAdapter;
 import com.example.musicplayer.ui.DatabaseViewmodel;
+import com.google.android.material.snackbar.BaseTransientBottomBar;
+import com.google.android.material.snackbar.Snackbar;
 
 import java.util.ArrayList;
 
@@ -46,12 +40,14 @@ public class Playlist extends Fragment {
     private PlaylistAdapter mAdapter;
     private RecyclerView playlist;
     private RecyclerView.LayoutManager layoutManager;
+    private View snackbar_anchor;
 
     private DatabaseViewmodel databaseViewmodel;
 
-    private int deleteID;
+    private int playlistID, deleteID;
+    private boolean undo=false, isSnackbarActive=false;
     private PlaylistInterface playlistInterface;
-
+    private String deletedTrack, deletedSize;
     private ArrayList<String> playlist_list,playlist_size;
 
     public Playlist() {
@@ -79,6 +75,7 @@ public class Playlist extends Fragment {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_playlist, container, false);
         playlist = view.findViewById(R.id.playlist);
+        snackbar_anchor = view.findViewById(R.id.snackbar_anchor);
         playlist.setHasFixedSize(true);
 
         MainActivity mainActivity =(MainActivity) requireActivity();
@@ -90,11 +87,13 @@ public class Playlist extends Fragment {
 
         databaseViewmodel = new ViewModelProvider(requireActivity()).get(DatabaseViewmodel.class);
         databaseViewmodel.fetchTables().observe(getViewLifecycleOwner(),allTables -> {
+            if (playlist_list.size() > 0)playlist_list.clear();
             playlist_list.addAll(allTables);
             mAdapter.notifyDataSetChanged();
         });
         databaseViewmodel.fetchTableSizes().observe(getViewLifecycleOwner(),allTablesSizes ->{
             Log.e("LOADED",""+allTablesSizes);
+            if (playlist_size.size() > 0)playlist_size.clear();
             playlist_size.addAll(allTablesSizes);
             mAdapter.notifyDataSetChanged();
         });
@@ -115,21 +114,53 @@ public class Playlist extends Fragment {
             }
 
             @Override
+            public int getSwipeDirs(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder) {
+                if (isSnackbarActive)return 0;
+                else return super.getSwipeDirs(recyclerView, viewHolder);
+            }
+
+            @Override
             public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
-                if(direction==ItemTouchHelper.LEFT){
-                    databaseViewmodel.deleteTable(playlist_list.get(deleteID));
-                    playlist_list.remove(deleteID);
-                    playlist_size.remove(deleteID);
-                    mAdapter.notifyItemRemoved(deleteID);
+                if(direction==ItemTouchHelper.LEFT && !isSnackbarActive){
+                    deleteID = playlistID;
+                    deletedTrack = playlist_list.get(playlistID);
+                    deletedSize = playlist_size.get(playlistID);
+                    playlist_list.remove(playlistID);
+                    playlist_size.remove(playlistID);
+                    mAdapter.notifyItemRemoved(playlistID);
+                    isSnackbarActive=true;
+                    mAdapter.setOnItemClickEnabled(false);
+                    Snackbar.make(view,"Playlist " + deletedTrack + " will be deleted!",Snackbar.LENGTH_LONG).setAnchorView(snackbar_anchor).setAction("Undo", new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            undo=true;
+                            isSnackbarActive=false;
+                        }
+                    }).addCallback(new BaseTransientBottomBar.BaseCallback<Snackbar>() {
+                        @Override
+                        public void onDismissed(Snackbar transientBottomBar, int event) {
+                            super.onDismissed(transientBottomBar, event);
+                            if (!undo){
+                                databaseViewmodel.deleteTable(deletedTrack);
+                            } else {
+                                playlist_list.add(deleteID,deletedTrack);
+                                playlist_size.add(deleteID,deletedSize);
+                                mAdapter.notifyItemInserted(deleteID);
+                                undo=false;
+                            }
+                            mAdapter.setOnItemClickEnabled(true);
+                            isSnackbarActive=false;
+                        }
+                    }).setDuration(5000).show();
                 }
             }
 
             @Override
             public void onChildDraw(@NonNull Canvas c, @NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, float dX, float dY, int actionState, boolean isCurrentlyActive) {
 
-                if(actionState==ItemTouchHelper.ACTION_STATE_SWIPE){
+                if(actionState==ItemTouchHelper.ACTION_STATE_SWIPE && !isSnackbarActive){
                     View itemView = viewHolder.itemView;
-                    deleteID=viewHolder.getAdapterPosition();
+                    playlistID =viewHolder.getAdapterPosition();
                     if(dX<0){
                         c.drawRect((float) itemView.getRight() + dX, (float) itemView.getTop(),
                                 (float) itemView.getRight(), (float) itemView.getBottom(), p);
@@ -139,8 +170,10 @@ public class Playlist extends Fragment {
                                     p);
                         }
                     }
+                    super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive);
+                } else {
+                    viewHolder.itemView.setTranslationX(0);
                 }
-                super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive);
             }
         };
 

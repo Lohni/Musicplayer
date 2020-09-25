@@ -42,6 +42,7 @@ import com.example.musicplayer.ui.playlistdetail.PlaylistDetail;
 import com.example.musicplayer.ui.playlistdetail.PlaylistDetailAdd;
 import com.example.musicplayer.ui.songlist.SongList;
 import com.example.musicplayer.ui.songlist.SongListInterface;
+import com.example.musicplayer.ui.views.PlaybackControlSeekbar;
 import com.google.android.material.navigation.NavigationView;
 
 import java.util.ArrayList;
@@ -50,8 +51,6 @@ import java.util.Objects;
 import androidx.annotation.NonNull;
 
 import androidx.appcompat.app.ActionBarDrawerToggle;
-import androidx.core.app.SharedElementCallback;
-import androidx.core.content.ContextCompat;
 import androidx.core.view.GravityCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
@@ -61,9 +60,6 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
-import androidx.transition.AutoTransition;
-import androidx.transition.ChangeBounds;
-import androidx.transition.TransitionValues;
 
 public class MainActivity extends AppCompatActivity implements SongListInterface, PlaybackControlInterface,NavigationView.OnNavigationItemSelectedListener, ExpandedPlaybackControlInterface, PlaylistInterface {
 
@@ -83,7 +79,7 @@ public class MainActivity extends AppCompatActivity implements SongListInterface
     private final int MENU_CONFIG_PLAYLIST=1,MENU_CONFIG_PLAYLIST_DETAIL=2,MENU_CONFIG_TRACK_SELECTOR=3;
     private int actionbarMenuConfig = 0;
 
-    private boolean isOnPause = true,isExpanded=false;
+    private boolean isOnPause = true, isExpanded=false;
     private Handler mHandler = new Handler();
     private ActionBarDrawerToggle toggle;
 
@@ -109,10 +105,22 @@ public class MainActivity extends AppCompatActivity implements SongListInterface
             @Override
             public void onClick(View view) {
                 onBackPressed();
-                Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(false);
-                drawer.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED);
-                toggle.setDrawerIndicatorEnabled(true);
-                actionbarMenuConfig=MENU_CONFIG_PLAYLIST_DETAIL;
+                switch (actionbarMenuConfig){
+                    case MENU_CONFIG_TRACK_SELECTOR:
+                        actionbarMenuConfig=MENU_CONFIG_PLAYLIST_DETAIL;
+                        drawer.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED);
+                        toggle.setDrawerIndicatorEnabled(false);
+
+                        Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
+                        getSupportActionBar().setHomeAsUpIndicator(R.drawable.ic_baseline_arrow_back_24);
+                        break;
+
+                    case MENU_CONFIG_PLAYLIST_DETAIL:
+                        actionbarMenuConfig = MENU_CONFIG_PLAYLIST;
+                        Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(false);
+                        toggle.setDrawerIndicatorEnabled(true);
+                        break;
+                }
                 invalidateOptionsMenu();
             }
         });
@@ -264,10 +272,10 @@ public class MainActivity extends AppCompatActivity implements SongListInterface
     }
 
     @Override
-    public void OnExpandListener(SeekBar view, View text) {
+    public void OnExpandListener(PlaybackControlSeekbar view, View text) {
         FragmentTransaction ft = this.getSupportFragmentManager().beginTransaction();
         expandedPlaybackControl = new ExpandedPlaybackControl();
-
+        expandedPlaybackControl.setAudioSessionID(musicService.getSessionId());
         Slide anim = new Slide();
         anim.setSlideEdge(Gravity.BOTTOM);
         anim.setDuration(100);
@@ -366,11 +374,10 @@ public class MainActivity extends AppCompatActivity implements SongListInterface
             String table = getSupportActionBar().getTitle().toString();
             databaseViewmodel.addTableEntries(table,selection);
 
-            onBackPressed();
-            getSupportActionBar().setDisplayHomeAsUpEnabled(false);
             drawer.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED);
-            toggle.setDrawerIndicatorEnabled(true);
+            getSupportActionBar().setHomeAsUpIndicator(R.drawable.ic_baseline_arrow_back_24);
             actionbarMenuConfig=MENU_CONFIG_PLAYLIST_DETAIL;
+            onBackPressed();
             invalidateOptionsMenu();
         }
         return super.onOptionsItemSelected(item);
@@ -378,6 +385,9 @@ public class MainActivity extends AppCompatActivity implements SongListInterface
 
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+        Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(false);
+        toggle.setDrawerIndicatorEnabled(true);
+        getSupportFragmentManager().popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
         switch (item.getItemId()){
             case R.id.nav_tracklist:{
                 getSupportFragmentManager().beginTransaction().replace(R.id.nav_host_fragment,new SongList()).commit();
@@ -399,23 +409,30 @@ public class MainActivity extends AppCompatActivity implements SongListInterface
                 getSupportFragmentManager().beginTransaction().replace(R.id.nav_host_fragment,equalizerFragment).commit();
             }
         }
+
         drawer.closeDrawer(GravityCompat.START);
+
         return true;
     }
 
     @Override
     public void OnClickListener(String table, View view) {
         playlistDetailFragment = new PlaylistDetail();
-        //playlistDetailFragment.setExitTransition(new Fade().setDuration(500));
         getSupportFragmentManager().beginTransaction().replace(R.id.nav_host_fragment, playlistDetailFragment).addToBackStack(null).commit();
         actionbarMenuConfig=MENU_CONFIG_PLAYLIST_DETAIL;
+
+        toggle.setDrawerIndicatorEnabled(false);
+
+        Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setHomeAsUpIndicator(R.drawable.ic_baseline_arrow_back_24);
+
         getSupportActionBar().setTitle(table);
         invalidateOptionsMenu();
     }
 
     @Override
     public void OnPlaylistResumeListener(){
-        actionbarMenuConfig=MENU_CONFIG_PLAYLIST;
+        databaseViewmodel.notifyDatabaseChanged();
         invalidateOptionsMenu();
     }
 

@@ -14,17 +14,24 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
 import android.provider.MediaStore;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.AnimationUtils;
 import android.widget.AdapterView;
+import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import com.example.musicplayer.R;
 import com.example.musicplayer.adapter.TrackSelectionAdapter;
 import com.example.musicplayer.entities.MusicResolver;
+import com.google.android.material.datepicker.MaterialTextInputPicker;
+import com.google.android.material.textfield.TextInputEditText;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -35,6 +42,7 @@ public class PlaylistDetailAdd extends Fragment {
     private static final int PERMISSION_REQUEST_CODE = 0x03 ;
 
     private ListView selection;
+    private EditText search;
     private ArrayList<MusicResolver> trackList;
     private TrackSelectionAdapter mAdapter;
 
@@ -48,6 +56,7 @@ public class PlaylistDetailAdd extends Fragment {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_playlist_detail_add, container, false);
         selection = view.findViewById(R.id.selection_list);
+        search = view.findViewById(R.id.playlist_add_search);
         permission();
         trackList = new ArrayList<>();
 
@@ -79,6 +88,24 @@ public class PlaylistDetailAdd extends Fragment {
                 mAdapter.notifyDataSetChanged();
             }
         });
+
+        search.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                mAdapter.getFilter().filter(charSequence);
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+
+            }
+        });
+
         return view;
     }
 

@@ -64,12 +64,15 @@ public class DatabaseViewmodel extends AndroidViewModel {
     }
 
     public void deleteTableEntry(String table, long id){
-        if(mDatabase.deleteItem(table,id)) Toast.makeText(getApplication(),"Track removed",Toast.LENGTH_SHORT).show();
+        if(mDatabase.deleteItem(table,id)){
+            Toast.makeText(getApplication(),"Track removed",Toast.LENGTH_SHORT).show();
+        }
     }
 
     //Database Methods
     private boolean setNewTable(String table){
         boolean state = mDatabase.newTable(table);
+        /*
         ArrayList<String> size =new ArrayList<>();
         ArrayList<String> tables = new ArrayList<>();
         if (state){
@@ -78,6 +81,8 @@ public class DatabaseViewmodel extends AndroidViewModel {
             allTables.setValue(tables);
             allTableSizes.setValue(size);
         }
+         */
+        notifyDatabaseChanged();
         return state;
     }
 
@@ -112,5 +117,10 @@ public class DatabaseViewmodel extends AndroidViewModel {
             }
         }
         allTables.setValue(tables);
+    }
+
+    public void notifyDatabaseChanged(){
+        getAllTables();
+        getAllTableSizes();
     }
 }

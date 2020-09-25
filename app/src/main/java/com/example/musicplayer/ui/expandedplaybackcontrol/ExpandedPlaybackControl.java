@@ -1,9 +1,12 @@
 package com.example.musicplayer.ui.expandedplaybackcontrol;
 
+import android.Manifest;
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
+import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
@@ -22,11 +25,13 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.musicplayer.R;
+import com.example.musicplayer.ui.views.AudioVisualizerView;
 
 public class ExpandedPlaybackControl extends Fragment {
-
+    private static final int PERMISSION_REQUEST_CODE = 0x03;
     private TextView expanded_title,expanded_artist,expanded_currtime,expanded_absolute_time;
-    private ImageButton expanded_play,expanded_skipforward,expanded_skipback,expanded_shuffle,expanded_repeat,expanded_loop;
+    private ImageButton expanded_play,expanded_skipforward,expanded_skipback,collapse;
+    private AudioVisualizerView audioVisualizerView;
 
     private SeekBar expanded_seekbar;
 
@@ -36,7 +41,7 @@ public class ExpandedPlaybackControl extends Fragment {
 
     private ExpandedPlaybackControlInterface epcInterface;
 
-    private int newProgress;
+    private int newProgress, audioSessionID;
     private boolean seekbarUserAction=false;
 
     public ExpandedPlaybackControl() {
@@ -69,13 +74,15 @@ public class ExpandedPlaybackControl extends Fragment {
         expanded_play = view.findViewById(R.id.expanded_control_play);
         expanded_skipforward = view.findViewById(R.id.expanded_control_skipforward);
         expanded_skipback = view.findViewById(R.id.expanded_control_skipback);
-        expanded_shuffle = view.findViewById(R.id.expanded_control_shuffle);
-        expanded_repeat = view.findViewById(R.id.expanded_control_repeat);
+        //expanded_shuffle = view.findViewById(R.id.expanded_control_shuffle);
+        //expanded_repeat = view.findViewById(R.id.expanded_control_repeat);
         expanded_currtime = view.findViewById(R.id.expanded_current_time);
         expanded_absolute_time = view.findViewById(R.id.expanded_absolute_time);
         expanded_seekbar = view.findViewById(R.id.expanded_seekbar);
-        expanded_loop = view.findViewById(R.id.expanded_control_loop);
-
+        //expanded_loop = view.findViewById(R.id.expanded_control_loop);
+        audioVisualizerView = view.findViewById(R.id.audioView);
+        collapse = view.findViewById(R.id.expanded_control_collapse);
+        permission();
         expanded_title.setSelected(true);
 
         requireActivity().startPostponedEnterTransition();
@@ -104,6 +111,13 @@ public class ExpandedPlaybackControl extends Fragment {
             }
         });
 
+        collapse.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                getParentFragmentManager().popBackStack();
+            }
+        });
+        /*
         expanded_shuffle.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -124,7 +138,7 @@ public class ExpandedPlaybackControl extends Fragment {
                 epcInterface.OnLoopClickListener();
             }
         });
-
+        */
         expanded_seekbar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
@@ -143,6 +157,7 @@ public class ExpandedPlaybackControl extends Fragment {
             }
         });
         epcInterface.OnStartListener();
+        audioVisualizerView.initVisualizer(audioSessionID);
         return view;
     }
 
@@ -150,6 +165,7 @@ public class ExpandedPlaybackControl extends Fragment {
     public void onPause() {
         super.onPause();
         epcInterface.OnCloseListener();
+        audioVisualizerView.setenableVisualizer(false);
     }
 
     public void updateSeekbar(int time){
@@ -175,6 +191,10 @@ public class ExpandedPlaybackControl extends Fragment {
         expanded_seekbar.setMax(length);
     }
 
+    public void setAudioSessionID(int audioSessionID){
+        this.audioSessionID=audioSessionID;
+    }
+
     public void setControlButton(boolean isOnPause){
         if(!isOnPause){
             expanded_play.setBackground(ContextCompat.getDrawable(requireContext(),R.drawable.ic_pause_black_24dp));
@@ -185,32 +205,57 @@ public class ExpandedPlaybackControl extends Fragment {
 
     public void setShuffleButton(boolean shuffle){
         if(!shuffle){
-            expanded_shuffle.setBackgroundTintList(getResources().getColorStateList(R.color.colorTransparent));
+            //expanded_shuffle.setBackgroundTintList(getResources().getColorStateList(R.color.colorTransparent));
             Toast.makeText(requireContext(),"Disable shuffle list",Toast.LENGTH_LONG).show();
         } else{
-            expanded_shuffle.setBackgroundTintList(getResources().getColorStateList(R.color.colorPrimaryDark));
+            //expanded_shuffle.setBackgroundTintList(getResources().getColorStateList(R.color.colorPrimaryDark));
             Toast.makeText(requireContext(),"Shuffle list",Toast.LENGTH_LONG).show();
         }
     }
 
     public void setRepeatButton(boolean repeat){
         if(!repeat){
-            expanded_repeat.setBackgroundTintList(getResources().getColorStateList(R.color.colorTransparent));
+            //expanded_repeat.setBackgroundTintList(getResources().getColorStateList(R.color.colorTransparent));
             Toast.makeText(requireContext(),"Disable repeat list",Toast.LENGTH_LONG).show();
         } else{
-            expanded_repeat.setBackgroundTintList(getResources().getColorStateList(R.color.colorPrimaryDark));
+            //expanded_repeat.setBackgroundTintList(getResources().getColorStateList(R.color.colorPrimaryDark));
             Toast.makeText(requireContext(),"Repeat list",Toast.LENGTH_LONG).show();
         }
     }
 
     public void setLoopButton(boolean loop){
         if(!loop){
-            expanded_loop.setBackgroundTintList(getResources().getColorStateList(R.color.colorTransparent));
+            //expanded_loop.setBackgroundTintList(getResources().getColorStateList(R.color.colorTransparent));
             Toast.makeText(requireContext(),"Disable looping",Toast.LENGTH_LONG).show();
         } else{
-            expanded_loop.setBackgroundTintList(getResources().getColorStateList(R.color.colorPrimaryDark));
+            //expanded_loop.setBackgroundTintList(getResources().getColorStateList(R.color.colorPrimaryDark));
             Toast.makeText(requireContext(),"Loop current song",Toast.LENGTH_LONG).show();
         }
+    }
+
+    private void permission(){
+        //if (Build.VERSION.SDK_INT >= 23) {
+        //Check whether your app has access to the READ permission//
+        if (checkPermission()) {
+            //If your app has access to the device’s storage, then print the following message to Android Studio’s Logcat//
+            Log.e("permission", "Permission already granted.");
+        } else {
+            //If your app doesn’t have permission to access external storage, then call requestPermission//
+            requestPermission();
+        }
+        //}
+    }
+
+    private boolean checkPermission() {
+        //Check for READ_EXTERNAL_STORAGE access, using ContextCompat.checkSelfPermission()//
+        int result = ContextCompat.checkSelfPermission(requireActivity(), Manifest.permission.RECORD_AUDIO);
+        //If the app does have this permission, then return true//
+        //If the app doesn’t have this permission, then return false//
+        return result == PackageManager.PERMISSION_GRANTED;
+    }
+
+    private void requestPermission() {
+        ActivityCompat.requestPermissions(requireActivity(), new String[]{Manifest.permission.RECORD_AUDIO}, PERMISSION_REQUEST_CODE);
     }
 
     private class PlaybackPagerAdapter extends FragmentStateAdapter{

@@ -32,6 +32,8 @@ import com.example.musicplayer.adapter.SongListAdapter;
 import com.example.musicplayer.entities.MusicResolver;
 import com.example.musicplayer.ui.DatabaseViewmodel;
 import com.example.musicplayer.ui.playlist.PlaylistInterface;
+import com.google.android.material.snackbar.BaseTransientBottomBar;
+import com.google.android.material.snackbar.Snackbar;
 
 import java.util.ArrayList;
 
@@ -44,10 +46,14 @@ public class PlaylistDetail extends Fragment {
     private PlaylistDetailAdapter playlistDetailAdapter;
     private DatabaseViewmodel databaseViewmodel;
     private PlaylistInterface playlistInterface;
+    private View snackbar_anchor;
+    private Snackbar snackbar;
+    private boolean isSnackbarActive = false, undo = false, isSecondDelete=false;
 
     private String table;
 
-    private int deleteID;
+    private int deleteID, oldDeleteID=-1;
+    private MusicResolver deletedSong, newDeleteSong;
 
     public PlaylistDetail() {
         // Required empty public constructor
@@ -74,6 +80,7 @@ public class PlaylistDetail extends Fragment {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_playlist_detail, container, false);
         list= view.findViewById(R.id.playlistdetail_list);
+        snackbar_anchor = view.findViewById(R.id.playlist_detail_snackbar_anchor);
         list.setHasFixedSize(true);
         list.setLayoutAnimation(AnimationUtils.loadLayoutAnimation(requireContext(),R.anim.layout_animation_fall_down));
 
@@ -108,9 +115,15 @@ public class PlaylistDetail extends Fragment {
             @Override
             public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
                 if(direction==ItemTouchHelper.LEFT){
-                    databaseViewmodel.deleteTableEntry(table, trackList.get(deleteID).getId());
-                    trackList.remove(deleteID);
-                    playlistDetailAdapter.notifyItemRemoved(deleteID);
+                    if (isSnackbarActive && snackbar != null){
+                        isSecondDelete=true;
+                        snackbar.dismiss();
+                    }
+                    if (!isSecondDelete){
+                        removeTrack();
+                        createSnackbar();
+                        isSnackbarActive=true;
+                    }
                 }
             }
 
@@ -119,7 +132,8 @@ public class PlaylistDetail extends Fragment {
 
                 if(actionState==ItemTouchHelper.ACTION_STATE_SWIPE){
                     View itemView = viewHolder.itemView;
-                    deleteID=viewHolder.getAdapterPosition();
+                    int id = viewHolder.getAdapterPosition();
+                    if (id != -1)deleteID=id;
                     if(dX<0){
                         c.drawRect((float) itemView.getRight() + dX, (float) itemView.getTop(),
                                 (float) itemView.getRight(), (float) itemView.getBottom(), p);
@@ -137,6 +151,40 @@ public class PlaylistDetail extends Fragment {
         ItemTouchHelper itemTouchHelper = new ItemTouchHelper(simpleCallback);
         itemTouchHelper.attachToRecyclerView(list);
         return view;
+    }
+
+    private void createSnackbar(){
+        snackbar = Snackbar.make(snackbar_anchor, "song will be deleted!", Snackbar.LENGTH_LONG).setAction("Undo", new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                undo=true;
+            }
+        }).addCallback(new BaseTransientBottomBar.BaseCallback<Snackbar>() {
+            @Override
+            public void onDismissed(Snackbar transientBottomBar, int event) {
+                super.onDismissed(transientBottomBar, event);
+                if (undo){
+                    trackList.add(oldDeleteID,deletedSong);
+                    playlistDetailAdapter.notifyItemInserted(oldDeleteID);
+                } else {
+                    databaseViewmodel.deleteTableEntry(table, deletedSong.getId());
+                }
+                undo=false;
+                if (isSecondDelete){
+                    isSecondDelete=false;
+                    removeTrack();
+                    createSnackbar();
+                } else isSnackbarActive=false;
+            }
+        }).setDuration(5000);
+        snackbar.show();
+    }
+
+    private void removeTrack(){
+        deletedSong = trackList.get(deleteID);
+        trackList.remove(deleteID);
+        playlistDetailAdapter.notifyItemRemoved(deleteID);
+        oldDeleteID = deleteID;
     }
 
     public static Bitmap getBitmapFromVectorDrawable(Context context, int drawableId) {
