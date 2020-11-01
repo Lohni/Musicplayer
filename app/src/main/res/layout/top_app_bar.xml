@@ -5,7 +5,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:elevation="0dp"
-    tools:context=".MainActivity">
+    tools:context=".MainActivity"
+    android:id="@+id/parentContainer">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/container_holder"
@@ -17,7 +18,6 @@
         app:layout_constraintTop_toBottomOf="@id/appbar">
 
         <androidx.constraintlayout.widget.ConstraintLayout
-            android:id="@+id/parentContainer"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             app:layout_constraintBottom_toBottomOf="parent"
@@ -73,7 +73,7 @@
             android:backgroundTint="#00FFFFFF"
             android:elevation="0dp"
             android:theme="@style/Theme.MusicPlayer"
-            app:titleTextColor="@color/colorTextDark" />
+            app:titleTextColor="@color/colorTextLight" />
 
     </com.google.android.material.appbar.AppBarLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

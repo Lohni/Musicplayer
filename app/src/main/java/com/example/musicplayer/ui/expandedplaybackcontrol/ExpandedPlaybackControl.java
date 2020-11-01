@@ -1,13 +1,24 @@
 package com.example.musicplayer.ui.expandedplaybackcontrol;
 
 import android.Manifest;
+import android.content.ContentUris;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.content.res.ColorStateList;
+import android.content.res.Resources;
+import android.graphics.BitmapFactory;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.VectorDrawable;
+import android.media.MediaMetadataRetriever;
+import android.net.Uri;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.content.res.AppCompatResources;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.core.content.res.ResourcesCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.fragment.app.FragmentManager;
@@ -15,24 +26,27 @@ import androidx.fragment.app.FragmentPagerAdapter;
 import androidx.viewpager2.adapter.FragmentStateAdapter;
 import androidx.viewpager2.widget.ViewPager2;
 
+import android.provider.MediaStore;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.musicplayer.R;
+import com.example.musicplayer.entities.MusicResolver;
 import com.example.musicplayer.ui.views.AudioVisualizerView;
 
 public class ExpandedPlaybackControl extends Fragment {
     private static final int PERMISSION_REQUEST_CODE = 0x03;
     private TextView expanded_title,expanded_artist,expanded_currtime,expanded_absolute_time;
-    private ImageButton expanded_play,expanded_skipforward,expanded_skipback,collapse;
+    private ImageButton expanded_play,expanded_skipforward,expanded_skipback,collapse, expanded_fav, expanded_behaviourControl;
     private AudioVisualizerView audioVisualizerView;
-
+    private ImageView cover;
     private SeekBar expanded_seekbar;
 
     private ViewPager2 mPager;
@@ -74,14 +88,16 @@ public class ExpandedPlaybackControl extends Fragment {
         expanded_play = view.findViewById(R.id.expanded_control_play);
         expanded_skipforward = view.findViewById(R.id.expanded_control_skipforward);
         expanded_skipback = view.findViewById(R.id.expanded_control_skipback);
-        //expanded_shuffle = view.findViewById(R.id.expanded_control_shuffle);
-        //expanded_repeat = view.findViewById(R.id.expanded_control_repeat);
+        expanded_fav = view.findViewById(R.id.expanded_favourite);
+        expanded_behaviourControl = view.findViewById(R.id.expanded_control_behaviour);
         expanded_currtime = view.findViewById(R.id.expanded_current_time);
         expanded_absolute_time = view.findViewById(R.id.expanded_absolute_time);
         expanded_seekbar = view.findViewById(R.id.expanded_seekbar);
         //expanded_loop = view.findViewById(R.id.expanded_control_loop);
         audioVisualizerView = view.findViewById(R.id.audioView);
         collapse = view.findViewById(R.id.expanded_control_collapse);
+        cover = view.findViewById(R.id.expanded_cover);
+
         permission();
         expanded_title.setSelected(true);
 
@@ -184,11 +200,12 @@ public class ExpandedPlaybackControl extends Fragment {
         return minute + ":" + second;
     }
 
-    public void setSongInfo(String title, String artist,int length){
+    public void setSongInfo(String title, String artist,int length, long id){
         expanded_absolute_time.setText(convertTime(length));
         expanded_title.setText(title);
         expanded_artist.setText(artist);
         expanded_seekbar.setMax(length);
+        loadCover(id);
     }
 
     public void setAudioSessionID(int audioSessionID){
@@ -201,6 +218,24 @@ public class ExpandedPlaybackControl extends Fragment {
         } else {
             expanded_play.setBackground(ContextCompat.getDrawable(requireContext(),R.drawable.ic_play_arrow_black_24dp));
         }
+    }
+
+    private void loadCover(long song){
+        Uri trackUri = ContentUris.withAppendedId(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,song);
+        MediaMetadataRetriever mmr = new MediaMetadataRetriever();
+        mmr.setDataSource(requireContext(),trackUri);
+        byte [] thumbnail = mmr.getEmbeddedPicture();
+        mmr.release();
+        if (thumbnail != null){
+            setCoverImage(new BitmapDrawable(getResources(),BitmapFactory.decodeByteArray(thumbnail,0,thumbnail.length)),false);
+        } else {
+            setCoverImage(ResourcesCompat.getDrawable(getResources(),R.drawable.ic_baseline_music_note_24,null),true);
+        }
+    }
+
+    private void setCoverImage(Drawable coverImage, boolean custom){
+        if (custom)cover.setImageTintList(AppCompatResources.getColorStateList(requireContext(),R.color.colorPrimaryNight));
+        this.cover.setImageDrawable(coverImage);
     }
 
     public void setShuffleButton(boolean shuffle){

@@ -7,8 +7,8 @@
             android:shape="line"
             android:thickness="1px">
             <stroke
-                android:color="@color/colorTextDark"
-                android:width="1px">
+                android:color="@color/colorTextLight"
+                android:width="2px">
             </stroke>
         </shape>
     </item>

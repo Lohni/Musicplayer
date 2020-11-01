@@ -1,0 +1,68 @@
+
+h
+java:S1128$"KRemove this unused import 'com.example.musicplayer.entities.MusicResolver'.(šÇ…–8‡»ÃØ.
+C
+java:S1604|"(Make this anonymous inner class a lambda(¯ŞÃûşÿÿÿÿ
+W	java:S125"<This block of commented-out lines of code should be removed.(éØ»Úûÿÿÿÿ
+m
+java:S1450*"WRemove the "collapse" field and declare it as a local variable in the relevant methods.(·¤–á
+r
+java:S14500"WRemove the "mAdapter" field and declare it as a local variable in the relevant methods.(óØ©Šùÿÿÿÿ
+k
+java:S1450/"URemove the "mPager" field and declare it as a local variable in the relevant methods.(‚ÏÇ›
+J
+java:S1659)"/Declare "expanded_currtime" on a separate line.(ëÜ»òşÿÿÿÿ
+C
+java:S1604g"(Make this anonymous inner class a lambda(ŞóÒÚûÿÿÿÿ
+]
+java:S1128"BRemove this unused import 'androidx.fragment.app.FragmentManager'.(¯­ë‹ıÿÿÿÿ
+@
+java:S1659¿"$Declare "second" on a separate line.(âì‰ûÿÿÿÿ
+o
+java:S2637¨"XThis method's return value is marked "androidx.annotation.NonNull" but null is returned.(¥¹ï
+H
+java:S1659*"2Declare "expanded_skipforward" on a separate line.(·¤–á
+O
+java:S1659)"4Declare "expanded_absolute_time" on a separate line.(ëÜ»òşÿÿÿÿ
+t	java:S116*"_Rename this field "expanded_skipforward" to match the regular expression '^[a-z][a-zA-Z0-9]*$'.(·¤–á
+Q	java:S125‡"<This block of commented-out lines of code should be removed.(¡éZ
+Q	java:S125V"<This block of commented-out lines of code should be removed.(èÅş«
+C
+java:S1604u"(Make this anonymous inner class a lambda(¯·Şšıÿÿÿÿ
+v
+java:S1450*"`Remove the "expanded_skipback" field and declare it as a local variable in the relevant methods.(·¤–á
+H
+java:S1659)"-Declare "expanded_artist" on a separate line.(ëÜ»òşÿÿÿÿ
+y
+java:S1450*"cRemove the "expanded_skipforward" field and declare it as a local variable in the relevant methods.(·¤–á
+s	java:S116)"YRename this field "expanded_title" to match the regular expression '^[a-z][a-zA-Z0-9]*$'.(ëÜ»òşÿÿÿÿ
+W	java:S125ô"<This block of commented-out lines of code should be removed.(àæÓğúÿÿÿÿ
+r
+java:S2095Û"TUse try-with-resources or close this "MediaMetadataRetriever" in a "finally" clause.(ÂÕî8ÌÄ¨…Ø.
+V	java:S125["<This block of commented-out lines of code should be removed.(å‘·¹şÿÿÿÿ
+R	java:S125ş"<This block of commented-out lines of code should be removed.(´ñò¤
+i
+java:S14501"SRemove the "view" field and declare it as a local variable in the relevant methods.(ØÊ»¶
+<
+java:S1659*"&Declare "collapse" on a separate line.(·¤–á
+C
+java:S1604n"(Make this anonymous inner class a lambda(ü´ûúÿÿÿÿ
+q	java:S116*"\Rename this field "expanded_skipback" to match the regular expression '^[a-z][a-zA-Z0-9]*$'.(·¤–á
+m	java:S116*"XRename this field "expanded_play" to match the regular expression '^[a-z][a-zA-Z0-9]*$'.(·¤–á
+R	java:S125í"<This block of commented-out lines of code should be removed.(›µà
+v	java:S116)"\Rename this field "expanded_currtime" to match the regular expression '^[a-z][a-zA-Z0-9]*$'.(ëÜ»òşÿÿÿÿ
+R	java:S125÷"<This block of commented-out lines of code should be removed.(ØŞ·³
+>
+java:S1185="(Remove this method to simply inherit it.(ßìê¯
+E
+java:S1659*"/Declare "expanded_skipback" on a separate line.(·¤–á
+t	java:S116)"ZRename this field "expanded_artist" to match the regular expression '^[a-z][a-zA-Z0-9]*$'.(ëÜ»òşÿÿÿÿ
+W	java:S125ƒ"<This block of commented-out lines of code should be removed.(¦Ñ¾Šüÿÿÿÿ
+u	java:S116-"[Rename this field "expanded_seekbar" to match the regular expression '^[a-z][a-zA-Z0-9]*$'.(şúâÜıÿÿÿÿ
+{	java:S116)"aRename this field "expanded_absolute_time" to match the regular expression '^[a-z][a-zA-Z0-9]*$'.(ëÜ»òşÿÿÿÿ
+W	java:S125ê"<This block of commented-out lines of code should be removed.(èì‘šüÿÿÿÿ
+G
+java:S16595",Declare "audioSessionID" on a separate line.(ÚÅŠ ıÿÿÿÿ
+\
+java:S1128"GRemove this unused import 'androidx.fragment.app.FragmentPagerAdapter'.(ş÷S
+R	java:S125"<This block of commented-out lines of code should be removed.(Š

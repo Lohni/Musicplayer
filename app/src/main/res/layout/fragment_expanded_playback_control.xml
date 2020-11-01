@@ -14,7 +14,7 @@
         android:layout_marginTop="8dp"
         android:layout_marginStart="8dp"
         android:background="@drawable/ic_baseline_keyboard_arrow_down_24"
-        android:backgroundTint="@color/colorSecondary"
+        android:backgroundTint="@color/colorSecondaryLight"
         android:elevation="8dp"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
@@ -25,12 +25,20 @@
         android:layout_height="0dp"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toTopOf="@+id/control_layout"
-        android:background="@color/colorPrimary">
+        android:background="@color/colorPrimaryDark">
+
+        <ImageView
+            android:id="@+id/expanded_cover"
+            android:layout_width="280dp"
+            android:layout_height="280dp"
+            android:layout_gravity="center" />
 
         <com.example.musicplayer.ui.views.AudioVisualizerView
             android:id="@+id/audioView"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"/>
+            android:layout_height="100dp"
+            app:visualizerColor="@color/colorPrimaryNight"
+            android:layout_gravity="bottom"/>
 
         <androidx.viewpager2.widget.ViewPager2
             android:id="@+id/expanded_control_viewpager"
@@ -46,7 +54,7 @@
         android:layout_height="0dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/cover_layout"
-        android:background="@color/colorPrimaryDark">
+        android:background="@color/colorPrimaryNight">
 
 
         <LinearLayout
@@ -54,7 +62,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
-            android:layout_marginTop="16dp"
+            android:layout_marginTop="8dp"
             android:layout_marginEnd="16dp"
             android:orientation="vertical"
             app:layout_constraintEnd_toEndOf="parent"
@@ -144,7 +152,6 @@
             android:layout_width="0dp"
             android:layout_height="20dp"
             android:layout_marginTop="8dp"
-            android:layout_marginBottom="8dp"
             android:progressBackgroundTintMode="src_in"
             android:progressTint="@color/colorSecondaryLight"
             android:secondaryProgressTint="@color/colorPrimaryLight"
@@ -152,7 +159,7 @@
             app:layout_constraintBottom_toTopOf="@id/expanded_control_play"
             app:layout_constraintLeft_toRightOf="@id/expanded_current_time"
             app:layout_constraintRight_toLeftOf="@id/expanded_absolute_time"
-            app:layout_constraintTop_toBottomOf="@id/expanded_control_holder"
+            app:layout_constraintTop_toBottomOf="@id/expanded_favourite"
             android:transitionName="playback_seekbar"/>
 
         <com.google.android.material.textview.MaterialTextView
@@ -169,6 +176,32 @@
             app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintTop_toTopOf="@id/expanded_seekbar" />
 
+        <ImageButton
+            android:id="@+id/expanded_control_behaviour"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            app:layout_constraintBottom_toTopOf="@id/expanded_seekbar"
+            app:layout_constraintRight_toLeftOf="@id/expanded_control_play"
+            app:layout_constraintTop_toBottomOf="@id/expanded_control_holder"
+            android:background="@drawable/ic_shuffle_black_24dp"
+            android:backgroundTint="@color/colorSecondaryLight"
+            app:layout_constraintLeft_toRightOf="@id/expanded_control_skipback"/>
+
+        <ImageButton
+            android:id="@+id/expanded_favourite"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            app:layout_constraintBottom_toTopOf="@id/expanded_seekbar"
+            app:layout_constraintLeft_toRightOf="@id/expanded_control_play"
+            app:layout_constraintRight_toLeftOf="@id/expanded_control_skipforward"
+            app:layout_constraintTop_toBottomOf="@id/expanded_control_holder"
+            android:background="@drawable/ic_outline_favorite_border_24"
+            android:backgroundTint="@color/colorSecondaryLight"/>
+
+        <ImageButton
+            android:id="@+id/expanded_menu_more"
+            android:layout_width="30dp"
+            android:layout_height="30dp"/>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

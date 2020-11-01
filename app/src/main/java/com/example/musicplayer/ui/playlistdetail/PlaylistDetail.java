@@ -9,6 +9,7 @@ import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
@@ -19,11 +20,15 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import android.transition.Explode;
 import android.util.DisplayMetrics;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.AnimationUtils;
+import android.widget.Button;
 import android.widget.ListView;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.musicplayer.MainActivity;
 import com.example.musicplayer.R;
@@ -32,10 +37,12 @@ import com.example.musicplayer.adapter.SongListAdapter;
 import com.example.musicplayer.entities.MusicResolver;
 import com.example.musicplayer.ui.DatabaseViewmodel;
 import com.example.musicplayer.ui.playlist.PlaylistInterface;
+import com.google.android.material.button.MaterialButton;
 import com.google.android.material.snackbar.BaseTransientBottomBar;
 import com.google.android.material.snackbar.Snackbar;
 
 import java.util.ArrayList;
+import java.util.Objects;
 
 
 public class PlaylistDetail extends Fragment {
@@ -46,6 +53,8 @@ public class PlaylistDetail extends Fragment {
     private PlaylistDetailAdapter playlistDetailAdapter;
     private DatabaseViewmodel databaseViewmodel;
     private PlaylistInterface playlistInterface;
+    private TextView title, info;
+    private ConstraintLayout shuffle;
     private View snackbar_anchor;
     private Snackbar snackbar;
     private boolean isSnackbarActive = false, undo = false, isSecondDelete=false;
@@ -81,30 +90,37 @@ public class PlaylistDetail extends Fragment {
         View view = inflater.inflate(R.layout.fragment_playlist_detail, container, false);
         list= view.findViewById(R.id.playlistdetail_list);
         snackbar_anchor = view.findViewById(R.id.playlist_detail_snackbar_anchor);
+        title = view.findViewById(R.id.playlistdetail_title);
+        info = view.findViewById(R.id.playlistdetail_duration);
+        shuffle = (ConstraintLayout) view.findViewById(R.id.playlistdetail_shuffle);
         list.setHasFixedSize(true);
         list.setLayoutAnimation(AnimationUtils.loadLayoutAnimation(requireContext(),R.anim.layout_animation_fall_down));
 
         trackList=new ArrayList<>();
         databaseViewmodel = new ViewModelProvider(requireActivity()).get(DatabaseViewmodel.class);
 
-        MainActivity mainActivity =(MainActivity) requireActivity();
-        table = mainActivity.getSupportActionBar().getTitle().toString();
+        databaseViewmodel.getTableName().observe(getViewLifecycleOwner(), table ->{
+            this.table = table;
+            title.setText(table);
+            info.setText(trackList.size()+" songs - 00:00");
 
-        databaseViewmodel.fetchTableContent(table).observe(getViewLifecycleOwner(),trackList ->{
-            this.trackList.addAll(trackList);
-            playlistDetailAdapter.notifyDataSetChanged();
-            playlistInterface.OnPlaylistCreatedListener(this.trackList);
+            databaseViewmodel.fetchTableContent(table).observe(getViewLifecycleOwner(),trackList ->{
+                this.trackList.addAll(trackList);
+                playlistDetailAdapter.notifyDataSetChanged();
+                playlistInterface.OnPlaylistCreatedListener(this.trackList);
+            });
         });
-        //trackList=databaseViewmodel.fetchTableContent(table).getValue();
+
 
         layoutManager = new LinearLayoutManager(requireContext());
         list.setLayoutManager(layoutManager);
-        list.addItemDecoration(new DividerItemDecoration(requireContext(),DividerItemDecoration.VERTICAL));
+
+        DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(requireContext(), R.drawable.recyclerview_divider);
+        list.addItemDecoration(dividerItemDecoration);
         list.setAdapter(playlistDetailAdapter=new PlaylistDetailAdapter(this.trackList,playlistInterface));
         Paint p = new Paint();
-        p.setColor(getResources().getColor(R.color.colorSecondary));
+        p.setColor(ContextCompat.getColor(requireContext(), R.color.colorSecondary));
         Bitmap icon = getBitmapFromVectorDrawable(requireContext(),R.drawable.ic_delete_sweep_black_24dp);
-        int width =(int) getResources().getDisplayMetrics().widthPixels/4;
 
         ItemTouchHelper.SimpleCallback simpleCallback = new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT) {
             @Override
@@ -147,6 +163,12 @@ public class PlaylistDetail extends Fragment {
                 super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive);
             }
         };
+        shuffle.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                playlistInterface.OnShuffle();
+            }
+        });
 
         ItemTouchHelper itemTouchHelper = new ItemTouchHelper(simpleCallback);
         itemTouchHelper.attachToRecyclerView(list);
@@ -201,5 +223,42 @@ public class PlaylistDetail extends Fragment {
 
     private int convertDpToPx(int dp){
         return Math.round(dp * (getResources().getDisplayMetrics().xdpi / DisplayMetrics.DENSITY_DEFAULT));
+    }
+
+    public String getTable(){return table;}
+
+    private class DividerItemDecoration extends RecyclerView.ItemDecoration{
+
+        private Drawable divider;
+        private int paddingLeft, paddingRight;
+
+        public DividerItemDecoration(Context context, int resId) {
+            divider = ContextCompat.getDrawable(context, resId);
+            paddingLeft = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 16f, context.getResources().getDisplayMetrics());
+            paddingRight = paddingLeft;
+        }
+
+        @Override
+        public void onDraw(Canvas c, RecyclerView parent, RecyclerView.State state) {
+
+            int childCount = parent.getChildCount() - 1;
+            for (int i = 0; i < childCount; i++) {
+                View child = parent.getChildAt(i);
+
+                RecyclerView.LayoutParams params = (RecyclerView.LayoutParams) child.getLayoutParams();
+
+                int top = child.getBottom() + params.bottomMargin;
+                int bottom = top + divider.getIntrinsicHeight();
+
+                divider.setBounds(paddingLeft, top, parent.getWidth() - paddingRight, bottom);
+                divider.draw(c);
+            }
+        }
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        playlistInterface.OnPlaylistDetailResumeListener();
     }
 }

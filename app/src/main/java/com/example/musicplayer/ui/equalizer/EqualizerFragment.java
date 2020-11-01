@@ -7,6 +7,8 @@ import android.graphics.PorterDuff;
 import android.media.audiofx.Equalizer;
 import android.os.Bundle;
 
+import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
 import android.util.Log;
@@ -41,12 +43,10 @@ public class EqualizerFragment extends Fragment {
     public EqualizerFragment() {
         // Required empty public constructor
     }
-
-
+    
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
     }
 
     @Override
@@ -63,7 +63,6 @@ public class EqualizerFragment extends Fragment {
 
     public void initEqualizerFragment(Equalizer equalizer){
         this.equalizer=equalizer;
-
     }
 
     private void createChipGroup(){
@@ -73,9 +72,24 @@ public class EqualizerFragment extends Fragment {
             String presetName = equalizer.getPresetName(i);
             presetlist.add(presetName);
             Chip preset = (Chip) getLayoutInflater().inflate(R.layout.equalizer_chip_layout,chipGroup,false);
-
             preset.setText(presetName);
+            preset.setId(i);
             chipGroup.addView(preset);
+        }
+        chipGroup.setOnCheckedChangeListener(new ChipGroup.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(ChipGroup group, int checkedId) {
+                equalizer.usePreset((short) checkedId);
+                updateSeekbars();
+            }
+        });
+    }
+
+    private void updateSeekbars(){
+        for (short i=0; i < equalizer.getNumberOfBands();i++){
+            SeekBar seekBar = view.findViewById(i);
+            int bandlevel = equalizer.getBandLevel(i);
+            seekBar.setProgress(bandlevel - equalizer.getBandLevelRange()[0]);
         }
     }
 
@@ -97,26 +111,52 @@ public class EqualizerFragment extends Fragment {
         long width = getResources().getDisplayMetrics().widthPixels;
         long height = getResources().getDisplayMetrics().heightPixels;
 
-        int laywidth = (int) (width/numberFreqBands);
+        int laywidth = (int) (width/(numberFreqBands));
         Resources r = getResources();
 
-        int clipGroupHeight =(int) TypedValue.applyDimension(
+        int playbackControlHeight =(int) TypedValue.applyDimension(
+                TypedValue.COMPLEX_UNIT_DIP,
+                64f,
+                r.getDisplayMetrics()
+        );
+
+        float appBarHeight = TypedValue.applyDimension(
                 TypedValue.COMPLEX_UNIT_DIP,
                 50f,
                 r.getDisplayMetrics()
         );
 
-        int boostHeight =(int) TypedValue.applyDimension(
+        float seekbarMargin = TypedValue.applyDimension(
                 TypedValue.COMPLEX_UNIT_DIP,
-                100f,
+                16f,
                 r.getDisplayMetrics()
         );
 
-        float px = TypedValue.applyDimension(
-                TypedValue.COMPLEX_UNIT_DIP,
-                204f,
+        float freqtextHeight = TypedValue.applyDimension(
+                TypedValue.COMPLEX_UNIT_SP,
+                16f,
                 r.getDisplayMetrics()
         );
+
+        float headertextHeight = TypedValue.applyDimension(
+                TypedValue.COMPLEX_UNIT_SP,
+                22f,
+                r.getDisplayMetrics()
+        );
+
+        float chipLayoutHeight = TypedValue.applyDimension(
+                TypedValue.COMPLEX_UNIT_DIP,
+                66f,
+                r.getDisplayMetrics()
+        );
+
+        float statusBarHeight = TypedValue.applyDimension(
+                TypedValue.COMPLEX_UNIT_DIP,
+                25f,
+                r.getDisplayMetrics()
+        );
+
+        float navigationBarHeight = getResources().getDimensionPixelSize(getResources().getIdentifier("navigation_bar_height", "dimen", "android"));
 
         for(short i=0;i<numberFreqBands;i++){
             final short bandIndex = i;
@@ -125,6 +165,8 @@ public class EqualizerFragment extends Fragment {
             TextView freq = new TextView(requireContext());
             freq.setGravity(Gravity.CENTER);
             freq.setText((equalizer.getCenterFreq(i))/1000 + "Hz");
+            freq.setTextSize(TypedValue.COMPLEX_UNIT_SP, 16f);
+            freq.setTextColor(ContextCompat.getColor(requireContext(), R.color.colorTextLight));
 
             LinearLayout rowLayout = new LinearLayout(requireContext());
             rowLayout.setOrientation(LinearLayout.VERTICAL);
@@ -133,17 +175,8 @@ public class EqualizerFragment extends Fragment {
             LinearLayout.LayoutParams lowBandlvlLay = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
             lowBandlvlLay.gravity=Gravity.CENTER;
 
-            TextView lowBandlvl = new TextView(requireContext());
-            lowBandlvl.setLayoutParams(textLay);
-            lowBandlvl.setText((lowerEQBandLevel/100)+"dB");
-
-            TextView upperBandlvl = new TextView(requireContext());
-            upperBandlvl.setLayoutParams(textLay);
-            upperBandlvl.setText((upperEQBandLevel/100)+"dB");
-            upperBandlvl.setTextSize(14);
-
             LinearLayout.LayoutParams seeklay = new LinearLayout.LayoutParams(
-                    (int) (height-px-clipGroupHeight-boostHeight),
+                    (int) (height-appBarHeight-playbackControlHeight - seekbarMargin - freqtextHeight - headertextHeight - chipLayoutHeight - statusBarHeight - navigationBarHeight),
                     10);
             seeklay.weight=1;
             seeklay.gravity=Gravity.CENTER;
@@ -154,8 +187,8 @@ public class EqualizerFragment extends Fragment {
             seekBar.setLayoutParams(seeklay);
             seekBar.setMax(upperEQBandLevel - lowerEQBandLevel);
             seekBar.setProgress(bandlevelstart[i] + upperEQBandLevel);
-            seekBar.setProgressTintList(ColorStateList.valueOf(getResources().getColor(R.color.colorSecondaryDark)));
-            seekBar.setThumbTintList(ColorStateList.valueOf(getResources().getColor(R.color.colorSecondaryDark)));
+            seekBar.setProgressTintList(ColorStateList.valueOf(getResources().getColor(R.color.colorSecondaryLight)));
+            seekBar.setThumbTintList(ColorStateList.valueOf(getResources().getColor(R.color.colorSecondaryLight)));
             seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
                 @Override
                 public void onProgressChanged(SeekBar seekBar, int value, boolean b) {
@@ -173,10 +206,8 @@ public class EqualizerFragment extends Fragment {
                 }
             });
 
-            rowLayout.addView(freq);
-            rowLayout.addView(upperBandlvl);
             rowLayout.addView(seekBar);
-            rowLayout.addView(lowBandlvl);
+            rowLayout.addView(freq);
             linearLayout.addView(rowLayout);
         }
     }

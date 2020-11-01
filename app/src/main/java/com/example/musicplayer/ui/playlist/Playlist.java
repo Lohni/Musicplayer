@@ -19,6 +19,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import android.util.DisplayMetrics;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -28,6 +29,7 @@ import com.example.musicplayer.MainActivity;
 import com.example.musicplayer.R;
 import com.example.musicplayer.adapter.PlaylistAdapter;
 import com.example.musicplayer.ui.DatabaseViewmodel;
+import com.example.musicplayer.ui.playlistdetail.PlaylistDetail;
 import com.google.android.material.snackbar.BaseTransientBottomBar;
 import com.google.android.material.snackbar.Snackbar;
 
@@ -101,11 +103,11 @@ public class Playlist extends Fragment {
         layoutManager = new LinearLayoutManager(requireContext());
         playlist.setLayoutManager(layoutManager);
 
-        playlist.addItemDecoration(new DividerItemDecoration(requireContext(),DividerItemDecoration.VERTICAL));
+        Playlist.DividerItemDecoration dividerItemDecoration = new Playlist.DividerItemDecoration(requireContext(), R.drawable.recyclerview_divider);
+        playlist.addItemDecoration(dividerItemDecoration);
         Paint p = new Paint();
-        p.setColor(getResources().getColor(R.color.colorSecondary));
+        p.setColor(ContextCompat.getColor(requireContext(), R.color.colorSecondary));
         Bitmap icon = getBitmapFromVectorDrawable(requireContext(),R.drawable.ic_delete_sweep_black_24dp);
-        int width =(int) getResources().getDisplayMetrics().widthPixels/4;
 
         ItemTouchHelper.SimpleCallback simpleCallback = new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT) {
             @Override
@@ -206,5 +208,34 @@ public class Playlist extends Fragment {
 
     private int convertDpToPx(int dp){
         return Math.round(dp * (getResources().getDisplayMetrics().xdpi / DisplayMetrics.DENSITY_DEFAULT));
+    }
+
+    private class DividerItemDecoration extends RecyclerView.ItemDecoration{
+
+        private Drawable divider;
+        private int paddingLeft, paddingRight;
+
+        public DividerItemDecoration(Context context, int resId) {
+            divider = ContextCompat.getDrawable(context, resId);
+            paddingLeft = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 16f, context.getResources().getDisplayMetrics());
+            paddingRight = paddingLeft;
+        }
+
+        @Override
+        public void onDraw(Canvas c, RecyclerView parent, RecyclerView.State state) {
+
+            int childCount = parent.getChildCount() - 1;
+            for (int i = 0; i < childCount; i++) {
+                View child = parent.getChildAt(i);
+
+                RecyclerView.LayoutParams params = (RecyclerView.LayoutParams) child.getLayoutParams();
+
+                int top = child.getBottom() + params.bottomMargin;
+                int bottom = top + divider.getIntrinsicHeight();
+
+                divider.setBounds(paddingLeft, top, parent.getWidth() - paddingRight, bottom);
+                divider.draw(c);
+            }
+        }
     }
 }

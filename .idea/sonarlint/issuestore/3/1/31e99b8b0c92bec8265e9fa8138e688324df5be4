@@ -1,0 +1,34 @@
+
+T
+java:S1155b">Use isEmpty() to check whether the collection is empty or not.(½øàÆ
+A
+java:S16591"&Declare "deleteID" on a separate line.(¸Ž¶¬ùÿÿÿÿ
+D
+java:S16592".Declare "isSnackbarActive" on a separate line.(©…¦­
+?
+java:S16594")Declare "deletedSize" on a separate line.(ò·ìª
+m	java:S1165"XRename this field "playlist_size" to match the regular expression '^[a-z][a-zA-Z0-9]*$'.(ñíí…
+>
+java:S1185<"(Remove this method to simply inherit it.(ßìê¯
+~
+java:S3252‡"gUse static access with "com.google.android.material.snackbar.BaseTransientBottomBar" for "LENGTH_LONG".(’¹Þþ
+r
+java:S1450,"\Remove the "layoutManager" field and declare it as a local variable in the relevant methods.(üÉÙ¼
+m	java:S1165"XRename this field "playlist_list" to match the regular expression '^[a-z][a-zA-Z0-9]*$'.(ñíí…
+r
+java:S1450+"WRemove the "playlist" field and declare it as a local variable in the relevant methods.(¨’ºÔÿÿÿÿÿ
+A
+java:S16595"+Declare "playlist_size" on a separate line.(ñíí…
+w
+java:S1128 "URemove this unused import 'com.example.musicplayer.ui.playlistdetail.PlaylistDetail'.(ö›ûãùÿÿÿÿ8ŠðÚÉÏ.
+?
+java:S1604‡"(Make this anonymous inner class a lambda(’¹Þþ
+o	java:S116-"ZRename this field "snackbar_anchor" to match the regular expression '^[a-z][a-zA-Z0-9]*$'.(ù€Ç
+m
+java:S3776K"RRefactor this method to reduce its Cognitive Complexity from 26 to the 15 allowed.(ËÄ•åûÿÿÿÿ
+Y
+java:S1155\">Use isEmpty() to check whether the collection is empty or not.(á­üêÿÿÿÿÿ
+H
+java:S1659Ø"*Declare "paddingRight" on a separate line.(ã‡ç‘8–ê×ÉÏ.
+2
+java:S1700+"Rename field "playlist"(¨’ºÔÿÿÿÿÿ

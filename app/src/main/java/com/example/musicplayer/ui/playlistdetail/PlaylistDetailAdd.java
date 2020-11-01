@@ -2,12 +2,14 @@ package com.example.musicplayer.ui.playlistdetail;
 
 import android.Manifest;
 import android.content.ContentResolver;
+import android.content.Context;
 import android.content.pm.PackageManager;
 import android.content.res.ColorStateList;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 
+import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
@@ -30,7 +32,9 @@ import android.widget.TextView;
 import com.example.musicplayer.R;
 import com.example.musicplayer.adapter.TrackSelectionAdapter;
 import com.example.musicplayer.entities.MusicResolver;
+import com.example.musicplayer.ui.playlist.PlaylistInterface;
 import com.google.android.material.datepicker.MaterialTextInputPicker;
+import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
 import com.google.android.material.textfield.TextInputEditText;
 
 import java.util.ArrayList;
@@ -45,9 +49,23 @@ public class PlaylistDetailAdd extends Fragment {
     private EditText search;
     private ArrayList<MusicResolver> trackList;
     private TrackSelectionAdapter mAdapter;
+    private ExtendedFloatingActionButton confirm;
+    private PlaylistInterface playlistInterface;
+    private boolean isFiltered=false;
+    private int selectedCount = 0;
 
     public PlaylistDetailAdd() {
         // Required empty public constructor
+    }
+
+    @Override
+    public void onAttach(@NonNull Context context) {
+        super.onAttach(context);
+        try {
+            playlistInterface = (PlaylistInterface) context;
+        } catch (ClassCastException e){
+            throw new ClassCastException(context.toString() + "must implement SongListInterface");
+        }
     }
 
     @Override
@@ -57,6 +75,8 @@ public class PlaylistDetailAdd extends Fragment {
         View view = inflater.inflate(R.layout.fragment_playlist_detail_add, container, false);
         selection = view.findViewById(R.id.selection_list);
         search = view.findViewById(R.id.playlist_add_search);
+        confirm = view.findViewById(R.id.playlist_detail_add_confirm);
+        confirm.setVisibility(View.INVISIBLE);
         permission();
         trackList = new ArrayList<>();
 
@@ -76,16 +96,32 @@ public class PlaylistDetailAdd extends Fragment {
             } else {
                 mAdapter.notifyDataSetChanged();
             }
+            playlistInterface.OnTracklistLoadedListener();
         });
 
         selection.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                MusicResolver track = mAdapter.getItem(i);
-                if(track.isSelected())track.setSelected(false);
-                else track.setSelected(true);
-                trackList.set(i,track);
+                int position;
+                if (isFiltered)position = mAdapter.getOriginalPosition(i);
+                else position = i;
+                MusicResolver track = mAdapter.getItem(position);
+                if(track.isSelected()){
+                    track.setSelected(false);
+                    selectedCount-=1;
+                }
+                else {
+                    track.setSelected(true);
+                    selectedCount += 1;
+                }
+                trackList.set(position,track);
                 mAdapter.notifyDataSetChanged();
+                if (selectedCount > 0) {
+                    if (selectedCount == 1){
+                        confirm.setVisibility(View.VISIBLE);
+                        confirm.setText("ADD " + selectedCount + " SONG");
+                    } else confirm.setText("ADD " + selectedCount + " SONGS");
+                } else confirm.setVisibility(View.INVISIBLE);
             }
         });
 
@@ -97,12 +133,21 @@ public class PlaylistDetailAdd extends Fragment {
 
             @Override
             public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                if (charSequence.length() != 0) isFiltered=true;
+                else isFiltered=false;
                 mAdapter.getFilter().filter(charSequence);
             }
 
             @Override
             public void afterTextChanged(Editable editable) {
 
+            }
+        });
+
+        confirm.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                playlistInterface.OnAddSongsListener();
             }
         });
 
@@ -138,5 +183,10 @@ public class PlaylistDetailAdd extends Fragment {
             if (trackList.get(i).isSelected())selected_tracks.add(trackList.get(i));
         }
         return selected_tracks;
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
     }
 }

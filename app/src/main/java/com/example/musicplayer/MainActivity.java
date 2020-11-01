@@ -1,5 +1,6 @@
 package com.example.musicplayer;
 
+import android.Manifest;
 import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
@@ -8,6 +9,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.drawable.AnimatedVectorDrawable;
 import android.media.audiofx.Equalizer;
@@ -19,6 +21,7 @@ import android.text.InputType;
 import android.transition.Explode;
 import android.transition.Fade;
 import android.transition.Slide;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.MenuItem;
 import android.view.Menu;
@@ -30,7 +33,10 @@ import android.widget.Toast;
 import com.example.musicplayer.entities.MusicResolver;
 import com.example.musicplayer.ui.DatabaseViewmodel;
 import com.example.musicplayer.ui.dashboard.DashboardFragment;
+import com.example.musicplayer.ui.equalizer.EffectFragment;
 import com.example.musicplayer.ui.equalizer.EqualizerFragment;
+import com.example.musicplayer.ui.equalizer.EqualizerInterface;
+import com.example.musicplayer.ui.equalizer.EqualizerViewPager;
 import com.example.musicplayer.ui.expandedplaybackcontrol.ExpandedPlaybackControl;
 import com.example.musicplayer.ui.expandedplaybackcontrol.ExpandedPlaybackControlInterface;
 import com.example.musicplayer.ui.expandedplaybackcontrol.ExpandedTransition;
@@ -51,6 +57,8 @@ import java.util.Objects;
 import androidx.annotation.NonNull;
 
 import androidx.appcompat.app.ActionBarDrawerToggle;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.core.view.GravityCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
@@ -61,7 +69,9 @@ import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
-public class MainActivity extends AppCompatActivity implements SongListInterface, PlaybackControlInterface,NavigationView.OnNavigationItemSelectedListener, ExpandedPlaybackControlInterface, PlaylistInterface {
+public class MainActivity extends AppCompatActivity implements SongListInterface, PlaybackControlInterface,NavigationView.OnNavigationItemSelectedListener, ExpandedPlaybackControlInterface, PlaylistInterface, EqualizerInterface {
+
+    private static final int PERMISSION_REQUEST_CODE = 0x03 ;
 
     DrawerLayout drawer;
     MusicService musicService;
@@ -92,6 +102,8 @@ public class MainActivity extends AppCompatActivity implements SongListInterface
         loadPlayControl(playcontrol = new PlaybackControl());
         loadDashboard(new DashboardFragment());
 
+        permission();
+
         databaseViewmodel=new ViewModelProvider(this).get(DatabaseViewmodel.class);
 
         drawer = findViewById(R.id.drawer_layout);
@@ -105,23 +117,6 @@ public class MainActivity extends AppCompatActivity implements SongListInterface
             @Override
             public void onClick(View view) {
                 onBackPressed();
-                switch (actionbarMenuConfig){
-                    case MENU_CONFIG_TRACK_SELECTOR:
-                        actionbarMenuConfig=MENU_CONFIG_PLAYLIST_DETAIL;
-                        drawer.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED);
-                        toggle.setDrawerIndicatorEnabled(false);
-
-                        Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
-                        getSupportActionBar().setHomeAsUpIndicator(R.drawable.ic_baseline_arrow_back_24);
-                        break;
-
-                    case MENU_CONFIG_PLAYLIST_DETAIL:
-                        actionbarMenuConfig = MENU_CONFIG_PLAYLIST;
-                        Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(false);
-                        toggle.setDrawerIndicatorEnabled(true);
-                        break;
-                }
-                invalidateOptionsMenu();
             }
         });
 
@@ -156,7 +151,6 @@ public class MainActivity extends AppCompatActivity implements SongListInterface
                 break;
             }
             case MENU_CONFIG_TRACK_SELECTOR:{
-                getMenuInflater().inflate(R.menu.playlist_detail_add_confirm, menu);
                 break;
             }
             default:{
@@ -177,6 +171,7 @@ public class MainActivity extends AppCompatActivity implements SongListInterface
             filter.addAction("START");
             musicService.registerReceiver(broadcastReceiver,filter);
             equalizer = new Equalizer(0,musicService.getSessionId());
+            playcontrol.setAudioSessionID(musicService.getSessionId());
             equalizer.setEnabled(true);
         }
 
@@ -212,7 +207,7 @@ public class MainActivity extends AppCompatActivity implements SongListInterface
                     if (!isExpanded)
                         playcontrol.setSongInfo(currsong.getTitle(), currsong.getArtist(), musicService.getDuration());
                     else
-                        expandedPlaybackControl.setSongInfo(currsong.getTitle(), currsong.getArtist(), musicService.getDuration());
+                        expandedPlaybackControl.setSongInfo(currsong.getTitle(), currsong.getArtist(), musicService.getDuration(), currsong.getId());
                 }
             }
         }
@@ -299,7 +294,7 @@ public class MainActivity extends AppCompatActivity implements SongListInterface
         if(musicService!=null){
             isExpanded=true;
             MusicResolver currsong = musicService.getCurrSong();
-            if(currsong!=null)expandedPlaybackControl.setSongInfo(currsong.getTitle(),currsong.getArtist(),musicService.getDuration());
+            if(currsong!=null)expandedPlaybackControl.setSongInfo(currsong.getTitle(),currsong.getArtist(),musicService.getDuration(),currsong.getId());
             expandedPlaybackControl.setControlButton(isOnPause);
             expandedPlaybackControl.setShuffleButton(musicService.getShuffle());
             expandedPlaybackControl.setRepeatButton(musicService.getRepeat());
@@ -352,6 +347,7 @@ public class MainActivity extends AppCompatActivity implements SongListInterface
             });
             builder.show();
         } else if(item.getItemId()==R.id.action_playlist_detail_add){
+
             selectionFragment = new PlaylistDetailAdd();
 
             Slide anim = new Slide();
@@ -360,25 +356,6 @@ public class MainActivity extends AppCompatActivity implements SongListInterface
 
             selectionFragment.setEnterTransition(anim);
             getSupportFragmentManager().beginTransaction().replace(R.id.nav_host_fragment,selectionFragment).addToBackStack(null).commit();
-
-            actionbarMenuConfig=MENU_CONFIG_TRACK_SELECTOR;
-            drawer.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED);
-            toggle.setDrawerIndicatorEnabled(false);
-
-            Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
-            getSupportActionBar().setHomeAsUpIndicator(R.drawable.ic_clear_black_24dp);
-            invalidateOptionsMenu();
-
-        } else if(item.getItemId()==R.id.action_playlist_detail_add_confirm){
-            ArrayList<MusicResolver> selection = selectionFragment.getSelected();
-            String table = getSupportActionBar().getTitle().toString();
-            databaseViewmodel.addTableEntries(table,selection);
-
-            drawer.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED);
-            getSupportActionBar().setHomeAsUpIndicator(R.drawable.ic_baseline_arrow_back_24);
-            actionbarMenuConfig=MENU_CONFIG_PLAYLIST_DETAIL;
-            onBackPressed();
-            invalidateOptionsMenu();
         }
         return super.onOptionsItemSelected(item);
     }
@@ -403,15 +380,15 @@ public class MainActivity extends AppCompatActivity implements SongListInterface
                 break;
             }
             case R.id.nav_equalizer:{
-                EqualizerFragment equalizerFragment = new EqualizerFragment();
-                equalizerFragment.initEqualizerFragment(equalizer);
+                EqualizerViewPager equalizerFragment = new EqualizerViewPager();
+                equalizerFragment.setEqualizer(equalizer);
+                equalizerFragment.setAudioSessionID(musicService.getSessionId());
                 getSupportActionBar().setTitle("Equalizer");
                 getSupportFragmentManager().beginTransaction().replace(R.id.nav_host_fragment,equalizerFragment).commit();
             }
         }
 
         drawer.closeDrawer(GravityCompat.START);
-
         return true;
     }
 
@@ -426,7 +403,8 @@ public class MainActivity extends AppCompatActivity implements SongListInterface
         Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setHomeAsUpIndicator(R.drawable.ic_baseline_arrow_back_24);
 
-        getSupportActionBar().setTitle(table);
+        databaseViewmodel.setTableName(table);
+        getSupportActionBar().setTitle("");
         invalidateOptionsMenu();
     }
 
@@ -448,5 +426,98 @@ public class MainActivity extends AppCompatActivity implements SongListInterface
         musicService.setSong(index);
         if(!isExpanded)playcontrol.setControlButton(isOnPause);
         else expandedPlaybackControl.setControlButton(isOnPause);
+    }
+
+    @Override
+    public void OnShuffle() {
+        isOnPause=false;
+        musicService.setShuffle(true);
+        musicService.shuffle();
+        if(!isExpanded)playcontrol.setControlButton(isOnPause);
+        else expandedPlaybackControl.setControlButton(isOnPause);
+    }
+
+    @Override
+    public void OnAddSongsListener() {
+        ArrayList<MusicResolver> selection = selectionFragment.getSelected();
+        String table = getSupportActionBar().getTitle().toString();
+        getSupportActionBar().setTitle("");
+        databaseViewmodel.addTableEntries(table,selection);
+
+        onBackPressed();
+        invalidateOptionsMenu();
+    }
+
+    @Override
+    public void OnPlaylistDetailResumeListener() {
+        getSupportActionBar().setTitle("");
+    }
+
+    @Override
+    public void OnTracklistLoadedListener() {
+        getSupportActionBar().setTitle(playlistDetailFragment.getTable());
+        actionbarMenuConfig=MENU_CONFIG_TRACK_SELECTOR;
+        drawer.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED);
+        toggle.setDrawerIndicatorEnabled(false);
+
+        Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setHomeAsUpIndicator(R.drawable.ic_clear_black_24dp);
+        invalidateOptionsMenu();
+    }
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        switch (actionbarMenuConfig){
+            case MENU_CONFIG_TRACK_SELECTOR:
+                actionbarMenuConfig=MENU_CONFIG_PLAYLIST_DETAIL;
+                drawer.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED);
+                toggle.setDrawerIndicatorEnabled(false);
+
+                Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
+                getSupportActionBar().setHomeAsUpIndicator(R.drawable.ic_baseline_arrow_back_24);
+                break;
+
+            case MENU_CONFIG_PLAYLIST_DETAIL:
+                actionbarMenuConfig = MENU_CONFIG_PLAYLIST;
+                Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(false);
+                toggle.setDrawerIndicatorEnabled(true);
+                break;
+
+            default:
+                break;
+        }
+        invalidateOptionsMenu();
+    }
+
+    private void permission(){
+        //if (Build.VERSION.SDK_INT >= 23) {
+        //Check whether your app has access to the READ permission//
+        if (checkPermission()) {
+            //If your app has access to the device’s storage, then print the following message to Android Studio’s Logcat//
+            Log.e("permission", "MODIFY_AUDIO_SETTINGS-Permission already granted.");
+        } else {
+            //If your app doesn’t have permission to access external storage, then call requestPermission//
+            requestPermission();
+        }
+        //}
+    }
+
+    private boolean checkPermission() {
+        //Check for READ_EXTERNAL_STORAGE access, using ContextCompat.checkSelfPermission()//
+        int result = ContextCompat.checkSelfPermission(this, Manifest.permission.MODIFY_AUDIO_SETTINGS);
+        //If the app does have this permission, then return true//
+        //If the app doesn’t have this permission, then return false//
+        return result == PackageManager.PERMISSION_GRANTED;
+    }
+
+    private void requestPermission() {
+        ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.MODIFY_AUDIO_SETTINGS}, PERMISSION_REQUEST_CODE);
+        ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.RECORD_AUDIO}, PERMISSION_REQUEST_CODE);
+    }
+
+    @Override
+    public void onPresetReverbCreated(int id) {
+        musicService.setEffect(id);
     }
 }

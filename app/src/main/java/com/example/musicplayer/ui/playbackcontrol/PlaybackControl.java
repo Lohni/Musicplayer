@@ -16,6 +16,7 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 
 import com.example.musicplayer.R;
+import com.example.musicplayer.ui.views.AudioVisualizerView;
 import com.example.musicplayer.ui.views.PlaybackControlSeekbar;
 
 
@@ -25,8 +26,9 @@ public class PlaybackControl extends Fragment {
     private TextView control_title, control_artist;
     private ImageButton play, skip_forward;
     private View view;
+    private AudioVisualizerView audioVisualizerView;
 
-    private int newProgress;
+    private int newProgress,audioSessionID;
     private boolean seekbarUserAction=false;
 
     private PlaybackControlInterface playbackControlInterface;
@@ -60,6 +62,7 @@ public class PlaybackControl extends Fragment {
         control_title = view.findViewById(R.id.control_title);
         control_artist = view.findViewById(R.id.control_artist);
         play = view.findViewById(R.id.control_play);
+        audioVisualizerView = view.findViewById(R.id.playbackcontrol_visualizer);
         skip_forward = view.findViewById(R.id.control_skip);
 
         control_title.setSelected(true);
@@ -103,6 +106,7 @@ public class PlaybackControl extends Fragment {
         control_title.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                audioVisualizerView.release();
                 playbackControlInterface.OnExpandListener(playbackControlSeekbar,control_title);
             }
         });
@@ -120,6 +124,11 @@ public class PlaybackControl extends Fragment {
         if (!seekbarUserAction){
             playbackControlSeekbar.setProgress(time);
         }
+    }
+
+    public void setAudioSessionID(int audioSessionID){
+        this.audioSessionID=audioSessionID;
+        audioVisualizerView.initVisualizer(audioSessionID);
     }
 
     public void setControlButton(boolean isOnPause){

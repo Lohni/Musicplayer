@@ -20,11 +20,14 @@ public class DatabaseViewmodel extends AndroidViewModel {
     private MutableLiveData<ArrayList<String>> allTableSizes;
     private MutableLiveData<ArrayList<MusicResolver>> tableContent;
     private MusicplayerDatabase mDatabase;
+    private MutableLiveData<String> mtable;
 
     public DatabaseViewmodel(@NonNull Application application) {
         super(application);
         mDatabase=new MusicplayerDatabase(application);
     }
+
+    public LiveData<String> getTableName(){return mtable;}
 
     public LiveData<ArrayList<String>> fetchTables(){
         if(allTables==null){
@@ -45,6 +48,11 @@ public class DatabaseViewmodel extends AndroidViewModel {
     public LiveData<ArrayList<MusicResolver>> fetchTableContent(String table){
         getTableContent(table);
         return tableContent;
+    }
+
+    public void setTableName(String tableName){
+        mtable = new MutableLiveData<>();
+        mtable.setValue(tableName);
     }
 
     public boolean createNewTable(String table){

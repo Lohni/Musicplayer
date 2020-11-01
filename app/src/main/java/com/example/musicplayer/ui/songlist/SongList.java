@@ -127,7 +127,6 @@ public class SongList extends Fragment{
 
     private void fetchSongList(){
         ContentResolver contentResolver = requireContext().getContentResolver();
-        //Uri internalUri = MediaStore.Audio.Media.INTERNAL_CONTENT_URI;
         Uri musicUri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
         Cursor musicCursor = contentResolver.query(musicUri, null, null, null, null);
         if(musicCursor!=null && musicCursor.moveToFirst()){
@@ -139,6 +138,7 @@ public class SongList extends Fragment{
             int artistColumn = musicCursor.getColumnIndex
                     (android.provider.MediaStore.Audio.Media.ARTIST);
             int albumid = musicCursor.getColumnIndex(MediaStore.Audio.Media.ALBUM_ID);
+
             //add songs to list
             do {
                 long thisalbumid = musicCursor.getLong(albumid);

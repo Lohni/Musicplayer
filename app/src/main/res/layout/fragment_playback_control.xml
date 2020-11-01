@@ -15,6 +15,12 @@
         app:layout_constraintBottom_toTopOf="@id/control_holder"
         app:layout_constraintTop_toTopOf="parent" />
 
+    <com.example.musicplayer.ui.views.AudioVisualizerView
+        android:id="@+id/playbackcontrol_visualizer"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        app:layout_constraintTop_toBottomOf="@id/new_seekbar"
+        app:layout_constraintBottom_toBottomOf="parent"/>
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/control_holder"

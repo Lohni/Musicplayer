@@ -1,0 +1,40 @@
+
+y
+java:S14506"^Remove the "songListAdapter" field and declare it as a local variable in the relevant methods.(ØÁÔĞùÿÿÿÿ
+l
+java:S3252‹"UUse static access with "android.provider.MediaStore$Audio$AudioColumns" for "ARTIST".(ø‹ß
+=
+java:S1905±"&Remove this unnecessary cast to "int".(ÅôÖ
+P	java:S125t"<This block of commented-out lines of code should be removed.(¡éZ
+U
+java:S1128":Remove this unused import 'android.view.ViewTreeObserver'.(¹õÃ×şÿÿÿÿ
+u
+java:S2293¶"YReplace the type specification in this constructor call with the diamond operator ("<>").(Ş”Ğ›ıÿÿÿÿ
+V	java:S125}"<This block of commented-out lines of code should be removed.(éØ»Úûÿÿÿÿ
+g	java:S117§"QRename this local variable to match the regular expression '^[a-z][a-zA-Z0-9]*$'.(ßƒÊ±
+u
+java:S2293È"YReplace the type specification in this constructor call with the diamond operator ("<>").(Í‚×¬úÿÿÿÿ
+S
+java:S1128"8Remove this unused import 'android.util.DisplayMetrics'.(Æ…Ú×ùÿÿÿÿ
+\
+java:S3252‰"@Use static access with "android.provider.BaseColumns" for "_ID".(ı÷áèøÿÿÿÿ
+i
+java:S1128"NRemove this unused import 'androidx.constraintlayout.widget.ConstraintLayout'.(¨‘úÿÿÿÿ
+>
+java:S1604¼"(Make this anonymous inner class a lambda(ıÙ5
+>
+java:S1185@"(Remove this method to simply inherit it.(ßìê¯
+C
+java:S1604]"(Make this anonymous inner class a lambda(Òœúæûÿÿÿÿ
+s
+java:S3252Œ"WUse static access with "android.provider.MediaStore$Audio$AudioColumns" for "ALBUM_ID".(º‰¹¨ùÿÿÿÿ
+2
+java:S17008"Rename field "songList"(•«¾øÿÿÿÿ
+D
+java:S1128.".Remove this unused import 'java.util.Objects'.(¼¸õ›
+d
+java:S3252‡"NUse static access with "android.provider.MediaStore$MediaColumns" for "TITLE".(ÚÙ„p
+G
+java:S1172§"0Remove this unused method parameter "container".(ßƒÊ±
+=
+java:S1604f"(Make this anonymous inner class a lambda(•ÁñS

@@ -1,0 +1,27 @@
+
+i
+java:S1450"SRemove the "view" field and declare it as a local variable in the relevant methods.(ØÊ»¶
+B
+java:S1659",Declare "control_artist" on a separate line.(‰«ÄÏ
+T
+java:S1068"2Remove this unused "audioSessionID" private field.(ÚÅŠ ýÿÿÿÿ8ÌŒøãÕ.
+C
+java:S1604I"(Make this anonymous inner class a lambda(¤˜èîüÿÿÿÿ
+E
+java:S1659"*Declare "skip_forward" on a separate line.(¸›ä™ýÿÿÿÿ
+q	java:S116"WRename this field "skip_forward" to match the regular expression '^[a-z][a-zA-Z0-9]*$'.(¸›ä™ýÿÿÿÿ
+>
+java:S1185)"(Remove this method to simply inherit it.(ßìê¯
+I
+java:S1128"3Remove this unused import 'android.widget.SeekBar'.(§‹Úš
+R	java:S125‹"<This block of commented-out lines of code should be removed.(÷¬«¬
+m	java:S116"XRename this field "control_title" to match the regular expression '^[a-z][a-zA-Z0-9]*$'.(‰«ÄÏ
+n	java:S116"YRename this field "control_artist" to match the regular expression '^[a-z][a-zA-Z0-9]*$'.(‰«ÄÏ
+N
+java:S1659",Declare "audioSessionID" on a separate line.(ÚÅŠ ýÿÿÿÿ8½û×ãÕ.
+C
+java:S1604j"(Make this anonymous inner class a lambda(Éø«ÿÿÿÿÿ
+C
+java:S1604O"(Make this anonymous inner class a lambda(š°ŸÍýÿÿÿÿ
+
+java:S1450"]Remove the "audioSessionID" field and declare it as a local variable in the relevant methods.(ÚÅŠ ýÿÿÿÿ8ÌŒøãÕ.
