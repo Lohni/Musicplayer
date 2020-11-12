@@ -44,7 +44,7 @@ import com.example.musicplayer.ui.views.AudioVisualizerView;
 public class ExpandedPlaybackControl extends Fragment {
     private static final int PERMISSION_REQUEST_CODE = 0x03;
     private TextView expanded_title,expanded_artist,expanded_currtime,expanded_absolute_time;
-    private ImageButton expanded_play,expanded_skipforward,expanded_skipback,collapse, expanded_fav, expanded_behaviourControl;
+    private ImageButton expanded_play,expanded_skipforward,expanded_skipback,collapse, expanded_fav, expanded_behaviourControl, expanded_more;
     private AudioVisualizerView audioVisualizerView;
     private ImageView cover;
     private SeekBar expanded_seekbar;
@@ -93,7 +93,7 @@ public class ExpandedPlaybackControl extends Fragment {
         expanded_currtime = view.findViewById(R.id.expanded_current_time);
         expanded_absolute_time = view.findViewById(R.id.expanded_absolute_time);
         expanded_seekbar = view.findViewById(R.id.expanded_seekbar);
-        //expanded_loop = view.findViewById(R.id.expanded_control_loop);
+        expanded_more = view.findViewById(R.id.expanded_menu_more);
         audioVisualizerView = view.findViewById(R.id.audioView);
         collapse = view.findViewById(R.id.expanded_control_collapse);
         cover = view.findViewById(R.id.expanded_cover);
@@ -133,28 +133,7 @@ public class ExpandedPlaybackControl extends Fragment {
                 getParentFragmentManager().popBackStack();
             }
         });
-        /*
-        expanded_shuffle.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                epcInterface.OnShuffleClickListener();
-            }
-        });
 
-        expanded_repeat.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                epcInterface.OnRepeatClickListener();
-            }
-        });
-
-        expanded_loop.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                epcInterface.OnLoopClickListener();
-            }
-        });
-        */
         expanded_seekbar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int i, boolean b) {

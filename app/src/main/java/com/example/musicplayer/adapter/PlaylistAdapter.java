@@ -10,6 +10,7 @@ import android.widget.TextView;
 
 import com.example.musicplayer.R;
 import com.example.musicplayer.ui.playlist.PlaylistInterface;
+import com.example.musicplayer.ui.tagEditor.TagEditorInterface;
 
 import java.util.ArrayList;
 import java.util.Map;
@@ -27,6 +28,7 @@ public class PlaylistAdapter extends RecyclerView.Adapter<PlaylistAdapter.ViewHo
         playlistsize=size;
         this.playlistInterface=playlistInterface;
     }
+
 
     @NonNull
     @Override

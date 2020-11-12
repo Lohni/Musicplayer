@@ -180,9 +180,9 @@
             android:id="@+id/expanded_control_behaviour"
             android:layout_width="30dp"
             android:layout_height="30dp"
-            app:layout_constraintBottom_toTopOf="@id/expanded_seekbar"
+            app:layout_constraintBottom_toBottomOf="@id/expanded_favourite"
             app:layout_constraintRight_toLeftOf="@id/expanded_control_play"
-            app:layout_constraintTop_toBottomOf="@id/expanded_control_holder"
+            app:layout_constraintTop_toTopOf="@id/expanded_favourite"
             android:background="@drawable/ic_shuffle_black_24dp"
             android:backgroundTint="@color/colorSecondaryLight"
             app:layout_constraintLeft_toRightOf="@id/expanded_control_skipback"/>
@@ -201,7 +201,13 @@
         <ImageButton
             android:id="@+id/expanded_menu_more"
             android:layout_width="30dp"
-            android:layout_height="30dp"/>
+            android:layout_height="30dp"
+            android:background="@drawable/ic_baseline_more_vert_24"
+            android:backgroundTint="@color/colorSecondaryLight"
+            app:layout_constraintTop_toTopOf="@id/expanded_favourite"
+            app:layout_constraintBottom_toBottomOf="@id/expanded_favourite"
+            app:layout_constraintRight_toLeftOf="@id/expanded_favourite"
+            app:layout_constraintLeft_toRightOf="@id/expanded_control_behaviour"/>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    tools:context=".ui.tagEditor.TagEditorFragment"
+    android:orientation="vertical">
+
+    <EditText
+        android:id="@+id/tagEditor_search"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:background="@drawable/search_background_rounded"
+        android:hint="Search"
+        android:maxLines="1"
+        android:paddingStart="32dp"
+        android:textSize="20sp"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="8dp"/>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/tagEditor_songlist"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+</LinearLayout>

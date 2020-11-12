@@ -48,6 +48,9 @@ import com.example.musicplayer.ui.playlistdetail.PlaylistDetail;
 import com.example.musicplayer.ui.playlistdetail.PlaylistDetailAdd;
 import com.example.musicplayer.ui.songlist.SongList;
 import com.example.musicplayer.ui.songlist.SongListInterface;
+import com.example.musicplayer.ui.tagEditor.TagEditorDetailFragment;
+import com.example.musicplayer.ui.tagEditor.TagEditorFragment;
+import com.example.musicplayer.ui.tagEditor.TagEditorInterface;
 import com.example.musicplayer.ui.views.PlaybackControlSeekbar;
 import com.google.android.material.navigation.NavigationView;
 
@@ -69,7 +72,8 @@ import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
-public class MainActivity extends AppCompatActivity implements SongListInterface, PlaybackControlInterface,NavigationView.OnNavigationItemSelectedListener, ExpandedPlaybackControlInterface, PlaylistInterface, EqualizerInterface {
+public class MainActivity extends AppCompatActivity implements SongListInterface, PlaybackControlInterface, NavigationView.OnNavigationItemSelectedListener,
+        ExpandedPlaybackControlInterface, PlaylistInterface, EqualizerInterface, TagEditorInterface {
 
     private static final int PERMISSION_REQUEST_CODE = 0x03 ;
 
@@ -386,6 +390,11 @@ public class MainActivity extends AppCompatActivity implements SongListInterface
                 getSupportActionBar().setTitle("Equalizer");
                 getSupportFragmentManager().beginTransaction().replace(R.id.nav_host_fragment,equalizerFragment).commit();
             }
+            case R.id.nav_tagEditor:{
+                TagEditorFragment tagEditorFragment = new TagEditorFragment();
+                getSupportActionBar().setTitle("Tag-Editor");
+                getSupportFragmentManager().beginTransaction().replace(R.id.nav_host_fragment,tagEditorFragment).commit();
+            }
         }
 
         drawer.closeDrawer(GravityCompat.START);
@@ -519,5 +528,11 @@ public class MainActivity extends AppCompatActivity implements SongListInterface
     @Override
     public void onPresetReverbCreated(int id) {
         musicService.setEffect(id);
+    }
+
+    @Override
+    public void onTrackSelectedListener(MusicResolver musicResolver) {
+        TagEditorDetailFragment tagEditorDetailFragment = new TagEditorDetailFragment();
+        getSupportFragmentManager().beginTransaction().replace(R.id.nav_host_fragment,tagEditorDetailFragment).commit();
     }
 }
