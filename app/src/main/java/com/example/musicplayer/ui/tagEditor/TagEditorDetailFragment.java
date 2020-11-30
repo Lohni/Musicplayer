@@ -1,16 +1,32 @@
 package com.example.musicplayer.ui.tagEditor;
 
+import android.content.ContentResolver;
+import android.content.ContentUris;
+import android.media.MediaMetadataRetriever;
+import android.net.Uri;
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
 
+import android.provider.MediaStore;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
 import com.example.musicplayer.R;
 import com.example.musicplayer.entities.MusicResolver;
+import com.example.musicplayer.utils.ID3v2_4;
 import com.google.android.material.textfield.TextInputEditText;
+
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.channels.SeekableByteChannel;
+import java.nio.file.Files;
+import java.nio.file.StandardOpenOption;
 
 public class TagEditorDetailFragment extends Fragment {
 
@@ -35,11 +51,45 @@ public class TagEditorDetailFragment extends Fragment {
         trackNr = view.findViewById(R.id.tagEditorDetail_tracknr);
         composer = view.findViewById(R.id.tagEditorDetail_composer);
 
+        getValues();
+
         return view;
     }
 
-    public void setTrack(MusicResolver track){
+    public void setTrack(MusicResolver track) {
         this.track = track;
+
     }
 
+    private void setValues() {
+
+    }
+
+    private void getValues() {
+        ContentResolver contentResolver = requireContext().getContentResolver();
+        Uri trackUri = ContentUris.withAppendedId(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, track.getId());
+        MediaMetadataRetriever mmr = new MediaMetadataRetriever();
+        mmr.setDataSource(requireContext(), trackUri);
+        readBytes(trackUri);
+
+
+/*
+        title.setText(track.getTitle());
+        artist.setText(track.getArtist());
+        album.setText(mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ALBUM));
+        genre.setText(mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_GENRE));
+        date.setText(mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DATE));
+        trackNr.setText(mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_CD_TRACK_NUMBER));
+        composer.setText(mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_COMPOSER));
+
+ */
+    }
+
+    private void init(Uri trackUri) {
+
+    }
+
+    private void readBytes(Uri uri) {
+        ID3v2_4 tag = new ID3v2_4(uri, requireContext());
+    }
 }

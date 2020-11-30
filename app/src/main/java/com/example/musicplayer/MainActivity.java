@@ -533,6 +533,7 @@ public class MainActivity extends AppCompatActivity implements SongListInterface
     @Override
     public void onTrackSelectedListener(MusicResolver musicResolver) {
         TagEditorDetailFragment tagEditorDetailFragment = new TagEditorDetailFragment();
+        tagEditorDetailFragment.setTrack(musicResolver);
         getSupportFragmentManager().beginTransaction().replace(R.id.nav_host_fragment,tagEditorDetailFragment).commit();
     }
 }
