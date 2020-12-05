@@ -15,18 +15,8 @@ import android.view.ViewGroup;
 
 import com.example.musicplayer.R;
 import com.example.musicplayer.entities.MusicResolver;
-import com.example.musicplayer.utils.ID3v2_4;
+import com.example.musicplayer.utils.ID3Editor;
 import com.google.android.material.textfield.TextInputEditText;
-
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.channels.SeekableByteChannel;
-import java.nio.file.Files;
-import java.nio.file.StandardOpenOption;
 
 public class TagEditorDetailFragment extends Fragment {
 
@@ -90,6 +80,6 @@ public class TagEditorDetailFragment extends Fragment {
     }
 
     private void readBytes(Uri uri) {
-        ID3v2_4 tag = new ID3v2_4(uri, requireContext());
+        ID3Editor tag = new ID3Editor(uri, requireContext());
     }
 }

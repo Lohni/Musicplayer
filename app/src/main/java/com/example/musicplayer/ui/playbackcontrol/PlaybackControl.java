@@ -1,13 +1,17 @@
 package com.example.musicplayer.ui.playbackcontrol;
 
+import android.Manifest;
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.graphics.drawable.AnimatedVectorDrawable;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
+import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -21,7 +25,7 @@ import com.example.musicplayer.ui.views.PlaybackControlSeekbar;
 
 
 public class PlaybackControl extends Fragment {
-
+    private static final int PERMISSION_REQUEST_CODE = 0x03;
     private PlaybackControlSeekbar playbackControlSeekbar;
     private TextView control_title, control_artist;
     private ImageButton play, skip_forward;
@@ -128,6 +132,7 @@ public class PlaybackControl extends Fragment {
 
     public void setAudioSessionID(int audioSessionID){
         this.audioSessionID=audioSessionID;
+        permission();
         audioVisualizerView.initVisualizer(audioSessionID);
     }
 
@@ -144,6 +149,29 @@ public class PlaybackControl extends Fragment {
         }
     }
 
+    private void permission(){
+        //if (Build.VERSION.SDK_INT >= 23) {
+        //Check whether your app has access to the READ permission//
+        if (checkPermission()) {
+            //If your app has access to the device’s storage, then print the following message to Android Studio’s Logcat//
+            Log.e("permission", "Permission already granted.");
+        } else {
+            //If your app doesn’t have permission to access external storage, then call requestPermission//
+            requestPermission();
+        }
+        //}
+    }
 
+    private boolean checkPermission() {
+        //Check for READ_EXTERNAL_STORAGE access, using ContextCompat.checkSelfPermission()//
+        int result = ContextCompat.checkSelfPermission(requireActivity(), Manifest.permission.RECORD_AUDIO);
+        //If the app does have this permission, then return true//
+        //If the app doesn’t have this permission, then return false//
+        return result == PackageManager.PERMISSION_GRANTED;
+    }
+
+    private void requestPermission() {
+        ActivityCompat.requestPermissions(requireActivity(), new String[]{Manifest.permission.RECORD_AUDIO}, PERMISSION_REQUEST_CODE);
+    }
 
 }
