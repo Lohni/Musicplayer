@@ -56,6 +56,10 @@ public class TagEditorDetailFragment extends Fragment{
 
     }
 
+    public TagResolver getTagResolver(){
+        return track;
+    }
+
     private void setValues(TagResolver track) {
         title.setText(track.getTitle());
         artist.setText(track.getArtist());

@@ -44,13 +44,14 @@ public class ID3Editor {
             byte[] header = new byte[HEADER_SIZE];
             is.read(header, 0, header.length);
 
-            if (decodeHeader(header)){
+            if (checkIfV2TagIsPresent(Arrays.copyOfRange(header,0, 3))){
+                ID3V2TagHeader tagHeader = new ID3V2TagHeader(header);
 
-                byte[] data = new byte[TAG_SIZE];
+                byte[] data = new byte[tagHeader.getTAG_SIZE()];
                 is.read(data, 0, data.length);
 
-                is.close();
-                switch (TAG_VERSION_MAJOR){
+
+                switch (tagHeader.getTAG_VERSION_MAJOR()){
                     case 2:{
 
                     }
@@ -64,9 +65,8 @@ public class ID3Editor {
 
                     }
                 }
-            } else {
-                is.close();
             }
+            is.close();
 
         } catch (FileNotFoundException e){
             System.out.println(e);
@@ -81,10 +81,13 @@ public class ID3Editor {
         try {
             ByteArrayInputStream bis = new ByteArrayInputStream(data);
             track = new TagResolver();
+            int framePos = 0;
+
             byte[] header = new byte[10];
             while (bis.available() > 0){
 
                 int bytesRead = bis.read(header,0,HEADER_SIZE);
+                framePos += bytesRead;
                 if (bytesRead == HEADER_SIZE){
                     ID3V4FrameHeader frameHeader = new ID3V4FrameHeader(header);
                     int frameSize = frameHeader.FRAME_SIZE;
@@ -93,8 +96,9 @@ public class ID3Editor {
                     bis.read(frameData,0,frameSize);
                     ID3V4Frame frame = new ID3V4Frame(frameData, frameHeader);
                     if (frame.getFrameContent() != null){
-                        setTrackData(frame.getFrameContent(), frameHeader.FRAME_ID);
+                        setTrackData(frame.getFrameContent(), frameHeader.FRAME_ID, framePos);
                     }
+                    framePos += frameSize;
                 }
             }
             bis.close();
@@ -106,14 +110,16 @@ public class ID3Editor {
         }
     }
 
-    private void setTrackData(String trackData, String frameID){
+    private void setTrackData(String trackData, String frameID, int framePos){
         switch (frameID){
             case ID3V2FrameIDs.TPE1:{
                 track.setArtist(trackData);
+                track.setArtistPos(framePos);
                 break;
             }
             case ID3V2FrameIDs.TDRC:{
                 track.setYear(trackData);
+                track.setYearPos(framePos);
                 break;
             }
             case ID3V2FrameIDs.TRCK:{
@@ -122,16 +128,22 @@ public class ID3Editor {
             }
             case ID3V2FrameIDs.TCON:{
                 track.setGenre(trackData);
+                track.setGenrePos(framePos);
                 break;
             }
             case ID3V2FrameIDs.TCOM:{
                 track.setComposer(trackData);
+                track.setComposerPos(framePos);
+                break;
             }
             case ID3V2FrameIDs.TIT2:{
                 track.setTitle(trackData);
+                track.setTitlePos(framePos);
+                break;
             }
             case ID3V2FrameIDs.TALB: {
                 track.setAlbum(trackData);
+                track.setAlbumPos(framePos);
                 break;
             }
             default:{
@@ -144,32 +156,11 @@ public class ID3Editor {
 
     }
 
-    private void getFlags(byte flag){
-        UNSYNCHRONISATION = flag >> 7;
-        EXTENDED_HEADER = flag >> 6;
-        EXPERIMENTAL_INDICATOR = flag >> 5;
-        FOOTER = flag >> 4;
-    }
 
-    private void getSize(byte size4, byte size3, byte size2, byte size1){
-        size4 = (byte) (size4 << 1);
-        size3 = (byte) (size3 << 1);
-        size2 = (byte) (size2 << 1);
-        size1 = (byte) (size1 << 1);
+    private boolean checkIfV2TagIsPresent(byte[] tagIdent){
+        if (tagIdent[0] == 0x49 && tagIdent[1] == 0x44 && tagIdent[2] == 0x33)return true;
+        else return false;
 
-        TAG_SIZE = (int) (((size4) << 24) + ((size3) << 17) + ((size2) << 10) + ((size1) << 3) >> 4);
-    }
-
-    private boolean decodeHeader(byte[] header){
-        if (header[0] == 0x49 && header[1] == 0x44 && header[2] == 0x33){
-            TAG_VERSION_MAJOR = (int) header[3];
-            TAG_VERSION_REVISION = (int) header[4];
-            getFlags(header[5]);
-            getSize(header[6], header[7], header[8], header[9]);
-            return true;
-        } else {
-            return false;
-        }
     }
 
     private void getV4Frames(byte[] data){

@@ -9,8 +9,10 @@ public class ID3V4FrameHeader {
             READONLY, GROUPING, COMPRESSION, ENCRYPTION, UNSYNCHRONISATION, DATA_LENGTH_INDICATOR;
 
     public String FRAME_ID;
+    public byte[] header;
 
     public ID3V4FrameHeader(byte[] header){
+        this.header = header;
         decodeHeader(header);
     }
 
@@ -39,5 +41,7 @@ public class ID3V4FrameHeader {
         UNSYNCHRONISATION = (formatFlag >> 1) & 1;
         DATA_LENGTH_INDICATOR = formatFlag & 1;
     }
+
+    public byte[] getHeaderAsBytes(){return header;}
 
 }

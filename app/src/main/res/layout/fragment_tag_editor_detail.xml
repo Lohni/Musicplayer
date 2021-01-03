@@ -100,9 +100,7 @@
             android:layout_height="match_parent"
             android:hint="Artist"
             android:inputType="text"
-            android:textColor="@color/colorPrimaryLight"
-            android:textColorHint="@color/colorPrimaryLight"
-            android:textColorLink="@color/colorPrimaryLight" />
+            android:textColor="@color/colorPrimaryLight" />
 
     </com.google.android.material.textfield.TextInputLayout>
 

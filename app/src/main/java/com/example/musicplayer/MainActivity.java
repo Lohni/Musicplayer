@@ -52,6 +52,7 @@ import com.example.musicplayer.ui.tagEditor.TagEditorDetailFragment;
 import com.example.musicplayer.ui.tagEditor.TagEditorFragment;
 import com.example.musicplayer.ui.tagEditor.TagEditorInterface;
 import com.example.musicplayer.ui.views.PlaybackControlSeekbar;
+import com.example.musicplayer.utils.TagResolver;
 import com.google.android.material.navigation.NavigationView;
 
 import java.util.ArrayList;
@@ -85,12 +86,13 @@ public class MainActivity extends AppCompatActivity implements SongListInterface
     private PlaylistDetail playlistDetailFragment;
     private PlaylistDetailAdd selectionFragment;
     private ExpandedPlaybackControl expandedPlaybackControl;
+    private TagEditorDetailFragment tagEditorDetailFragment;
 
     private Equalizer equalizer;
 
     private DatabaseViewmodel databaseViewmodel;
 
-    private final int MENU_CONFIG_PLAYLIST=1,MENU_CONFIG_PLAYLIST_DETAIL=2,MENU_CONFIG_TRACK_SELECTOR=3;
+    private final int MENU_CONFIG_PLAYLIST=1, MENU_CONFIG_PLAYLIST_DETAIL=2, MENU_CONFIG_TRACK_SELECTOR=3, MENU_CONFIG_TAGEDITOR_DETAIL = 4;
     private int actionbarMenuConfig = 0;
 
     private boolean isOnPause = true, isExpanded=false;
@@ -360,6 +362,10 @@ public class MainActivity extends AppCompatActivity implements SongListInterface
 
             selectionFragment.setEnterTransition(anim);
             getSupportFragmentManager().beginTransaction().replace(R.id.nav_host_fragment,selectionFragment).addToBackStack(null).commit();
+        } else if (item.getItemId()==R.id.action_tagEditor_confirm){
+
+            TagResolver track = tagEditorDetailFragment.getTagResolver();
+
         }
         return super.onOptionsItemSelected(item);
     }
@@ -486,13 +492,16 @@ public class MainActivity extends AppCompatActivity implements SongListInterface
                 Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
                 getSupportActionBar().setHomeAsUpIndicator(R.drawable.ic_baseline_arrow_back_24);
                 break;
-
             case MENU_CONFIG_PLAYLIST_DETAIL:
                 actionbarMenuConfig = MENU_CONFIG_PLAYLIST;
                 Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(false);
                 toggle.setDrawerIndicatorEnabled(true);
                 break;
-
+            case MENU_CONFIG_TAGEDITOR_DETAIL:
+                actionbarMenuConfig = 0;
+                Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(false);
+                toggle.setDrawerIndicatorEnabled(true);
+                break;
             default:
                 break;
         }
@@ -532,8 +541,19 @@ public class MainActivity extends AppCompatActivity implements SongListInterface
 
     @Override
     public void onTrackSelectedListener(MusicResolver musicResolver) {
-        TagEditorDetailFragment tagEditorDetailFragment = new TagEditorDetailFragment();
+        tagEditorDetailFragment = new TagEditorDetailFragment();
         tagEditorDetailFragment.setTrack(musicResolver);
+
+        toggle.setDrawerIndicatorEnabled(false);
+        actionbarMenuConfig = MENU_CONFIG_TAGEDITOR_DETAIL;
+
+        Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setHomeAsUpIndicator(R.drawable.ic_clear_black_24dp);
+
+        getSupportActionBar().setTitle("");
+        invalidateOptionsMenu();
+
+
         getSupportFragmentManager().beginTransaction().replace(R.id.nav_host_fragment,tagEditorDetailFragment).commit();
     }
 }
