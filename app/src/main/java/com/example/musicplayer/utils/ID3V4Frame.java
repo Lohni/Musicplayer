@@ -12,9 +12,6 @@ public class ID3V4Frame {
     private String FRAME_CONTENT;
     private ID3V4FrameHeader frameHeader;
 
-    private boolean hasChanged=false;
-
-
     //Only Frame-IDs which are used for this application are defined
     private final String TIT2="TIT2", //Title
                          TALB="TALB", //Album
@@ -54,7 +51,6 @@ public class ID3V4Frame {
 
     public void setFrameContent(String content){
         FRAME_CONTENT = content;
-        hasChanged=true;
     }
 
     private String getText(byte[] text, int encoding){
@@ -119,6 +115,8 @@ public class ID3V4Frame {
         return FRAME_HEADER_LENGTH + FRAME_ENCODING_LENGHT + FRAME_CONTENT.length();
     }
 
-
+    public String getFrameId(){
+        return frameHeader.FRAME_ID;
+    }
 
 }

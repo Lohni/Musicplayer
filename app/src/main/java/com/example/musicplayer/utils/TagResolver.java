@@ -2,113 +2,62 @@ package com.example.musicplayer.utils;
 
 public class TagResolver {
 
-    private String title, artist, album, genre, year, composer, trackid;
-    private int titlePos = 0, artistPos = 0, albumPos = 0, genrePos = 0, yearPos = 0, composerPos = 0;
-    private ID3V4Frame titleFrame, artistFrame, albumFrame, genreFrame, yearFrame, composerFrame;
+    private ID3V4Frame titleFrame, artistFrame, albumFrame, genreFrame, yearFrame, composerFrame, trackIdFrame;
+    private int oldCombinedSize=0;
+    private long trackid;
+    public TagResolver(long trackid){this.trackid = trackid;}
 
-    public TagResolver(){}
-
-    public int getTitlePos() {
-        return titlePos;
+    public void setTitleFrame(ID3V4Frame titleFrame) {
+        this.titleFrame = titleFrame;
     }
 
-    public void setTitlePos(int titlePos) {
-        this.titlePos = titlePos;
+    public void setArtistFrame(ID3V4Frame artistFrame) {
+        this.artistFrame = artistFrame;
     }
 
-    public int getArtistPos() {
-        return artistPos;
+    public void setAlbumFrame(ID3V4Frame albumFrame) {
+        this.albumFrame = albumFrame;
     }
 
-    public void setArtistPos(int artistPos) {
-        this.artistPos = artistPos;
+    public void setGenreFrame(ID3V4Frame genreFrame) {
+        this.genreFrame = genreFrame;
     }
 
-    public int getAlbumPos() {
-        return albumPos;
+    public void setYearFrame(ID3V4Frame yearFrame) {
+        this.yearFrame = yearFrame;
     }
 
-    public void setAlbumPos(int albumPos) {
-        this.albumPos = albumPos;
+    public void setComposerFrame(ID3V4Frame composerFrame) {
+        this.composerFrame = composerFrame;
     }
 
-    public int getGenrePos() {
-        return genrePos;
+    public void setTrackIdFrame(ID3V4Frame trackIdFrame){
+        this.trackIdFrame = trackIdFrame;
     }
 
-    public void setGenrePos(int genrePos) {
-        this.genrePos = genrePos;
+    //Has to be called after Audiofile first read
+    public void calculateCombinedSize(){
+        if (titleFrame != null)oldCombinedSize+=titleFrame.getFrameSize();
+        if (artistFrame != null)oldCombinedSize+=artistFrame.getFrameSize();
+        if (albumFrame != null)oldCombinedSize+=albumFrame.getFrameSize();
+        if (genreFrame != null)oldCombinedSize+=genreFrame.getFrameSize();
+        if (yearFrame != null)oldCombinedSize+=yearFrame.getFrameSize();
+        if (composerFrame != null)oldCombinedSize+=composerFrame.getFrameSize();
+        if (trackIdFrame != null)oldCombinedSize+=trackIdFrame.getFrameSize();
     }
 
-    public int getYearPos() {
-        return yearPos;
+    public int getChangedContentSize(){
+        int newCombinedSize=0;
+        if (titleFrame != null)newCombinedSize+=titleFrame.getFrameSize();
+        if (artistFrame != null)newCombinedSize+=artistFrame.getFrameSize();
+        if (albumFrame != null)newCombinedSize+=albumFrame.getFrameSize();
+        if (genreFrame != null)newCombinedSize+=genreFrame.getFrameSize();
+        if (yearFrame != null)newCombinedSize+=yearFrame.getFrameSize();
+        if (composerFrame != null)newCombinedSize+=composerFrame.getFrameSize();
+        if (trackIdFrame != null)newCombinedSize+=trackIdFrame.getFrameSize();
+
+        return newCombinedSize - oldCombinedSize;
     }
 
-    public void setYearPos(int yearPos) {
-        this.yearPos = yearPos;
-    }
-
-    public int getComposerPos() {
-        return composerPos;
-    }
-
-    public void setComposerPos(int composerPos) {
-        this.composerPos = composerPos;
-    }
-
-    public String getTitle() {
-        return title;
-    }
-
-    public void setTitle(String title) {
-        this.title = title;
-    }
-
-    public String getArtist() {
-        return artist;
-    }
-
-    public void setArtist(String artist) {
-        this.artist = artist;
-    }
-
-    public String getAlbum() {
-        return album;
-    }
-
-    public void setAlbum(String album) {
-        this.album = album;
-    }
-
-    public String getGenre() {
-        return genre;
-    }
-
-    public void setGenre(String genre) {
-        this.genre = genre;
-    }
-
-    public String getYear() {
-        return year;
-    }
-
-    public void setYear(String year) {
-        this.year = year;
-    }
-
-    public String getComposer() {
-        return composer;
-    }
-
-    public void setComposer(String comoser) {
-        this.composer = comoser;
-    }
-
-    public String getTrackid() {
-        return trackid;
-    }
-
-    public void setTrackid(String trackid) {
-        this.trackid = trackid;
-    }
+    public long getTrackId(){return trackid;}
 }

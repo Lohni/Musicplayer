@@ -14,6 +14,7 @@ public class TagWriter {
     private TagResolver track;
     private ID3V2TagHeader tagHeader;
     private Context context;
+    private byte[] audioTag;
 
     public TagWriter(Context context, TagResolver track, ID3V2TagHeader tagHeader){
         this.context = context;
@@ -23,7 +24,15 @@ public class TagWriter {
 
     private void writeToFile() throws IOException {
         InputStream is = context.getContentResolver().openInputStream(
-                ContentUris.withAppendedId(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, Long.parseLong(track.getTrackid())));
+                ContentUris.withAppendedId(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, track.getTrackId()));
+
+        int newSize = getNewTagSize();
+        byte[] newTag = new byte[newSize];
+
+        int offset = 0;
+        //Skip Header
+        offset = is.read(newTag,offset,tagHeader.getHeaderLength);
+
 
         byte[] header = new byte[10];
         is.read(header, 0, header.length);
@@ -79,8 +88,9 @@ public class TagWriter {
         }
     }
 
-    private boolean hasFrameChanged(){
-        return true;
+    private int getNewTagSize(){
+        int tagSizeDiff = track.getChangedContentSize();
+        return tagHeader.getTAG_SIZE() + tagSizeDiff;
     }
 
 }

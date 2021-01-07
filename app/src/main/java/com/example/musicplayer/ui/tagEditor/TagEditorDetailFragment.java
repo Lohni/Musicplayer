@@ -79,7 +79,7 @@ public class TagEditorDetailFragment extends Fragment{
     }
 
     private void readBytes(Uri uri) {
-        ID3Editor tag = new ID3Editor(uri, requireContext(), new ID3EditorInterface() {
+        ID3Editor tag = new ID3Editor(uri, requireContext(), trackID, new ID3EditorInterface() {
             @Override
             public void onDataLoadedListener(TagResolver tagResolver) {
                 setValues(tagResolver);
