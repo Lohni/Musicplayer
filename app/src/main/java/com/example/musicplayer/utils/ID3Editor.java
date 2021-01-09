@@ -77,7 +77,7 @@ public class ID3Editor {
     private void processFrames(byte[] data){
         try {
             ByteArrayInputStream bis = new ByteArrayInputStream(data);
-            track = new TagResolver();
+            track = new TagResolver(trackID);
 
             byte[] header = new byte[10];
             while (bis.available() > 0){

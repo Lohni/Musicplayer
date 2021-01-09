@@ -26,49 +26,41 @@ public class TagWriter {
         InputStream is = context.getContentResolver().openInputStream(
                 ContentUris.withAppendedId(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, track.getTrackId()));
 
-        int newSize = getNewTagSize();
-        byte[] newTag = new byte[newSize];
+        int oldTagSize = tagHeader.getTAG_SIZE();
+        tagHeader.setNewTagSize(getNewTagSize());
+        byte[] newTag = new byte[tagHeader.getTAG_SIZE() + tagHeader.getTagHeaderLength()];
 
-        int offset = 0;
-        //Skip Header
-        offset = is.read(newTag,offset,tagHeader.getHeaderLength);
+        //Skip Header from File
+        int offset = tagHeader.getTagHeaderLength();
 
+        byte[] tagHeaderBytes = tagHeader.toBytes();
+        for (int i = 0; i<tagHeaderBytes.length;i++){
+            newTag[i] = tagHeaderBytes[i];
+        }
 
-        byte[] header = new byte[10];
-        is.read(header, 0, header.length);
-        tagHeader = new ID3V2TagHeader(header);
-
-        byte[] data = new byte[tagHeader.getTAG_SIZE()];
-        is.read(data, 0, data.length);
+        byte[] data = new byte[oldTagSize];
+        is.read(data, offset, data.length);
         is.close();
-       if (tagHeader.getEXTENDED_HEADER() == 0) {
 
-           ByteArrayInputStream bis = new ByteArrayInputStream(data);
-           track = new TagResolver();
-           int framePos = 0;
+       ByteArrayInputStream bis = new ByteArrayInputStream(data);
 
-           while (bis.available() > 0){
+       while (bis.available() > 0){
 
-               int bytesRead = bis.read(header,0,10);
-               framePos += bytesRead;
-               if (bytesRead == 10){
-                   ID3V4FrameHeader frameHeader = new ID3V4FrameHeader(header);
-                   if (isFrameRelevant(frameHeader.FRAME_ID)){
+           byte[] rawFrameHeader = new byte[10];
+           bis.read(rawFrameHeader, 0, rawFrameHeader.length);
+           ID3V4FrameHeader frameHeader = new ID3V4FrameHeader(rawFrameHeader);
+           int frameSize = frameHeader.FRAME_SIZE;
+           if (!isFrameRelevant(frameHeader.FRAME_ID)){
+               byte[] frameData = new byte[frameSize];
+               bis.read(frameData,0,frameSize);
 
-                   }
-                   int frameSize = frameHeader.FRAME_SIZE;
-                   byte[] frameData = new byte[frameSize];
-
-                   bis.read(frameData,0,frameSize);
-                   ID3V4Frame frame = new ID3V4Frame(frameData, frameHeader);
-                   if (frame.getFrameContent() != null){
-                       setTrackData(frame.getFrameContent(), frameHeader.FRAME_ID, framePos);
-                   }
-                   framePos += frameSize;
-               }
            }
-           bis.close();
+
+
+
        }
+       bis.close();
+
     }
 
     private boolean isFrameRelevant(String frameID){
