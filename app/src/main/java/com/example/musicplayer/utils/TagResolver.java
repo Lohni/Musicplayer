@@ -59,5 +59,33 @@ public class TagResolver {
         return newCombinedSize - oldCombinedSize;
     }
 
+    public ID3V4Frame getTitleFrame() {
+        return titleFrame;
+    }
+
+    public ID3V4Frame getArtistFrame() {
+        return artistFrame;
+    }
+
+    public ID3V4Frame getAlbumFrame() {
+        return albumFrame;
+    }
+
+    public ID3V4Frame getGenreFrame() {
+        return genreFrame;
+    }
+
+    public ID3V4Frame getYearFrame() {
+        return yearFrame;
+    }
+
+    public ID3V4Frame getComposerFrame() {
+        return composerFrame;
+    }
+
+    public ID3V4Frame getTrackIdFrame() {
+        return trackIdFrame;
+    }
+
     public long getTrackId(){return trackid;}
 }

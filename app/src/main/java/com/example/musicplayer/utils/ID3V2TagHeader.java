@@ -50,12 +50,6 @@ public class ID3V2TagHeader {
         return true;
     }
 
-    private byte[] encodeSize(){
-        byte[] size = new byte[4];
-
-
-    }
-
     public int getTAG_SIZE() {
         return TAG_SIZE;
     }
@@ -99,9 +93,38 @@ public class ID3V2TagHeader {
         header[3] = (byte) TAG_VERSION_MAJOR;
         header[4] = (byte) TAG_VERSION_REVISION;
         header[5] = getFlagsAsByte();
+        byte[] encodedSizeBytes = getEncodedSize();
+        header[6] = encodedSizeBytes[0];
+        header[7] = encodedSizeBytes[1];
+        header[8] = encodedSizeBytes[2];
+        header[9] = encodedSizeBytes[3];
+
+        return header;
     }
 
     private byte getFlagsAsByte(){
         return (byte) ((((byte) UNSYNCHRONISATION) << 7) + (((byte) EXTENDED_HEADER) << 6) + (((byte) EXPERIMENTAL_INDICATOR) << 5) + (((byte) FOOTER) << 4));
+    }
+
+    private byte[] getEncodedSize(){
+        //Split to Byte-Chunks
+        byte[] size = new byte[4];
+        size[0] = (byte) (TAG_SIZE >> 24);
+        size[1] = (byte) (TAG_SIZE >> 16);
+        size[2] = (byte) (TAG_SIZE >> 8);
+        size[3] = (byte) (TAG_SIZE);
+
+        // 0x7F -> Clear MSB
+        int overFlow3 = (size[3] & 0xFF) >> 7;
+        byte syncByte3 = (byte) (size[3] & 0x7F);
+
+        int overFlow2 = (size[2] & 0xFF) >> 6;
+        byte syncByte2 = (byte) (((size[2] << 1) + overFlow3) & 0x7F);
+
+        int overFlow1 = (size[1] & 0xFF) >> 5;
+        byte syncByte1 = (byte) (((size[1] << 2) + overFlow2) & 0x7F);
+
+        byte syncByte0 = (byte) (((size[0] << 3) + overFlow1) & 0x7F);
+        return new byte[] {syncByte0, syncByte1, syncByte2, syncByte3};
     }
 }

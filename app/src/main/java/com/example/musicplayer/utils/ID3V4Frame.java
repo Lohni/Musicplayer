@@ -51,6 +51,7 @@ public class ID3V4Frame {
 
     public void setFrameContent(String content){
         FRAME_CONTENT = content;
+        frameHeader.FRAME_SIZE = content.length();
     }
 
     private String getText(byte[] text, int encoding){
@@ -77,7 +78,7 @@ public class ID3V4Frame {
         return FRAME_CONTENT;
     }
 
-    public byte[] getFrameContentAsBytes(int encoding){
+    private byte[] getFrameContentAsBytes(int encoding){
         switch (encoding) {
             case ISO88591: {
                 return FRAME_CONTENT.getBytes(StandardCharsets.ISO_8859_1);
@@ -99,7 +100,7 @@ public class ID3V4Frame {
 
     //ISO88591 used as standard encoding
     public byte[] getFrameAsBytes(){
-        byte[] header = frameHeader.getHeaderAsBytes();
+        byte[] header = frameHeader.toBytes();
         byte encoding = ISO88591;
         byte[] content = getFrameContentAsBytes(ISO88591);
 

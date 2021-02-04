@@ -1,21 +1,23 @@
 
+H
+java:S1128"-Remove this unused import 'android.util.Log'.(Ô¦Ø²øÿÿÿÿ
+8
+java:S1659I""Declare "size" on a separate line.(Êõ£Š
 ‰
-java:S1319"tThe type of the "tracklist" object should be an interface such as "List" rather than the implementation "ArrayList".(Å—ª
-u
-java:S1488#"ZImmediately return this expression instead of assigning it to the temporary variable "vh".(íÉæ‹øÿÿÿÿ
-„
-java:S1319"oThe type of the "size" object should be an interface such as "List" rather than the implementation "ArrayList".(Å—ª
+java:S1319"tThe type of the "tracklist" object should be an interface such as "List" rather than the implementation "ArrayList".(Å—ª
 J
 java:S1128"4Remove this unused import 'android.content.Context'.(©Ê‰è
 E
-java:S1128"*Remove this unused import 'java.util.Map'.(¼è½Òþÿÿÿÿ
->
-java:S1604+"(Make this anonymous inner class a lambda(Ö¹™º
+java:S1128"*Remove this unused import 'java.util.Map'.(¼è½Òþÿÿÿÿ
 R
 java:S1128"7Remove this unused import 'android.widget.BaseAdapter'.(ŒŸà“ýÿÿÿÿ
-8
-java:S1659G""Declare "size" on a separate line.(Êõ£Š
-H
-java:S1128"-Remove this unused import 'android.util.Log'.(Ô¦Ø²øÿÿÿÿ
 @
-java:S1659"*Declare "playlistsize" on a separate line.(‚†ÕŠ
+java:S1659"*Declare "playlistsize" on a separate line.(‚†ÕŠ
+„
+java:S1319"oThe type of the "size" object should be an interface such as "List" rather than the implementation "ArrayList".(Å—ª
+u
+java:S1488%"ZImmediately return this expression instead of assigning it to the temporary variable "vh".(íÉæ‹øÿÿÿÿ
+>
+java:S1604-"(Make this anonymous inner class a lambda(Ö¹™º
+v
+java:S1128"TRemove this unused import 'com.example.musicplayer.ui.tagEditor.TagEditorInterface'.(…éê¯ÿÿÿÿÿ8äæ—ÀÛ.
