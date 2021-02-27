@@ -60,7 +60,7 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
     public void onCreate() {
         player = new MediaPlayer();
         player.setWakeMode(getApplicationContext(), PowerManager.PARTIAL_WAKE_LOCK);
-        player.setAudioStreamType(AudioManager.STREAM_MUSIC);
+        //player.setAudioStreamType(AudioManager.STREAM_MUSIC);
         player.setOnPreparedListener(this);
         player.setOnErrorListener(this);
         player.setOnCompletionListener(this);
@@ -181,4 +181,13 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
     public boolean getRepeatSong(){return repeatSong;}
 
     public int getSessionId(){return player.getAudioSessionId();}
+
+    public void shuffle(){
+        skip();
+    }
+
+    public void setEffect(int id){
+        player.attachAuxEffect(id);
+        player.setAuxEffectSendLevel(1.0f);
+    }
 }

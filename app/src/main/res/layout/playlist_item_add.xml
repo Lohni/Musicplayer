@@ -26,7 +26,7 @@
         android:layout_marginTop="7dp"
         android:gravity="bottom"
         android:singleLine="true"
-        android:textColor="@color/colorTextDark"
+        android:textColor="@color/colorTextLight"
         android:textSize="18sp" />
 
     <com.google.android.material.textview.MaterialTextView
@@ -34,7 +34,7 @@
         android:layout_width="fill_parent"
         android:layout_height="20dp"
         android:gravity="bottom"
-        android:textColor="#DC000000"
+        android:textColor="@color/colorTextLight"
         android:textSize="14sp" />
     </LinearLayout>
 
@@ -45,7 +45,7 @@
         android:layout_marginTop="8dp"
         android:layout_marginBottom="8dp"
         android:background="@color/colorTransparent"
-        android:buttonTint="@color/colorSecondaryDark"
+        android:buttonTint="@color/colorPrimary"
         android:clickable="false"
         android:duplicateParentState="false"
         android:focusable="false"

@@ -1,0 +1,44 @@
+
+O
+java:S1128"4Remove this unused import 'android.database.Cursor'.(ŽÔäåúÿÿÿÿ
+˜
+java:S1186‚"€Add a nested comment explaining why this method is empty, throw an UnsupportedOperationException or complete the implementation.(á¬‡Ý
+l	java:S117µ"QRename this local variable to match the regular expression '^[a-z][a-zA-Z0-9]*$'.(´‡â‡üÿÿÿÿ
+G
+java:S1128	",Remove this unused import 'android.net.Uri'.(òêû‘ýÿÿÿÿ
+O
+java:S1128"4Remove this unused import 'android.widget.TextView'.(„Ë‚ˆÿÿÿÿÿ
+?
+java:S1185½"(Remove this method to simply inherit it.(öÿÕÅ
+M
+java:S1128"2Remove this unused import 'android.view.KeyEvent'.(ôÊÃ–úÿÿÿÿ
+F
+java:S1604“"(Make this anonymous inner class a lambda(ÁòäÂ8ž€ŠªÏ.
+j
+java:S1128&"TRemove this unused import 'com.google.android.material.textfield.TextInputEditText'.(ž°Òž
+k
+java:S14501"URemove the "search" field and declare it as a local variable in the relevant methods.(ØÚšä
+t
+java:S3776H"RRefactor this method to reduce its Cognitive Complexity from 19 to the 15 allowed.(ËÄ•åûÿÿÿÿ8«Êá«Ï.
+S
+java:S1117U"=Rename "trackList" which hides the field declared at line 50.(ê–úï
+C
+java:S1604f"(Make this anonymous inner class a lambda(Œñßäøÿÿÿÿ
+v
+java:S1128$"[Remove this unused import 'com.google.android.material.datepicker.MaterialTextInputPicker'.(´—Üíûÿÿÿÿ
+s
+java:S14500"XRemove the "selection" field and declare it as a local variable in the relevant methods.(­ß îþÿÿÿÿ
+Œ
+java:S1319´"pThe return type of this method should be an interface such as "List" rather than the implementation "ArrayList".(÷Ž©šýÿÿÿÿ
+C
+java:S1604W"(Make this anonymous inner class a lambda(±Úœñûÿÿÿÿ
+K
+java:S3740´"/Provide the parametrized type for this generic.(÷Ž©šýÿÿÿÿ
+R
+java:S1128"<Remove this unused import 'android.content.ContentResolver'.(½Àô“
+U
+java:S1128"?Remove this unused import 'android.content.res.ColorStateList'.(Ç¦µ·
+N
+java:S1128"8Remove this unused import 'android.provider.MediaStore'.(ãçšþ
+
+java:S1186Ž"€Add a nested comment explaining why this method is empty, throw an UnsupportedOperationException or complete the implementation.(×åó«øÿÿÿÿ

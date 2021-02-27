@@ -7,6 +7,8 @@ import android.graphics.PorterDuff;
 import android.media.audiofx.Equalizer;
 import android.os.Bundle;
 
+import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
 import android.util.Log;
@@ -23,6 +25,8 @@ import android.widget.ToggleButton;
 
 import com.example.musicplayer.R;
 import com.google.android.material.button.MaterialButtonToggleGroup;
+import com.google.android.material.chip.Chip;
+import com.google.android.material.chip.ChipGroup;
 
 import java.util.ArrayList;
 
@@ -34,16 +38,15 @@ public class EqualizerFragment extends Fragment {
     private ArrayList<Integer> centerfreq;
     private ArrayList<String> presetlist;
     private View view;
+    private ChipGroup chipGroup;
 
     public EqualizerFragment() {
         // Required empty public constructor
     }
-
-
+    
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
     }
 
     @Override
@@ -51,13 +54,43 @@ public class EqualizerFragment extends Fragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         view = inflater.inflate(R.layout.fragment_equalizer, container, false);
+        chipGroup = view.findViewById(R.id.chip_group);
+
+        createChipGroup();
         createLayout();
         return view;
     }
 
     public void initEqualizerFragment(Equalizer equalizer){
         this.equalizer=equalizer;
+    }
 
+    private void createChipGroup(){
+        presetlist = new ArrayList<>();
+        System.out.println(equalizer.getNumberOfPresets());
+        for(short i=0;i<equalizer.getNumberOfPresets();i++){
+            String presetName = equalizer.getPresetName(i);
+            presetlist.add(presetName);
+            Chip preset = (Chip) getLayoutInflater().inflate(R.layout.equalizer_chip_layout,chipGroup,false);
+            preset.setText(presetName);
+            preset.setId(i);
+            chipGroup.addView(preset);
+        }
+        chipGroup.setOnCheckedChangeListener(new ChipGroup.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(ChipGroup group, int checkedId) {
+                equalizer.usePreset((short) checkedId);
+                updateSeekbars();
+            }
+        });
+    }
+
+    private void updateSeekbars(){
+        for (short i=0; i < equalizer.getNumberOfBands();i++){
+            SeekBar seekBar = view.findViewById(i);
+            int bandlevel = equalizer.getBandLevel(i);
+            seekBar.setProgress(bandlevel - equalizer.getBandLevelRange()[0]);
+        }
     }
 
     private void createLayout(){
@@ -78,28 +111,52 @@ public class EqualizerFragment extends Fragment {
         long width = getResources().getDisplayMetrics().widthPixels;
         long height = getResources().getDisplayMetrics().heightPixels;
 
-        int laywidth = (int) (width/numberFreqBands);
-
+        int laywidth = (int) (width/(numberFreqBands));
         Resources r = getResources();
-        float px = TypedValue.applyDimension(
+
+        int playbackControlHeight =(int) TypedValue.applyDimension(
                 TypedValue.COMPLEX_UNIT_DIP,
-                204f,
+                64f,
                 r.getDisplayMetrics()
         );
 
-        int toggle_margin = (int)TypedValue.applyDimension(
+        float appBarHeight = TypedValue.applyDimension(
                 TypedValue.COMPLEX_UNIT_DIP,
-                8f,
+                50f,
                 r.getDisplayMetrics()
         );
 
-        int toggle_height = (int)TypedValue.applyDimension(
+        float seekbarMargin = TypedValue.applyDimension(
                 TypedValue.COMPLEX_UNIT_DIP,
-                20f,
+                16f,
                 r.getDisplayMetrics()
         );
 
-        int margin = (int) ((height-px-(laywidth*4))/2);
+        float freqtextHeight = TypedValue.applyDimension(
+                TypedValue.COMPLEX_UNIT_SP,
+                16f,
+                r.getDisplayMetrics()
+        );
+
+        float headertextHeight = TypedValue.applyDimension(
+                TypedValue.COMPLEX_UNIT_SP,
+                22f,
+                r.getDisplayMetrics()
+        );
+
+        float chipLayoutHeight = TypedValue.applyDimension(
+                TypedValue.COMPLEX_UNIT_DIP,
+                66f,
+                r.getDisplayMetrics()
+        );
+
+        float statusBarHeight = TypedValue.applyDimension(
+                TypedValue.COMPLEX_UNIT_DIP,
+                25f,
+                r.getDisplayMetrics()
+        );
+
+        float navigationBarHeight = getResources().getDimensionPixelSize(getResources().getIdentifier("navigation_bar_height", "dimen", "android"));
 
         for(short i=0;i<numberFreqBands;i++){
             final short bandIndex = i;
@@ -108,7 +165,8 @@ public class EqualizerFragment extends Fragment {
             TextView freq = new TextView(requireContext());
             freq.setGravity(Gravity.CENTER);
             freq.setText((equalizer.getCenterFreq(i))/1000 + "Hz");
-            freq.setPadding(0,margin,0,0);
+            freq.setTextSize(TypedValue.COMPLEX_UNIT_SP, 16f);
+            freq.setTextColor(ContextCompat.getColor(requireContext(), R.color.colorTextLight));
 
             LinearLayout rowLayout = new LinearLayout(requireContext());
             rowLayout.setOrientation(LinearLayout.VERTICAL);
@@ -117,18 +175,8 @@ public class EqualizerFragment extends Fragment {
             LinearLayout.LayoutParams lowBandlvlLay = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
             lowBandlvlLay.gravity=Gravity.CENTER;
 
-            TextView lowBandlvl = new TextView(requireContext());
-            lowBandlvl.setLayoutParams(textLay);
-            lowBandlvl.setText((lowerEQBandLevel/100)+"dB");
-            lowBandlvl.setPadding(0,0,0,margin);
-
-            TextView upperBandlvl = new TextView(requireContext());
-            upperBandlvl.setLayoutParams(textLay);
-            upperBandlvl.setText((upperEQBandLevel/100)+"dB");
-            upperBandlvl.setTextSize(14);
-
             LinearLayout.LayoutParams seeklay = new LinearLayout.LayoutParams(
-                    laywidth*4,
+                    (int) (height-appBarHeight-playbackControlHeight - seekbarMargin - freqtextHeight - headertextHeight - chipLayoutHeight - statusBarHeight - navigationBarHeight),
                     10);
             seeklay.weight=1;
             seeklay.gravity=Gravity.CENTER;
@@ -139,8 +187,8 @@ public class EqualizerFragment extends Fragment {
             seekBar.setLayoutParams(seeklay);
             seekBar.setMax(upperEQBandLevel - lowerEQBandLevel);
             seekBar.setProgress(bandlevelstart[i] + upperEQBandLevel);
-            seekBar.setProgressTintList(ColorStateList.valueOf(getResources().getColor(R.color.colorSecondaryDark)));
-            seekBar.setThumbTintList(ColorStateList.valueOf(getResources().getColor(R.color.colorSecondaryDark)));
+            seekBar.setProgressTintList(ColorStateList.valueOf(getResources().getColor(R.color.colorSecondaryLight)));
+            seekBar.setThumbTintList(ColorStateList.valueOf(getResources().getColor(R.color.colorSecondaryLight)));
             seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
                 @Override
                 public void onProgressChanged(SeekBar seekBar, int value, boolean b) {
@@ -158,24 +206,8 @@ public class EqualizerFragment extends Fragment {
                 }
             });
 
-            if (i == numberFreqBands-1){
-                Switch toggle = new Switch(requireContext());
-                LinearLayout.LayoutParams toggleLayout = new LinearLayout.LayoutParams(
-                        ViewGroup.LayoutParams.WRAP_CONTENT,
-                        toggle_height);
-                toggleLayout.gravity=Gravity.RIGHT;
-                toggle.setLayoutParams(toggleLayout);
-                toggle.setPadding(0,toggle_margin,0,0);
-
-                freq.setPadding(0,margin-toggle_height-toggle_margin,0,0);
-
-                rowLayout.addView(toggle);
-            }
-
-            rowLayout.addView(freq);
-            rowLayout.addView(upperBandlvl);
             rowLayout.addView(seekBar);
-            rowLayout.addView(lowBandlvl);
+            rowLayout.addView(freq);
             linearLayout.addView(rowLayout);
         }
     }

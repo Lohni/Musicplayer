@@ -1,0 +1,34 @@
+
+A
+java:S1659"&Declare "progress" on a separate line.(¯À¦Íÿÿÿÿÿ
+\
+java:S2184B"ACast one of the operands of this addition operation to a "float".(‚ëóÖÿÿÿÿÿ
+F
+java:S1874x"0Remove this use of "getColor"; it is deprecated.(¿ë…Œ
+K
+java:S1874y"0Remove this use of "getColor"; it is deprecated.(âµ„Üüÿÿÿÿ
+H
+java:S1128"3Remove this unused import 'android.view.DragEvent'.(÷ŒÚS
+W
+java:S2184;"ACast one of the operands of this addition operation to a "float".(¤÷¿
+W
+java:S2184C"ACast one of the operands of this addition operation to a "float".(ÎÄÃÌ
+O
+java:S1128"9Remove this unused import 'android.view.GestureDetector'.(ò³µ
+>
+java:S1659"#Declare "width" on a separate line.(¯À¦Íÿÿÿÿÿ
+<
+java:S1659"&Declare "fromUser" on a separate line.(ÕÔâ™
+N
+java:S1128"3Remove this unused import 'android.graphics.Color'.(øãíòþÿÿÿÿ
+C	java:S108#")Either remove or fill this block of code.(¡»¢üùÿÿÿÿ
+<	java:S131O""Add a default case to this switch.(ãÁð™øÿÿÿÿ
+I
+java:S1068".Remove this unused "paddingTop" private field.(¯À¦Íÿÿÿÿÿ
+H
+java:S1128"-Remove this unused import 'android.util.Log'.(Ô¦Ø²øÿÿÿÿ
+Q	java:S125."<This block of commented-out lines of code should be removed.(¡ù©á
+C
+java:S1659"(Declare "paddingTop" on a separate line.(¯À¦Íÿÿÿÿÿ
+W
+java:S2184:"ACast one of the operands of this addition operation to a "float".(Áö›Â

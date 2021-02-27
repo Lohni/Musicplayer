@@ -6,6 +6,8 @@ public class MusicResolver {
 
     private boolean isSelected;
 
+    public MusicResolver(){}
+
     public MusicResolver(long id, long album_id, String artist, String title) {
         this.id = id;
         this.album_id = album_id;

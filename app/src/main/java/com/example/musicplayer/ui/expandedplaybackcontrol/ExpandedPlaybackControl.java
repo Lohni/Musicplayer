@@ -1,10 +1,24 @@
 package com.example.musicplayer.ui.expandedplaybackcontrol;
 
+import android.Manifest;
+import android.content.ContentUris;
 import android.content.Context;
+import android.content.pm.PackageManager;
+import android.content.res.ColorStateList;
+import android.content.res.Resources;
+import android.graphics.BitmapFactory;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.VectorDrawable;
+import android.media.MediaMetadataRetriever;
+import android.net.Uri;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.content.res.AppCompatResources;
+import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.core.content.res.ResourcesCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.fragment.app.FragmentManager;
@@ -12,22 +26,27 @@ import androidx.fragment.app.FragmentPagerAdapter;
 import androidx.viewpager2.adapter.FragmentStateAdapter;
 import androidx.viewpager2.widget.ViewPager2;
 
+import android.provider.MediaStore;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.musicplayer.R;
+import com.example.musicplayer.entities.MusicResolver;
+import com.example.musicplayer.ui.views.AudioVisualizerView;
 
 public class ExpandedPlaybackControl extends Fragment {
-
+    private static final int PERMISSION_REQUEST_CODE = 0x03;
     private TextView expanded_title,expanded_artist,expanded_currtime,expanded_absolute_time;
-    private ImageButton expanded_play,expanded_skipforward,expanded_skipback,expanded_shuffle,expanded_repeat,expanded_loop;
-
+    private ImageButton expanded_play,expanded_skipforward,expanded_skipback,collapse, expanded_fav, expanded_behaviourControl, expanded_more;
+    private AudioVisualizerView audioVisualizerView;
+    private ImageView cover;
     private SeekBar expanded_seekbar;
 
     private ViewPager2 mPager;
@@ -36,7 +55,7 @@ public class ExpandedPlaybackControl extends Fragment {
 
     private ExpandedPlaybackControlInterface epcInterface;
 
-    private int newProgress;
+    private int newProgress, audioSessionID;
     private boolean seekbarUserAction=false;
 
     public ExpandedPlaybackControl() {
@@ -69,13 +88,17 @@ public class ExpandedPlaybackControl extends Fragment {
         expanded_play = view.findViewById(R.id.expanded_control_play);
         expanded_skipforward = view.findViewById(R.id.expanded_control_skipforward);
         expanded_skipback = view.findViewById(R.id.expanded_control_skipback);
-        expanded_shuffle = view.findViewById(R.id.expanded_control_shuffle);
-        expanded_repeat = view.findViewById(R.id.expanded_control_repeat);
+        expanded_fav = view.findViewById(R.id.expanded_favourite);
+        expanded_behaviourControl = view.findViewById(R.id.expanded_control_behaviour);
         expanded_currtime = view.findViewById(R.id.expanded_current_time);
         expanded_absolute_time = view.findViewById(R.id.expanded_absolute_time);
         expanded_seekbar = view.findViewById(R.id.expanded_seekbar);
-        expanded_loop = view.findViewById(R.id.expanded_control_loop);
+        expanded_more = view.findViewById(R.id.expanded_menu_more);
+        audioVisualizerView = view.findViewById(R.id.audioView);
+        collapse = view.findViewById(R.id.expanded_control_collapse);
+        cover = view.findViewById(R.id.expanded_cover);
 
+        permission();
         expanded_title.setSelected(true);
 
         requireActivity().startPostponedEnterTransition();
@@ -104,24 +127,10 @@ public class ExpandedPlaybackControl extends Fragment {
             }
         });
 
-        expanded_shuffle.setOnClickListener(new View.OnClickListener() {
+        collapse.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                epcInterface.OnShuffleClickListener();
-            }
-        });
-
-        expanded_repeat.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                epcInterface.OnRepeatClickListener();
-            }
-        });
-
-        expanded_loop.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                epcInterface.OnLoopClickListener();
+                getParentFragmentManager().popBackStack();
             }
         });
 
@@ -143,6 +152,7 @@ public class ExpandedPlaybackControl extends Fragment {
             }
         });
         epcInterface.OnStartListener();
+        audioVisualizerView.initVisualizer(audioSessionID);
         return view;
     }
 
@@ -150,6 +160,7 @@ public class ExpandedPlaybackControl extends Fragment {
     public void onPause() {
         super.onPause();
         epcInterface.OnCloseListener();
+        audioVisualizerView.setenableVisualizer(false);
     }
 
     public void updateSeekbar(int time){
@@ -168,11 +179,16 @@ public class ExpandedPlaybackControl extends Fragment {
         return minute + ":" + second;
     }
 
-    public void setSongInfo(String title, String artist,int length){
+    public void setSongInfo(String title, String artist,int length, long id){
         expanded_absolute_time.setText(convertTime(length));
         expanded_title.setText(title);
         expanded_artist.setText(artist);
         expanded_seekbar.setMax(length);
+        loadCover(id);
+    }
+
+    public void setAudioSessionID(int audioSessionID){
+        this.audioSessionID=audioSessionID;
     }
 
     public void setControlButton(boolean isOnPause){
@@ -183,34 +199,77 @@ public class ExpandedPlaybackControl extends Fragment {
         }
     }
 
+    private void loadCover(long song){
+        Uri trackUri = ContentUris.withAppendedId(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,song);
+        MediaMetadataRetriever mmr = new MediaMetadataRetriever();
+        mmr.setDataSource(requireContext(),trackUri);
+        byte [] thumbnail = mmr.getEmbeddedPicture();
+        mmr.release();
+        if (thumbnail != null){
+            setCoverImage(new BitmapDrawable(getResources(),BitmapFactory.decodeByteArray(thumbnail,0,thumbnail.length)),false);
+        } else {
+            setCoverImage(ResourcesCompat.getDrawable(getResources(),R.drawable.ic_baseline_music_note_24,null),true);
+        }
+    }
+
+    private void setCoverImage(Drawable coverImage, boolean custom){
+        if (custom)cover.setImageTintList(AppCompatResources.getColorStateList(requireContext(),R.color.colorPrimaryNight));
+        this.cover.setImageDrawable(coverImage);
+    }
+
     public void setShuffleButton(boolean shuffle){
         if(!shuffle){
-            expanded_shuffle.setBackgroundTintList(getResources().getColorStateList(R.color.colorTransparent));
+            //expanded_shuffle.setBackgroundTintList(getResources().getColorStateList(R.color.colorTransparent));
             Toast.makeText(requireContext(),"Disable shuffle list",Toast.LENGTH_LONG).show();
         } else{
-            expanded_shuffle.setBackgroundTintList(getResources().getColorStateList(R.color.colorPrimaryDark));
+            //expanded_shuffle.setBackgroundTintList(getResources().getColorStateList(R.color.colorPrimaryDark));
             Toast.makeText(requireContext(),"Shuffle list",Toast.LENGTH_LONG).show();
         }
     }
 
     public void setRepeatButton(boolean repeat){
         if(!repeat){
-            expanded_repeat.setBackgroundTintList(getResources().getColorStateList(R.color.colorTransparent));
+            //expanded_repeat.setBackgroundTintList(getResources().getColorStateList(R.color.colorTransparent));
             Toast.makeText(requireContext(),"Disable repeat list",Toast.LENGTH_LONG).show();
         } else{
-            expanded_repeat.setBackgroundTintList(getResources().getColorStateList(R.color.colorPrimaryDark));
+            //expanded_repeat.setBackgroundTintList(getResources().getColorStateList(R.color.colorPrimaryDark));
             Toast.makeText(requireContext(),"Repeat list",Toast.LENGTH_LONG).show();
         }
     }
 
     public void setLoopButton(boolean loop){
         if(!loop){
-            expanded_loop.setBackgroundTintList(getResources().getColorStateList(R.color.colorTransparent));
+            //expanded_loop.setBackgroundTintList(getResources().getColorStateList(R.color.colorTransparent));
             Toast.makeText(requireContext(),"Disable looping",Toast.LENGTH_LONG).show();
         } else{
-            expanded_loop.setBackgroundTintList(getResources().getColorStateList(R.color.colorPrimaryDark));
+            //expanded_loop.setBackgroundTintList(getResources().getColorStateList(R.color.colorPrimaryDark));
             Toast.makeText(requireContext(),"Loop current song",Toast.LENGTH_LONG).show();
         }
+    }
+
+    private void permission(){
+        //if (Build.VERSION.SDK_INT >= 23) {
+        //Check whether your app has access to the READ permission//
+        if (checkPermission()) {
+            //If your app has access to the device’s storage, then print the following message to Android Studio’s Logcat//
+            Log.e("permission", "Permission already granted.");
+        } else {
+            //If your app doesn’t have permission to access external storage, then call requestPermission//
+            requestPermission();
+        }
+        //}
+    }
+
+    private boolean checkPermission() {
+        //Check for READ_EXTERNAL_STORAGE access, using ContextCompat.checkSelfPermission()//
+        int result = ContextCompat.checkSelfPermission(requireActivity(), Manifest.permission.RECORD_AUDIO);
+        //If the app does have this permission, then return true//
+        //If the app doesn’t have this permission, then return false//
+        return result == PackageManager.PERMISSION_GRANTED;
+    }
+
+    private void requestPermission() {
+        ActivityCompat.requestPermissions(requireActivity(), new String[]{Manifest.permission.RECORD_AUDIO}, PERMISSION_REQUEST_CODE);
     }
 
     private class PlaybackPagerAdapter extends FragmentStateAdapter{

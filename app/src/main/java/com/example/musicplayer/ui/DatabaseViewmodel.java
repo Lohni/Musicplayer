@@ -20,11 +20,14 @@ public class DatabaseViewmodel extends AndroidViewModel {
     private MutableLiveData<ArrayList<String>> allTableSizes;
     private MutableLiveData<ArrayList<MusicResolver>> tableContent;
     private MusicplayerDatabase mDatabase;
+    private MutableLiveData<String> mtable;
 
     public DatabaseViewmodel(@NonNull Application application) {
         super(application);
         mDatabase=new MusicplayerDatabase(application);
     }
+
+    public LiveData<String> getTableName(){return mtable;}
 
     public LiveData<ArrayList<String>> fetchTables(){
         if(allTables==null){
@@ -47,6 +50,11 @@ public class DatabaseViewmodel extends AndroidViewModel {
         return tableContent;
     }
 
+    public void setTableName(String tableName){
+        mtable = new MutableLiveData<>();
+        mtable.setValue(tableName);
+    }
+
     public boolean createNewTable(String table){
         //return mDatabase.newTable(table);
         return setNewTable(table);
@@ -64,12 +72,15 @@ public class DatabaseViewmodel extends AndroidViewModel {
     }
 
     public void deleteTableEntry(String table, long id){
-        if(mDatabase.deleteItem(table,id)) Toast.makeText(getApplication(),"Track removed",Toast.LENGTH_SHORT).show();
+        if(mDatabase.deleteItem(table,id)){
+            Toast.makeText(getApplication(),"Track removed",Toast.LENGTH_SHORT).show();
+        }
     }
 
     //Database Methods
     private boolean setNewTable(String table){
         boolean state = mDatabase.newTable(table);
+        /*
         ArrayList<String> size =new ArrayList<>();
         ArrayList<String> tables = new ArrayList<>();
         if (state){
@@ -78,6 +89,8 @@ public class DatabaseViewmodel extends AndroidViewModel {
             allTables.setValue(tables);
             allTableSizes.setValue(size);
         }
+         */
+        notifyDatabaseChanged();
         return state;
     }
 
@@ -112,5 +125,10 @@ public class DatabaseViewmodel extends AndroidViewModel {
             }
         }
         allTables.setValue(tables);
+    }
+
+    public void notifyDatabaseChanged(){
+        getAllTables();
+        getAllTableSizes();
     }
 }

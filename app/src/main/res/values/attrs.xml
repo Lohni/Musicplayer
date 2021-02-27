@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="AudioVisualizerView">
+        <attr name="visualizerColor" format="integer"/>
+    </declare-styleable>
+    <declare-styleable name="PlaybackControlSeekbar"/>
+    <declare-styleable name="ControlKnob"/>
+</resources>

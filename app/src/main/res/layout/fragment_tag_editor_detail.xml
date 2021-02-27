@@ -1,0 +1,261 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".ui.tagEditor.TagEditorDetailFragment">
+
+
+    <ImageView
+        android:id="@+id/tagEditorDetail_cover"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toTopOf="@+id/guideline"
+        app:layout_constraintDimensionRatio="1:1"
+        app:layout_constraintEnd_toStartOf="@+id/guideline7"
+        app:layout_constraintStart_toStartOf="@+id/guideline6"
+        app:layout_constraintTop_toTopOf="@+id/guideline2" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.4" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.52" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline4"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.64" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.05" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline6"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.10" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline7"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.90" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline8"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.76" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline9"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.88" />
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/tagEditorDetail_artistLayout"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="4dp"
+        android:hint="Artist"
+        android:textColorHint="@color/edit_text"
+        app:boxStrokeColor="@color/edit_text"
+        app:endIconTint="@color/colorSecondaryLight"
+        app:helperTextTextColor="#FFFFFF"
+        app:layout_constraintBottom_toTopOf="@+id/guideline8"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintLeft_toRightOf="@id/tagEditorDetail_cover"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/guideline4">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/tagEditorDetail_artist"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:hint="Artist"
+            android:inputType="text"
+            android:textColor="@color/colorPrimaryLight" />
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/tagEditorDetail_albumLayout"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="4dp"
+        android:textColorHint="@color/colorPrimaryLight"
+        app:boxStrokeColor="@color/edit_text"
+        app:layout_constraintBottom_toTopOf="@+id/guideline4"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintLeft_toRightOf="@id/tagEditorDetail_cover"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/guideline3">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/tagEditorDetail_album"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:hint="Album"
+            android:inputType="text"
+            android:textColor="@color/colorPrimaryLight" />
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/tagEditorDetail_genreLayout"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginLeft="8dp"
+        android:layout_marginRight="4dp"
+        android:layout_marginBottom="4dp"
+        android:textColorHint="@color/colorPrimaryLight"
+        app:boxStrokeColor="@color/edit_text"
+        app:layout_constraintBottom_toTopOf="@+id/guideline9"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toLeftOf="@id/tagEditorDetail_yearLayout"
+        app:layout_constraintTop_toTopOf="@+id/guideline8">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/tagEditorDetail_genre"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:hint="Genre"
+            android:inputType="text"
+            android:textColor="@color/colorPrimaryLight" />
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/tagEditorDetail_yearLayout"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginLeft="4dp"
+        android:layout_marginRight="8dp"
+        android:layout_marginBottom="4dp"
+        android:textColorHint="@color/colorPrimaryLight"
+        app:boxStrokeColor="@color/edit_text"
+        app:layout_constraintBottom_toTopOf="@+id/guideline9"
+        app:layout_constraintLeft_toRightOf="@id/tagEditorDetail_genreLayout"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/guideline8">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/tagEditorDetail_date"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:hint="Date"
+            android:inputType="date"
+            android:textColor="@color/colorPrimaryLight" />
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/tagEditorDetail_composerLayout"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginLeft="4dp"
+        android:layout_marginRight="8dp"
+        android:layout_marginBottom="4dp"
+        android:textColorHint="@color/colorPrimaryLight"
+        app:boxStrokeColor="@color/edit_text"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toRightOf="@id/tagEditorDetail_trackNrLayout"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/guideline9">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/tagEditorDetail_composer"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:hint="Composer"
+            android:inputType="text"
+            android:textColor="@color/colorPrimaryLight" />
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/tagEditorDetail_trackNrLayout"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginLeft="8dp"
+        android:layout_marginRight="4dp"
+        android:layout_marginBottom="4dp"
+        android:textColorHint="@color/colorPrimaryLight"
+        app:boxStrokeColor="@color/edit_text"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toLeftOf="@id/tagEditorDetail_composerLayout"
+        app:layout_constraintTop_toTopOf="@+id/guideline9">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/tagEditorDetail_tracknr"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:hint="Track Nr"
+            android:inputType="number"
+            android:textColor="@color/colorPrimaryLight" />
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/tagEditorDetail_titleLayout"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="4dp"
+        android:textColorHint="@color/colorPrimaryLight"
+        app:boxStrokeColor="@color/edit_text"
+        app:layout_constraintBottom_toTopOf="@+id/guideline3"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/guideline">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/tagEditorDetail_title"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:hint="Title"
+            android:inputType="text"
+            android:textColor="@color/colorPrimaryLight" />
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

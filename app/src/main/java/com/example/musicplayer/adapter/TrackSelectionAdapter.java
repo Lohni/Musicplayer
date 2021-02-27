@@ -15,9 +15,12 @@ import com.example.musicplayer.entities.MusicResolver;
 
 import java.util.ArrayList;
 
+import androidx.core.content.ContextCompat;
+
 public class TrackSelectionAdapter extends BaseAdapter implements Filterable {
 
     private ArrayList<MusicResolver> songList, mDisplayedValues;
+    private ArrayList<Integer> originalIndex;
     private LayoutInflater layoutInflater;
     private Context context;
 
@@ -60,19 +63,29 @@ public class TrackSelectionAdapter extends BaseAdapter implements Filterable {
         viewHolder.title.setText(mDisplayedValues.get(i).getTitle());
         viewHolder.artist.setText(mDisplayedValues.get(i).getArtist());
         viewHolder.checkBox.setChecked(mDisplayedValues.get(i).isSelected());
-        if(mDisplayedValues.get(i).isSelected())view.setBackgroundResource(R.color.colorSecondaryLightTrans);
-        else view.setBackgroundResource(R.color.colorTransparent);
+        if(mDisplayedValues.get(i).isSelected()){
+            view.setBackgroundResource(R.color.colorSecondaryLightTrans);
+            viewHolder.title.setTextColor(ContextCompat.getColor(context,R.color.colorPrimaryNight));
+            viewHolder.artist.setTextColor(ContextCompat.getColor(context,R.color.colorPrimaryNight));
+            viewHolder.checkBox.setButtonTintList(ContextCompat.getColorStateList(context,R.color.colorPrimaryNight));
+        }
+        else{
+            view.setBackgroundResource(R.color.colorTransparent);
+            viewHolder.title.setTextColor(ContextCompat.getColor(context,R.color.colorTextLight));
+            viewHolder.artist.setTextColor(ContextCompat.getColor(context,R.color.colorTextLight));
+            viewHolder.checkBox.setButtonTintList(ContextCompat.getColorStateList(context,R.color.colorPrimary));
+        }
         return view;
     }
 
     @Override
     public Filter getFilter() {
-        Filter filter = new Filter() {
-            @SuppressWarnings("unchecked")
+        return new Filter() {
             @Override
             protected FilterResults performFiltering(CharSequence constraint) {
                 FilterResults filterResults = new FilterResults();
                 ArrayList<MusicResolver> filteredList = new ArrayList<>();
+                originalIndex = new ArrayList<>();
 
                 if(songList==null){
                     songList = new ArrayList<MusicResolver>(mDisplayedValues);
@@ -88,6 +101,7 @@ public class TrackSelectionAdapter extends BaseAdapter implements Filterable {
                         String data = songList.get(i).getTitle();
                         if (data.toLowerCase().startsWith(constraint.toString())) {
                             filteredList.add(songList.get(i));
+                            originalIndex.add(i);
                         }
                     }
                     // set the Filtered result to return
@@ -103,7 +117,10 @@ public class TrackSelectionAdapter extends BaseAdapter implements Filterable {
                 notifyDataSetChanged();  // notifies the data with new filtered values
             }
         };
-        return filter;
+    }
+
+    public Integer getOriginalPosition(int i){
+        return originalIndex.get(i);
     }
 
     private class ViewHolder{

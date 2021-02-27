@@ -10,6 +10,7 @@ import android.widget.TextView;
 
 import com.example.musicplayer.R;
 import com.example.musicplayer.ui.playlist.PlaylistInterface;
+import com.example.musicplayer.ui.tagEditor.TagEditorInterface;
 
 import java.util.ArrayList;
 import java.util.Map;
@@ -20,12 +21,14 @@ import androidx.recyclerview.widget.RecyclerView;
 public class PlaylistAdapter extends RecyclerView.Adapter<PlaylistAdapter.ViewHolder> {
     private ArrayList<String> playlist,playlistsize;
     private PlaylistInterface playlistInterface;
+    private boolean onItemClickEnabled = true;
 
     public PlaylistAdapter(ArrayList<String> tracklist, ArrayList<String> size, PlaylistInterface playlistInterface){
         playlist =tracklist;
         playlistsize=size;
         this.playlistInterface=playlistInterface;
     }
+
 
     @NonNull
     @Override
@@ -42,8 +45,10 @@ public class PlaylistAdapter extends RecyclerView.Adapter<PlaylistAdapter.ViewHo
         holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                view.setTransitionName("playlist_detail");
-                playlistInterface.OnClickListener(holder.name.getText().toString(),view);
+                if (onItemClickEnabled){
+                    view.setTransitionName("playlist_detail");
+                    playlistInterface.OnClickListener(holder.name.getText().toString(),view);
+                }
             }
         });
     }
@@ -61,6 +66,8 @@ public class PlaylistAdapter extends RecyclerView.Adapter<PlaylistAdapter.ViewHo
     public int getHolderPosition(String title){
         return playlist.indexOf(title);
     }
+
+    public void setOnItemClickEnabled(boolean onItemClickEnabled){this.onItemClickEnabled=onItemClickEnabled;}
 
     public static class ViewHolder extends RecyclerView.ViewHolder{
         TextView name, size;

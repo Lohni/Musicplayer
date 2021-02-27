@@ -1,0 +1,73 @@
+
+P
+java:S1199"-Extract this nested code block into a method.(¶Ìš“úÿÿÿÿ8Ã‹œèĞ.
+‡	java:S116]"fRename this field "MENU_CONFIG_PLAYLIST_DETAIL" to match the regular expression '^[a-z][a-zA-Z0-9]*$'.(¨“ùÿÿÿÿ8Ã‹œèĞ.
+^	java:S125€"<This block of commented-out lines of code should be removed.(éØ»Úûÿÿÿÿ8ûœèĞ.
+Y
+java:S1128"7Remove this unused import 'android.transition.Explode'.(–´÷şÿÿÿÿ8Ã‹œèĞ.
+M
+java:S1066Ñ"/Merge this if statement with the enclosing one.(÷÷ÏÚ8Ã‹œèĞ.
+K
+java:S1199™"-Extract this nested code block into a method.(±øÓ8¢ŠğÖÏ.
+[
+java:S1659]"9Declare "MENU_CONFIG_PLAYLIST_DETAIL" on a separate line.(¨“ùÿÿÿÿ8Ã‹œèĞ.
+J
+java:S1659`"(Declare "isExpanded" on a separate line.(³Ù¯”ûÿÿÿÿ8Ã‹œèĞ.
+C
+java:S1170]"!Make this final field static too.(¨“ùÿÿÿÿ8Ã‹œèĞ.
+J
+java:S1199õ"-Extract this nested code block into a method.(«õæ8Ã‹œèĞ.
+P
+java:S1199•"-Extract this nested code block into a method.(åŸëèşÿÿÿÿ8¢ŠğÖÏ.
+P
+java:S1199û"-Extract this nested code block into a method.(ÁãÉúÿÿÿÿ8Ã‹œèĞ.
+K
+java:S1604Ú"(Make this anonymous inner class a lambda(çÄİöøÿÿÿÿ8Ã‹œèĞ.
+P
+java:S1128"3Remove this unused import 'android.widget.SeekBar'.(§‹Úš8Ã‹œèĞ.
+†	java:S116]"eRename this field "MENU_CONFIG_TRACK_SELECTOR" to match the regular expression '^[a-z][a-zA-Z0-9]*$'.(¨“ùÿÿÿÿ8Ã‹œèĞ.
+C
+java:S1170]"!Make this final field static too.(¨“ùÿÿÿÿ8Ã‹œèĞ.
+C
+java:S1170]"!Make this final field static too.(¨“ùÿÿÿÿ8Ã‹œèĞ.
+J
+java:S1604x"(Make this anonymous inner class a lambda(©‹Ù™ÿÿÿÿÿ8Ã‹œèĞ.
+K
+java:S1199‰"-Extract this nested code block into a method.(³şïÂ8óÿ˜¸Û.
+„
+java:S1128*"bRemove this unused import 'com.example.musicplayer.ui.expandedplaybackcontrol.ExpandedTransition'.(êáÇ¸şÿÿÿÿ8Ã‹œèĞ.
+T
+java:S1128">Remove this unused import 'android.provider.ContactsContract'.(üç§±
+K
+java:S1604Ü"(Make this anonymous inner class a lambda(Ê ä¬üÿÿÿÿ8Ã‹œèĞ.
+n	java:S128‚"LEnd this switch case with an unconditional break, return or throw statement.(­®¸çøÿÿÿÿ8óÿ˜¸Û.
+P
+java:S1199 "-Extract this nested code block into a method.(Î—­Šşÿÿÿÿ8Ã‹œèĞ.
+X	java:S110K"<This class has 9 parents which is greater than 5 authorized.(¥÷ƒŞ8Ã‹œèĞ.
+F
+java:S1604Ó"(Make this anonymous inner class a lambda(§º‡8Ã‹œèĞ.
+P
+java:S1121j".Extract the assignment out of this expression.(…¶ÿ´üÿÿÿÿ8Ã‹œèĞ.
+Z
+java:S1659]"8Declare "MENU_CONFIG_TRACK_SELECTOR" on a separate line.(¨“ùÿÿÿÿ8Ã‹œèĞ.
+X	java:S125÷"<This block of commented-out lines of code should be removed.(¡éZ8ûœèĞ.
+
+java:S1450T"_Remove the "playlistFragment" field and declare it as a local variable in the relevant methods.(¬†üÜüÿÿÿÿ8Ã‹œèĞ.
+r
+java:S1128$"PRemove this unused import 'com.example.musicplayer.ui.equalizer.EffectFragment'.(ìØ¼©üÿÿÿÿ8Ã‹œèĞ.
+S
+java:S1128"1Remove this unused import 'android.widget.Toast'.(©›ïÍúÿÿÿÿ8Ã‹œèĞ.
+j
+java:S1128"MRemove this unused import 'android.graphics.drawable.AnimatedVectorDrawable'.(¹€§„8Ã‹œèĞ.
+Q
+java:S1128"4Remove this unused import 'android.transition.Fade'.(§Ò©8Ã‹œèĞ.
+P
+java:S1199‚"-Extract this nested code block into a method.(­®¸çøÿÿÿÿ8Ã‹œèĞ.
+V
+java:S1128"4Remove this unused import 'android.database.Cursor'.(Ôäåúÿÿÿÿ8Ã‹œèĞ.
+€	java:S116]"_Rename this field "MENU_CONFIG_PLAYLIST" to match the regular expression '^[a-z][a-zA-Z0-9]*$'.(¨“ùÿÿÿÿ8Ã‹œèĞ.
+D	java:S131ô""Add a default case to this switch.(øå´¡ÿÿÿÿÿ8Ã‹œèĞ.
+„
+java:S4144±"gUpdate this method so that its implementation is not identical to "OnSongSelectedListener" on line 238.(¦•ÇE8Ã‹œèĞ.
+u
+java:S1128%"SRemove this unused import 'com.example.musicplayer.ui.equalizer.EqualizerFragment'.(Ğ®¿ìùÿÿÿÿ8Ã‹œèĞ.

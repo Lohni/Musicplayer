@@ -1,13 +1,17 @@
 package com.example.musicplayer.ui.playbackcontrol;
 
+import android.Manifest;
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.graphics.drawable.AnimatedVectorDrawable;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
+import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,16 +20,19 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 
 import com.example.musicplayer.R;
+import com.example.musicplayer.ui.views.AudioVisualizerView;
+import com.example.musicplayer.ui.views.PlaybackControlSeekbar;
 
 
 public class PlaybackControl extends Fragment {
-
-    private SeekBar seekBar;
-    private TextView control_current, control_absolute, control_title, control_artist;
+    private static final int PERMISSION_REQUEST_CODE = 0x03;
+    private PlaybackControlSeekbar playbackControlSeekbar;
+    private TextView control_title, control_artist;
     private ImageButton play, skip_forward;
     private View view;
+    private AudioVisualizerView audioVisualizerView;
 
-    private int newProgress;
+    private int newProgress,audioSessionID;
     private boolean seekbarUserAction=false;
 
     private PlaybackControlInterface playbackControlInterface;
@@ -56,15 +63,16 @@ public class PlaybackControl extends Fragment {
         // Inflate the layout for this fragment
         view = inflater.inflate(R.layout.fragment_playback_control, container, false);
 
-        control_current = view.findViewById(R.id.control_current_time);
-        control_absolute = view.findViewById(R.id.control_absolut_time);
         control_title = view.findViewById(R.id.control_title);
         control_artist = view.findViewById(R.id.control_artist);
-        seekBar = view.findViewById(R.id.seekbar);
         play = view.findViewById(R.id.control_play);
+        audioVisualizerView = view.findViewById(R.id.playbackcontrol_visualizer);
         skip_forward = view.findViewById(R.id.control_skip);
 
         control_title.setSelected(true);
+
+        playbackControlSeekbar = view.findViewById(R.id.new_seekbar);
+        playbackControlSeekbar.init(R.color.colorSecondaryLight,R.color.colorPrimaryNight);
 
         play.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -80,19 +88,20 @@ public class PlaybackControl extends Fragment {
                 playbackControlInterface.OnSkipPressedListener();
             }
         });
-        seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+
+        playbackControlSeekbar.setSeekbarChangeListener(new PlaybackControlSeekbar.OnSeekbarChangeListener() {
             @Override
-            public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
-                newProgress=i;
+            public void onProgressChanged(PlaybackControlSeekbar seekbar, int progress, boolean fromUser) {
+                newProgress = progress;
             }
 
             @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {
+            public void onStartTrackingTouch(PlaybackControlSeekbar seekbar) {
                 seekbarUserAction=true;
             }
 
             @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {
+            public void onStopTrackingTouch(PlaybackControlSeekbar seekbar) {
                 playbackControlInterface.OnSeekbarChangeListener(newProgress);
                 seekbarUserAction=false;
             }
@@ -101,33 +110,30 @@ public class PlaybackControl extends Fragment {
         control_title.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                playbackControlInterface.OnExpandListener(seekBar,control_title);
+                audioVisualizerView.release();
+                playbackControlInterface.OnExpandListener(playbackControlSeekbar,control_title);
             }
         });
         return view;
     }
 
     public void setSongInfo(String title, String artist,int length){
-        control_absolute.setText(convertTime(length));
         control_title.setText(title);
         control_artist.setText(artist);
-        seekBar.setMax(length);
+
+        playbackControlSeekbar.setMax(length);
     }
 
     public void updateSeekbar(int time){
-        if (!seekbarUserAction)seekBar.setProgress(time);
-        control_current.setText(convertTime(time));
+        if (!seekbarUserAction){
+            playbackControlSeekbar.setProgress(time);
+        }
     }
 
-    private String convertTime(int duration){
-        float d = (float)duration /(1000*60);
-        int min = (int)d;
-        float seconds = (d - min)*60;
-        int sec = (int)seconds;
-        String minute=min+"", second=sec+"";
-        if(min<10) minute="0"+minute;
-        if(sec<10) second="0"+second;
-        return minute + ":" + second;
+    public void setAudioSessionID(int audioSessionID){
+        this.audioSessionID=audioSessionID;
+        permission();
+        audioVisualizerView.initVisualizer(audioSessionID);
     }
 
     public void setControlButton(boolean isOnPause){
@@ -143,6 +149,29 @@ public class PlaybackControl extends Fragment {
         }
     }
 
+    private void permission(){
+        //if (Build.VERSION.SDK_INT >= 23) {
+        //Check whether your app has access to the READ permission//
+        if (checkPermission()) {
+            //If your app has access to the device’s storage, then print the following message to Android Studio’s Logcat//
+            Log.e("permission", "Permission already granted.");
+        } else {
+            //If your app doesn’t have permission to access external storage, then call requestPermission//
+            requestPermission();
+        }
+        //}
+    }
 
+    private boolean checkPermission() {
+        //Check for READ_EXTERNAL_STORAGE access, using ContextCompat.checkSelfPermission()//
+        int result = ContextCompat.checkSelfPermission(requireActivity(), Manifest.permission.RECORD_AUDIO);
+        //If the app does have this permission, then return true//
+        //If the app doesn’t have this permission, then return false//
+        return result == PackageManager.PERMISSION_GRANTED;
+    }
+
+    private void requestPermission() {
+        ActivityCompat.requestPermissions(requireActivity(), new String[]{Manifest.permission.RECORD_AUDIO}, PERMISSION_REQUEST_CODE);
+    }
 
 }
