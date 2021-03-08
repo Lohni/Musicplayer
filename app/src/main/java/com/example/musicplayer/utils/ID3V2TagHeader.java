@@ -1,25 +1,28 @@
 package com.example.musicplayer.utils;
-
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
 public class ID3V2TagHeader {
 
-    private int TAG_SIZE;
+    private int TAG_SIZE = 0;
     private int TAG_VERSION_MAJOR;
-    private int TAG_VERSION_REVISION;
-    private int UNSYNCHRONISATION, EXTENDED_HEADER, EXPERIMENTAL_INDICATOR, FOOTER;
-    private int TAG_HEADER_LENGTH;
+    private int TAG_VERSION_REVISION = 0;
+    private int UNSYNCHRONISATION = 0, EXTENDED_HEADER = 0, EXPERIMENTAL_INDICATOR = 0, FOOTER = 0;
+    private int TAG_HEADER_LENGTH = 10;
 
     public ID3V2TagHeader(byte[] header){
         decodeHeader(header);
+    }
+
+    public ID3V2TagHeader(){
+        TAG_VERSION_MAJOR = 4;
     }
 
     private void decodeHeader(byte[] header){
         TAG_VERSION_MAJOR = getMajorVersion(header[3]);
         TAG_VERSION_REVISION = getRevision(header[4]);
         getFlags(header[5]);
-        decodeSize(Arrays.copyOfRange(header, 6, 9));
+        decodeSize(Arrays.copyOfRange(header, 6, 10));
     }
 
     private int getMajorVersion(byte versionMajor){
@@ -41,12 +44,12 @@ public class ID3V2TagHeader {
     private boolean decodeSize(byte[] size){
         if (size.length != 4)return false;
 
-        byte byte1 = (byte) (size[0] << 1);
-        byte byte2 = (byte) (size[1] << 1);
-        byte byte3 = (byte) (size[2] << 1);
-        byte byte4 = (byte) (size[3] << 1);
+        int b1 = size[0] << 21;
+        int b2 = size[1] << 14;
+        int b3 = size[2] << 7;
+        int b4 = size[3];
 
-        TAG_SIZE = (((byte1) << 24) + ((byte2) << 17) + ((byte3) << 10) + ((byte4) << 3) >> 4);
+        TAG_SIZE = b1 + b2 + b3 + b4;
         return true;
     }
 

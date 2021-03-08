@@ -46,7 +46,7 @@ import java.util.Map;
 import java.util.Objects;
 
 public class SongList extends Fragment{
-    private static final int PERMISSION_REQUEST_CODE = 0x03 ;
+    private static final int PERMISSION_REQUEST_CODE = 0x03;
 
     private ListView listView;
     private View view;
@@ -84,6 +84,7 @@ public class SongList extends Fragment{
 
         MainActivity mainActivity =(MainActivity) requireActivity();
         mainActivity.getSupportActionBar().setTitle("Tracklist");
+
 
         listView = view.findViewById(R.id.songList);
         listView.setLayoutAnimation(AnimationUtils.loadLayoutAnimation(requireContext(),R.anim.layout_animation_fall_down));

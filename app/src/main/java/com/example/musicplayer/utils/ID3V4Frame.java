@@ -1,5 +1,4 @@
 package com.example.musicplayer.utils;
-
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
@@ -9,34 +8,26 @@ public class ID3V4Frame {
 
     private final int ISO88591 = 0, UTF16 = 1, UTF16BE = 2, UTF8=3;
 
-    private String FRAME_CONTENT;
+    private String FRAME_CONTENT = "";
     private ID3V4FrameHeader frameHeader;
 
-    //Only Frame-IDs which are used for this application are defined
-    private final String TIT2="TIT2", //Title
-                         TALB="TALB", //Album
-                         TCOM="TCOM", //Composer
-                         TCON="TCON", //Genre
-                         TRCK="TRCK", //Track-ID
-                         TDRC="TDRC", //Jahr
-                         TPE1="TPE1", //Interpret
-                         POPM="POPM"; //Rating
+    private boolean isRead = false;
 
     public ID3V4Frame(byte[] data, ID3V4FrameHeader frameHeader){
         this.frameHeader = frameHeader;
-        decodeFrame(data);
+        if (data != null)decodeFrame(data);
     }
 
     private void decodeFrame(byte[] data){
         if (frameHeader.FRAME_ID != null){
             switch (frameHeader.FRAME_ID){
-                case TPE1:
-                case TDRC:
-                case TRCK:
-                case TCON:
-                case TCOM:
-                case TIT2:
-                case TALB: {
+                case ID3V2FrameIDs.TPE2:
+                case ID3V2FrameIDs.TDRC:
+                case ID3V2FrameIDs.TRCK:
+                case ID3V2FrameIDs.TCON:
+                case ID3V2FrameIDs.TCOM:
+                case ID3V2FrameIDs.TIT2:
+                case ID3V2FrameIDs.TALB: {
                     FRAME_CONTENT = getText(Arrays.copyOfRange(data, 1, frameHeader.FRAME_SIZE), (int) data[0]);
                     break;
                 }
@@ -46,12 +37,12 @@ public class ID3V4Frame {
                 }
             }
         }
-
     }
 
     public void setFrameContent(String content){
         FRAME_CONTENT = content;
-        frameHeader.FRAME_SIZE = content.length();
+        //+1 for encoding byte
+        frameHeader.setNewFrameSize(content.length() + 1);
     }
 
     private String getText(byte[] text, int encoding){
@@ -104,6 +95,7 @@ public class ID3V4Frame {
         byte encoding = ISO88591;
         byte[] content = getFrameContentAsBytes(ISO88591);
 
+        //+1 for encoding byte
         byte[] frame = new byte[header.length + 1 + content.length];
         System.arraycopy(header,0,frame,0,header.length);
         frame[10] = encoding;
@@ -120,4 +112,7 @@ public class ID3V4Frame {
         return frameHeader.FRAME_ID;
     }
 
+    public void setRead(boolean status){isRead=status;}
+
+    public boolean getRead(){return isRead;}
 }

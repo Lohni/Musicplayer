@@ -53,8 +53,10 @@ import com.example.musicplayer.ui.tagEditor.TagEditorFragment;
 import com.example.musicplayer.ui.tagEditor.TagEditorInterface;
 import com.example.musicplayer.ui.views.PlaybackControlSeekbar;
 import com.example.musicplayer.utils.TagResolver;
+import com.example.musicplayer.utils.TagWriter;
 import com.google.android.material.navigation.NavigationView;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Objects;
 
@@ -157,6 +159,10 @@ public class MainActivity extends AppCompatActivity implements SongListInterface
                 break;
             }
             case MENU_CONFIG_TRACK_SELECTOR:{
+                break;
+            }
+            case MENU_CONFIG_TAGEDITOR_DETAIL:{
+                //getMenuInflater().inflate(R.menu.tageditor_confirm, menu);
                 break;
             }
             default:{
@@ -363,9 +369,6 @@ public class MainActivity extends AppCompatActivity implements SongListInterface
             selectionFragment.setEnterTransition(anim);
             getSupportFragmentManager().beginTransaction().replace(R.id.nav_host_fragment,selectionFragment).addToBackStack(null).commit();
         } else if (item.getItemId()==R.id.action_tagEditor_confirm){
-
-            TagResolver track = tagEditorDetailFragment.getTagResolver();
-
         }
         return super.onOptionsItemSelected(item);
     }
@@ -532,6 +535,7 @@ public class MainActivity extends AppCompatActivity implements SongListInterface
     private void requestPermission() {
         ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.MODIFY_AUDIO_SETTINGS}, PERMISSION_REQUEST_CODE);
         ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.RECORD_AUDIO}, PERMISSION_REQUEST_CODE);
+        ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, PERMISSION_REQUEST_CODE);
     }
 
     @Override
@@ -553,7 +557,6 @@ public class MainActivity extends AppCompatActivity implements SongListInterface
         getSupportActionBar().setTitle("");
         invalidateOptionsMenu();
 
-
-        getSupportFragmentManager().beginTransaction().replace(R.id.nav_host_fragment,tagEditorDetailFragment).commit();
+        getSupportFragmentManager().beginTransaction().replace(R.id.nav_host_fragment,tagEditorDetailFragment).addToBackStack(null).commit();
     }
 }

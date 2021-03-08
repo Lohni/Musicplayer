@@ -19,14 +19,13 @@ public class ID3Editor {
     //Size in bytes
     private static final int HEADER_SIZE = 10;
     private long trackID;
-
-    private Context context;
-
+    private ID3V2TagHeader tagHeader;
     private TagResolver track;
 
+    private Context context;
     private ID3EditorInterface id3EditorInterface;
 
-    public ID3Editor(Uri uri, Context context,long trackID, ID3EditorInterface id3EditorInterface){
+    public ID3Editor(Uri uri, Context context, long trackID, ID3EditorInterface id3EditorInterface){
         this.context = context;
         this.trackID = trackID;
         this.id3EditorInterface = id3EditorInterface;
@@ -42,7 +41,7 @@ public class ID3Editor {
             is.read(header, 0, header.length);
 
             if (checkIfV2TagIsPresent(Arrays.copyOfRange(header,0, 3))){
-                ID3V2TagHeader tagHeader = new ID3V2TagHeader(header);
+                tagHeader = new ID3V2TagHeader(header);
 
                 byte[] data = new byte[tagHeader.getTAG_SIZE()];
                 is.read(data, 0, data.length);
@@ -62,6 +61,8 @@ public class ID3Editor {
 
                     }
                 }
+            } else {
+                tagHeader = new ID3V2TagHeader();
             }
             is.close();
 
@@ -70,7 +71,6 @@ public class ID3Editor {
         } catch (IOException e){
             System.out.println(e);
         }
-
         return true;
     }
 
@@ -87,8 +87,12 @@ public class ID3Editor {
                     ID3V4FrameHeader frameHeader = new ID3V4FrameHeader(header);
                     int frameSize = frameHeader.FRAME_SIZE;
                     byte[] frameData = new byte[frameSize];
-
                     bis.read(frameData,0,frameSize);
+
+                    if (frameHeader.FRAME_ID.equals("APIC")){
+                        track.setFrame(new ID3V4APICFrame(frameData, frameHeader));
+                    }
+
                     ID3V4Frame frame = new ID3V4Frame(frameData, frameHeader);
                     if (frame.getFrameContent() != null){
                         setTrackData(frame);
@@ -96,10 +100,8 @@ public class ID3Editor {
                 }
             }
             bis.close();
-            if (id3EditorInterface != null){
-                track.calculateCombinedSize();
-                id3EditorInterface.onDataLoadedListener(track);
-            }
+            track.calculateCombinedSize();
+            id3EditorInterface.onDataLoadedListener(track);
         } catch (IOException e){
             System.out.println(e);
         }
@@ -107,32 +109,32 @@ public class ID3Editor {
 
     private void setTrackData(ID3V4Frame frame){
         switch (frame.getFrameId()){
-            case ID3V2FrameIDs.TPE1:{
-                track.setArtistFrame(frame);
+            case ID3V2FrameIDs.TPE2:{
+                track.setFrame(TagResolver.FRAME_ARTIST,frame);
                 break;
             }
             case ID3V2FrameIDs.TDRC:{
-                track.setYearFrame(frame);
+                track.setFrame(TagResolver.FRAME_YEAR,frame);
                 break;
             }
             case ID3V2FrameIDs.TRCK:{
-                track.setTrackIdFrame(frame);
+                track.setFrame(TagResolver.FRAME_TRACKID,frame);
                 break;
             }
             case ID3V2FrameIDs.TCON:{
-                track.setGenreFrame(frame);
+                track.setFrame(TagResolver.FRAME_GENRE,frame);
                 break;
             }
             case ID3V2FrameIDs.TCOM:{
-                track.setComposerFrame(frame);
+                track.setFrame(TagResolver.FRAME_COMPOSER,frame);
                 break;
             }
             case ID3V2FrameIDs.TIT2:{
-                track.setTitleFrame(frame);
+                track.setFrame(TagResolver.FRAME_TITLE,frame);
                 break;
             }
             case ID3V2FrameIDs.TALB: {
-                track.setAlbumFrame(frame);
+                track.setFrame(TagResolver.FRAME_ALBUM,frame);
                 break;
             }
             default:{
@@ -148,7 +150,6 @@ public class ID3Editor {
     private boolean checkIfV2TagIsPresent(byte[] tagIdent){
         if (tagIdent[0] == 0x49 && tagIdent[1] == 0x44 && tagIdent[2] == 0x33)return true;
         else return false;
-
     }
 
     private void getV4Frames(byte[] data){
@@ -158,4 +159,7 @@ public class ID3Editor {
     public TagResolver getTrackData(){
         return track;
     }
+
+    public ID3V2TagHeader getTagHeader(){return tagHeader;}
+
 }
