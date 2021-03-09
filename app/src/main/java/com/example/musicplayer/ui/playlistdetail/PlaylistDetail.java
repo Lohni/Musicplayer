@@ -104,13 +104,12 @@ public class PlaylistDetail extends Fragment {
             title.setText(table);
             info.setText(trackList.size()+" songs - 00:00");
 
-            databaseViewmodel.fetchTableContent(table).observe(getViewLifecycleOwner(),trackList ->{
+            databaseViewmodel.fetchTableContent(table, requireContext()).observe(getViewLifecycleOwner(),trackList ->{
                 this.trackList.addAll(trackList);
                 playlistDetailAdapter.notifyDataSetChanged();
                 playlistInterface.OnPlaylistCreatedListener(this.trackList);
             });
         });
-
 
         layoutManager = new LinearLayoutManager(requireContext());
         list.setLayoutManager(layoutManager);

@@ -1,7 +1,11 @@
 package com.example.musicplayer.ui;
 
 import android.app.Application;
+import android.content.ContentUris;
+import android.content.Context;
 import android.database.Cursor;
+import android.net.Uri;
+import android.provider.MediaStore;
 import android.widget.Toast;
 
 import com.example.musicplayer.MusicplayerDatabase;
@@ -45,8 +49,8 @@ public class DatabaseViewmodel extends AndroidViewModel {
         return allTableSizes;
     }
 
-    public LiveData<ArrayList<MusicResolver>> fetchTableContent(String table){
-        getTableContent(table);
+    public LiveData<ArrayList<MusicResolver>> fetchTableContent(String table, Context context){
+        getTableContent(table, context);
         return tableContent;
     }
 
@@ -80,28 +84,31 @@ public class DatabaseViewmodel extends AndroidViewModel {
     //Database Methods
     private boolean setNewTable(String table){
         boolean state = mDatabase.newTable(table);
-        /*
-        ArrayList<String> size =new ArrayList<>();
-        ArrayList<String> tables = new ArrayList<>();
-        if (state){
-            tables.add(table);
-            size.add("0");
-            allTables.setValue(tables);
-            allTableSizes.setValue(size);
-        }
-         */
         notifyDatabaseChanged();
         return state;
     }
 
-    private void getTableContent(String table){
+    private void getTableContent(String table, Context context){
         Cursor cursor = mDatabase.getListContents(table);
         tableContent = new MutableLiveData<>();
         ArrayList<MusicResolver> contents = new ArrayList<>();
         while(cursor.moveToNext()){
-            contents.add(new MusicResolver(cursor.getLong(0),cursor.getLong(3),cursor.getString(2),cursor.getString(1)));
+            Uri trackUri = ContentUris.withAppendedId(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,cursor.getLong(0));
+            Cursor songCursor = context.getContentResolver().query(trackUri, null, null, null, null);
+            if (songCursor != null && songCursor.moveToFirst()){
+                //Get columns
+                int titleColumn = songCursor.getColumnIndex
+                        (android.provider.MediaStore.Audio.Media.TITLE);
+                int idColumn = songCursor.getColumnIndex
+                        (MediaStore.Audio.Media._ID);
+                int artistColumn = songCursor.getColumnIndex
+                        (android.provider.MediaStore.Audio.Media.ARTIST);
+                int albumid = songCursor.getColumnIndex(MediaStore.Audio.Media.ALBUM_ID);
+
+                contents.add(new MusicResolver(songCursor.getLong(idColumn), songCursor.getLong(albumid), songCursor.getString(artistColumn), songCursor.getString(titleColumn)));
+                tableContent.setValue(contents);
+            }
         }
-        tableContent.setValue(contents);
     }
 
     private void getAllTableSizes(){

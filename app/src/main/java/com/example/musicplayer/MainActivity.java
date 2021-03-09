@@ -84,11 +84,9 @@ public class MainActivity extends AppCompatActivity implements SongListInterface
     MusicService musicService;
     ArrayList<MusicResolver> songlist;
     private PlaybackControl playcontrol;
-    private Playlist playlistFragment;
     private PlaylistDetail playlistDetailFragment;
     private PlaylistDetailAdd selectionFragment;
     private ExpandedPlaybackControl expandedPlaybackControl;
-    private TagEditorDetailFragment tagEditorDetailFragment;
 
     private Equalizer equalizer;
 
@@ -386,8 +384,8 @@ public class MainActivity extends AppCompatActivity implements SongListInterface
                 break;
             }
             case R.id.nav_playlist:{
-                playlistFragment = new Playlist();
-                getSupportFragmentManager().beginTransaction().replace(R.id.nav_host_fragment,playlistFragment).commit();
+                Playlist playlistFragment = new Playlist();
+                getSupportFragmentManager().beginTransaction().replace(R.id.nav_host_fragment, playlistFragment).commit();
                 actionbarMenuConfig=MENU_CONFIG_PLAYLIST;
                 invalidateOptionsMenu();
                 break;
@@ -545,7 +543,7 @@ public class MainActivity extends AppCompatActivity implements SongListInterface
 
     @Override
     public void onTrackSelectedListener(MusicResolver musicResolver) {
-        tagEditorDetailFragment = new TagEditorDetailFragment();
+        TagEditorDetailFragment tagEditorDetailFragment = new TagEditorDetailFragment();
         tagEditorDetailFragment.setTrack(musicResolver);
 
         toggle.setDrawerIndicatorEnabled(false);
@@ -557,6 +555,6 @@ public class MainActivity extends AppCompatActivity implements SongListInterface
         getSupportActionBar().setTitle("");
         invalidateOptionsMenu();
 
-        getSupportFragmentManager().beginTransaction().replace(R.id.nav_host_fragment,tagEditorDetailFragment).addToBackStack(null).commit();
+        getSupportFragmentManager().beginTransaction().replace(R.id.nav_host_fragment, tagEditorDetailFragment).addToBackStack(null).commit();
     }
 }
