@@ -8,12 +8,15 @@ import android.nfc.Tag;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.provider.MediaStore;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
@@ -22,6 +25,7 @@ import com.example.musicplayer.R;
 import com.example.musicplayer.adapter.TagEditorAdapter;
 import com.example.musicplayer.entities.MusicResolver;
 import com.example.musicplayer.ui.playlist.PlaylistInterface;
+import com.example.musicplayer.utils.NavigationControlInterface;
 
 import java.util.ArrayList;
 import java.util.concurrent.ExecutorService;
@@ -38,6 +42,7 @@ public class TagEditorFragment extends Fragment {
 
     private Future fetched;
     private TagEditorInterface tagEditorInterface;
+    private NavigationControlInterface navigationControlInterface;
 
     public TagEditorFragment() {
         // Required empty public constructor
@@ -47,6 +52,7 @@ public class TagEditorFragment extends Fragment {
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
         try {
+            navigationControlInterface = (NavigationControlInterface) context;
             tagEditorInterface = (TagEditorInterface) context;
         } catch (ClassCastException e){
             throw new ClassCastException(context.toString() + "must implement TagEditorInterface");
@@ -61,11 +67,14 @@ public class TagEditorFragment extends Fragment {
         tagList = view.findViewById(R.id.tagEditor_songlist);
         search = view.findViewById(R.id.tagEditor_search);
 
+        navigationControlInterface.setToolbarTitle("Tag-Editor");
+        navigationControlInterface.setHomeAsUpEnabled(false);
+        navigationControlInterface.isDrawerEnabledListener(true);
+
         trackList = new ArrayList<>();
         adapter = new TagEditorAdapter(trackList, requireContext(), tagEditorInterface);
         tagList.setAdapter(adapter);
         tagList.setHasFixedSize(true);
-
         tagList.setLayoutManager(new LinearLayoutManager(requireContext()));
 
         loadTrackList();

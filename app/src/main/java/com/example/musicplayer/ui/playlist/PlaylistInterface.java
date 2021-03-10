@@ -12,7 +12,5 @@ public interface PlaylistInterface {
     void OnPlaylistCreatedListener(ArrayList<MusicResolver> trackList);
     void OnPlaylistItemSelectedListener(int index);
     void OnShuffle();
-    void OnAddSongsListener();
-    void OnPlaylistDetailResumeListener();
-    void OnTracklistLoadedListener();
+    void OnAddSongsListener(ArrayList<MusicResolver> songSelection, String title);
 }

@@ -1,4 +1,4 @@
-package com.example.musicplayer.utils;
+package com.example.musicplayer.utils.tageditor;
 
 public class ID3V2FrameIDs {
     public static final String

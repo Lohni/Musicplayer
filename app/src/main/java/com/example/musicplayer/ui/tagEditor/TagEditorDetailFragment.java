@@ -3,19 +3,14 @@ package com.example.musicplayer.ui.tagEditor;
 import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.drawable.BitmapDrawable;
-import android.media.MediaMetadataRetriever;
 import android.net.Uri;
-import android.nfc.Tag;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -25,41 +20,31 @@ import androidx.core.content.ContextCompat;
 import androidx.core.content.res.ResourcesCompat;
 import androidx.fragment.app.Fragment;
 
-import android.os.ParcelFileDescriptor;
 import android.provider.MediaStore;
 import android.util.Log;
-import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.webkit.MimeTypeMap;
 import android.widget.ImageView;
-import android.widget.TextView;
 
 import com.example.musicplayer.R;
 import com.example.musicplayer.entities.MusicResolver;
-import com.example.musicplayer.utils.ID3Editor;
-import com.example.musicplayer.utils.ID3EditorInterface;
-import com.example.musicplayer.utils.ID3V2TagHeader;
-import com.example.musicplayer.utils.ID3V4APICFrame;
-import com.example.musicplayer.utils.ID3V4Frame;
-import com.example.musicplayer.utils.TagResolver;
-import com.example.musicplayer.utils.TagWriter;
+import com.example.musicplayer.utils.NavigationControlInterface;
+import com.example.musicplayer.utils.tageditor.ID3Editor;
+import com.example.musicplayer.utils.tageditor.ID3EditorInterface;
+import com.example.musicplayer.utils.tageditor.ID3V4APICFrame;
+import com.example.musicplayer.utils.tageditor.ID3V4Frame;
+import com.example.musicplayer.utils.tageditor.TagResolver;
+import com.example.musicplayer.utils.tageditor.TagWriter;
 import com.google.android.material.textfield.TextInputEditText;
 
-import java.io.BufferedInputStream;
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileDescriptor;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Files;
 
 public class TagEditorDetailFragment extends Fragment{
     private static final int PERMISSION_REQUEST_CODE = 0x03;
@@ -69,6 +54,8 @@ public class TagEditorDetailFragment extends Fragment{
     private ID3V4Frame titleFrame, artistFrame, albumFrame, genreFrame, yearFrame, tracknrFrame, composerFrame;
     private ID3V4APICFrame apicFrame;
     private ImageView tagImageView;
+
+    private NavigationControlInterface navigationControlInterface;
 
     public TagEditorDetailFragment() {
         // Required empty public constructor
@@ -96,6 +83,16 @@ public class TagEditorDetailFragment extends Fragment{
     }
 
     @Override
+    public void onAttach(@NonNull Context context) {
+        super.onAttach(context);
+        try {
+            navigationControlInterface = (NavigationControlInterface) context;
+        } catch (ClassCastException e){
+            throw new ClassCastException(context.toString() + "must implement NavigationControlInterface");
+        }
+    }
+
+    @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
@@ -118,6 +115,10 @@ public class TagEditorDetailFragment extends Fragment{
                 selectImageFromGallery(requireContext());
             }
         });
+
+        navigationControlInterface.isDrawerEnabledListener(false);
+        navigationControlInterface.setHomeAsUpEnabled(true);
+        navigationControlInterface.setHomeAsUpIndicator(R.drawable.ic_clear_black_24dp);
 
         getValues();
 

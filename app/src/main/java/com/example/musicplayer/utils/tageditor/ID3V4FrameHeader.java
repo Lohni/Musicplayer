@@ -1,4 +1,4 @@
-package com.example.musicplayer.utils;
+package com.example.musicplayer.utils.tageditor;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 

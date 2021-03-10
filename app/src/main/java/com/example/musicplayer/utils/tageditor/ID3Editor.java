@@ -1,14 +1,9 @@
-package com.example.musicplayer.utils;
+package com.example.musicplayer.utils.tageditor;
 
 import android.content.Context;
 import android.net.Uri;
-import android.nfc.Tag;
-
-import com.example.musicplayer.entities.MusicResolver;
 
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;

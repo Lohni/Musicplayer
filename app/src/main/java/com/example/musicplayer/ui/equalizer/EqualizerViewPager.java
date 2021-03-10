@@ -1,12 +1,15 @@
 package com.example.musicplayer.ui.equalizer;
 
+import android.content.Context;
 import android.media.audiofx.Equalizer;
 import android.os.Bundle;
 
+import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.viewpager2.widget.ViewPager2;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -14,6 +17,7 @@ import android.view.ViewGroup;
 
 import com.example.musicplayer.R;
 import com.example.musicplayer.adapter.EqualizerViewPagerAdapter;
+import com.example.musicplayer.utils.NavigationControlInterface;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
 
@@ -23,15 +27,31 @@ public class EqualizerViewPager extends Fragment {
     private EqualizerViewPagerAdapter mAdapter;
     private Equalizer equalizer;
     private int audioSessionID;
+    private NavigationControlInterface navigationControlInterface;
 
     public EqualizerViewPager() {
         // Required empty public constructor
     }
 
     @Override
+    public void onAttach(@NonNull Context context) {
+        try {
+            navigationControlInterface = (NavigationControlInterface) context;
+        } catch (ClassCastException e){
+            Log.e("EQUALIZER_CASTERROR", e.toString());
+        }
+
+        super.onAttach(context);
+    }
+
+    @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_equalizer_view_pager, container, false);
+
+        navigationControlInterface.setToolbarTitle("Equalizer");
+        navigationControlInterface.setHomeAsUpEnabled(false);
+        navigationControlInterface.isDrawerEnabledListener(true);
 
         viewPager2 = view.findViewById(R.id.eualizer_viewpager);
         mAdapter = new EqualizerViewPagerAdapter(this,equalizer,audioSessionID);

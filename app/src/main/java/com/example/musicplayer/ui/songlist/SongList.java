@@ -35,6 +35,7 @@ import com.example.musicplayer.MainActivity;
 import com.example.musicplayer.R;
 import com.example.musicplayer.adapter.SongListAdapter;
 import com.example.musicplayer.entities.MusicResolver;
+import com.example.musicplayer.utils.NavigationControlInterface;
 import com.google.android.material.textview.MaterialTextView;
 
 import java.util.ArrayList;
@@ -55,6 +56,7 @@ public class SongList extends Fragment{
 
     private ArrayList<MusicResolver> songList = new ArrayList<>();
     private SongListInterface songListInterface;
+    private NavigationControlInterface navigationControlInterface;
 
     public SongList() {
         // Required empty public constructor
@@ -70,6 +72,7 @@ public class SongList extends Fragment{
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
         try {
+            navigationControlInterface = (NavigationControlInterface) context;
             songListInterface = (SongListInterface) context;
         } catch (ClassCastException e){
             throw new ClassCastException(context.toString() + "must implement SongListInterface");
@@ -82,9 +85,9 @@ public class SongList extends Fragment{
         // Inflate the layout for this fragment
         view = inflater.inflate(R.layout.fragment_song_list, container, false);
 
-        MainActivity mainActivity =(MainActivity) requireActivity();
-        mainActivity.getSupportActionBar().setTitle("Tracklist");
-
+        navigationControlInterface.isDrawerEnabledListener(true);
+        navigationControlInterface.setHomeAsUpEnabled(false);
+        navigationControlInterface.setToolbarTitle("Tracklist");
 
         listView = view.findViewById(R.id.songList);
         listView.setLayoutAnimation(AnimationUtils.loadLayoutAnimation(requireContext(),R.anim.layout_animation_fall_down));

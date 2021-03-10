@@ -1,4 +1,4 @@
-package com.example.musicplayer.utils;
+package com.example.musicplayer.utils.tageditor;
 
 public class TagResolver {
     public static final int FRAME_TITLE = 0, FRAME_ARTIST = 1, FRAME_ALBUM = 2, FRAME_GENRE = 3, FRAME_YEAR = 4, FRAME_COMPOSER = 5, FRAME_TRACKID = 6, FRAME_APIC = 7;

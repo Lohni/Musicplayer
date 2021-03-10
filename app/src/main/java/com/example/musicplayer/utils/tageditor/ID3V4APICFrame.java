@@ -1,13 +1,8 @@
-package com.example.musicplayer.utils;
+package com.example.musicplayer.utils.tageditor;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.net.Uri;
-import android.util.Log;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 
 public class ID3V4APICFrame {
