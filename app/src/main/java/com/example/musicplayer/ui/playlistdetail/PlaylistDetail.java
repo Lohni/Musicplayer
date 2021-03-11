@@ -19,9 +19,14 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.transition.Explode;
+import android.transition.Slide;
 import android.util.DisplayMetrics;
 import android.util.TypedValue;
+import android.view.Gravity;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.AnimationUtils;
@@ -37,6 +42,7 @@ import com.example.musicplayer.adapter.SongListAdapter;
 import com.example.musicplayer.entities.MusicResolver;
 import com.example.musicplayer.ui.DatabaseViewmodel;
 import com.example.musicplayer.ui.playlist.PlaylistInterface;
+import com.example.musicplayer.utils.NavigationControlInterface;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.snackbar.BaseTransientBottomBar;
 import com.google.android.material.snackbar.Snackbar;
@@ -53,6 +59,7 @@ public class PlaylistDetail extends Fragment {
     private PlaylistDetailAdapter playlistDetailAdapter;
     private DatabaseViewmodel databaseViewmodel;
     private PlaylistInterface playlistInterface;
+    private NavigationControlInterface navigationControlInterface;
     private TextView title, info;
     private ConstraintLayout shuffle;
     private View snackbar_anchor;
@@ -71,16 +78,40 @@ public class PlaylistDetail extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setHasOptionsMenu(true);
     }
 
     @Override
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
         try {
+            navigationControlInterface = (NavigationControlInterface) context;
             playlistInterface = (PlaylistInterface) context;
         } catch (ClassCastException e){
             throw new ClassCastException(context.toString() + "must implement SongListInterface");
         }
+    }
+
+    @Override
+    public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
+        super.onCreateOptionsMenu(menu, inflater);
+        inflater.inflate(R.menu.playlist_detail_add, menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        if(item.getItemId()==R.id.action_playlist_detail_add){
+            PlaylistDetailAdd playlistDetailAdd = new PlaylistDetailAdd();
+            playlistDetailAdd.setTitle(title.getText().toString());
+
+            Slide anim = new Slide();
+            anim.setSlideEdge(Gravity.RIGHT);
+            anim.setDuration(200);
+
+            playlistDetailAdd.setEnterTransition(anim);
+            requireActivity().getSupportFragmentManager().beginTransaction().replace(R.id.nav_host_fragment,playlistDetailAdd,"FRAGMENT_PLAYLISTDETAILADD").addToBackStack(null).commit();
+        }
+        return super.onOptionsItemSelected(item);
     }
 
     @Override
@@ -96,21 +127,25 @@ public class PlaylistDetail extends Fragment {
         list.setHasFixedSize(true);
         list.setLayoutAnimation(AnimationUtils.loadLayoutAnimation(requireContext(),R.anim.layout_animation_fall_down));
 
+        navigationControlInterface.isDrawerEnabledListener(false);
+        navigationControlInterface.setHomeAsUpEnabled(true);
+        navigationControlInterface.setHomeAsUpIndicator(R.drawable.ic_baseline_arrow_back_24);
+        navigationControlInterface.setToolbarTitle("");
+
         trackList=new ArrayList<>();
         databaseViewmodel = new ViewModelProvider(requireActivity()).get(DatabaseViewmodel.class);
 
         databaseViewmodel.getTableName().observe(getViewLifecycleOwner(), table ->{
             this.table = table;
             title.setText(table);
-            info.setText(trackList.size()+" songs - 00:00");
+            info.setText(trackList.size()+ " songs - 00:00");
 
-            databaseViewmodel.fetchTableContent(table).observe(getViewLifecycleOwner(),trackList ->{
+            databaseViewmodel.fetchTableContent(table, requireContext()).observe(getViewLifecycleOwner(),trackList ->{
                 this.trackList.addAll(trackList);
                 playlistDetailAdapter.notifyDataSetChanged();
                 playlistInterface.OnPlaylistCreatedListener(this.trackList);
             });
         });
-
 
         layoutManager = new LinearLayoutManager(requireContext());
         list.setLayoutManager(layoutManager);
@@ -254,11 +289,5 @@ public class PlaylistDetail extends Fragment {
                 divider.draw(c);
             }
         }
-    }
-
-    @Override
-    public void onResume() {
-        super.onResume();
-        playlistInterface.OnPlaylistDetailResumeListener();
     }
 }

@@ -1,5 +1,4 @@
-package com.example.musicplayer.utils;
-
+package com.example.musicplayer.utils.tageditor;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
@@ -16,6 +15,12 @@ public class ID3V4FrameHeader {
         decodeHeader(header);
     }
 
+    public ID3V4FrameHeader(){
+        FRAME_SIZE = 0;
+        byte def = 0b0;
+        getFlags(def, def);
+    }
+
     private void decodeHeader(byte[] header){
         FRAME_ID = new String(Arrays.copyOfRange(header,0,4), StandardCharsets.ISO_8859_1);
         getSize(header[4], header[5],header[6],header[7]);
@@ -23,12 +28,12 @@ public class ID3V4FrameHeader {
     }
 
     private void getSize(byte size4, byte size3, byte size2, byte size1){
-        size4 = (byte) (size4 << 1);
-        size3 = (byte) (size3 << 1);
-        size2 = (byte) (size2 << 1);
-        size1 = (byte) (size1 << 1);
+        int b1 = size4 << 21;
+        int b2 = size3 << 14;
+        int b3 = size2 << 7;
+        int b4 = size1;
 
-        FRAME_SIZE = (int) (((size4) << 24) + ((size3) << 17) + ((size2) << 10) + ((size1) << 3) >> 4);
+        FRAME_SIZE = b1 + b2 + b3 + b4;
     }
 
     private void getFlags(byte statusFlag, byte formatFlag){
@@ -47,7 +52,7 @@ public class ID3V4FrameHeader {
     //Todo: return real values
     public byte[] toBytes(){
         byte[] header = new byte[10];
-        byte[] id = FRAME_ID.getBytes(StandardCharsets.ISO_8859_1);
+        byte[] id = FRAME_ID.getBytes(StandardCharsets.UTF_8);
         byte[] size = getEncodedSize();
         header[0] = id[0];
         header[1] = id[1];
@@ -82,5 +87,13 @@ public class ID3V4FrameHeader {
 
         byte syncByte0 = (byte) (((size[0] << 3) + overFlow1) & 0x7F);
         return new byte[] {syncByte0, syncByte1, syncByte2, syncByte3};
+    }
+
+    public void setNewFrameSize(int size){FRAME_SIZE = size;}
+
+    public boolean setFrameID(String id){
+        if (id.length() != 4)return false;
+        this.FRAME_ID = id;
+        return true;
     }
 }

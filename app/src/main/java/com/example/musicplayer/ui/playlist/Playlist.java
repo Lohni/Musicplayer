@@ -1,7 +1,9 @@
 package com.example.musicplayer.ui.playlist;
 
 
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Paint;
@@ -17,12 +19,17 @@ import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.text.InputType;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
 
 
 import com.example.musicplayer.MainActivity;
@@ -30,6 +37,7 @@ import com.example.musicplayer.R;
 import com.example.musicplayer.adapter.PlaylistAdapter;
 import com.example.musicplayer.ui.DatabaseViewmodel;
 import com.example.musicplayer.ui.playlistdetail.PlaylistDetail;
+import com.example.musicplayer.utils.NavigationControlInterface;
 import com.google.android.material.snackbar.BaseTransientBottomBar;
 import com.google.android.material.snackbar.Snackbar;
 
@@ -49,6 +57,7 @@ public class Playlist extends Fragment {
     private int playlistID, deleteID;
     private boolean undo=false, isSnackbarActive=false;
     private PlaylistInterface playlistInterface;
+    private NavigationControlInterface navigationControlInterface;
     private String deletedTrack, deletedSize;
     private ArrayList<String> playlist_list,playlist_size;
 
@@ -59,16 +68,52 @@ public class Playlist extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setHasOptionsMenu(true);
     }
 
     @Override
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
         try {
+            navigationControlInterface = (NavigationControlInterface) context;
             playlistInterface = (PlaylistInterface) context;
         } catch (ClassCastException e){
             throw new ClassCastException(context.toString() + "must implement SongListInterface");
         }
+    }
+
+    @Override
+    public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
+        super.onCreateOptionsMenu(menu, inflater);
+        inflater.inflate(R.menu.playlist_menu, menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        if(item.getItemId()==R.id.action_playlist_add){
+            AlertDialog.Builder builder = new AlertDialog.Builder(requireContext()).setTitle("New playlist");
+
+            final EditText input = new EditText(requireContext());
+            input.setInputType(InputType.TYPE_CLASS_TEXT);
+            builder.setView(input);
+
+            builder.setPositiveButton("Create", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    String newTable = input.getText().toString();
+                    databaseViewmodel.createNewTable(newTable);
+                }
+            });
+            builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    dialogInterface.cancel();
+                }
+            });
+            builder.show();
+        }
+
+        return super.onOptionsItemSelected(item);
     }
 
     @Override
@@ -80,8 +125,9 @@ public class Playlist extends Fragment {
         snackbar_anchor = view.findViewById(R.id.snackbar_anchor);
         playlist.setHasFixedSize(true);
 
-        MainActivity mainActivity =(MainActivity) requireActivity();
-        mainActivity.getSupportActionBar().setTitle("Playlist");
+        navigationControlInterface.setHomeAsUpEnabled(false);
+        navigationControlInterface.isDrawerEnabledListener(true);
+        navigationControlInterface.setToolbarTitle("Playlist");
 
         playlist_list=new ArrayList<>();
         playlist_size=new ArrayList<>();

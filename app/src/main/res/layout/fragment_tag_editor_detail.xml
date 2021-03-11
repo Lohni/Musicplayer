@@ -11,11 +11,25 @@
         android:id="@+id/tagEditorDetail_cover"
         android:layout_width="0dp"
         android:layout_height="0dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="8dp"
+        android:background="#EB2E4753"
         app:layout_constraintBottom_toTopOf="@+id/guideline"
         app:layout_constraintDimensionRatio="1:1"
         app:layout_constraintEnd_toStartOf="@+id/guideline7"
         app:layout_constraintStart_toStartOf="@+id/guideline6"
-        app:layout_constraintTop_toTopOf="@+id/guideline2" />
+        app:layout_constraintTop_toTopOf="parent"
+        android:clickable="true"
+        android:focusable="true" />
+
+    <View
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:background="#C4D5D5D5"
+        android:foreground="@drawable/ic_baseline_image_search_24"
+        android:foregroundTint="@color/colorPrimaryNight"
+        app:layout_constraintBottom_toBottomOf="@id/tagEditorDetail_cover"
+        app:layout_constraintRight_toRightOf="@id/tagEditorDetail_cover" />
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/guideline"
@@ -81,11 +95,8 @@
         android:layout_marginStart="8dp"
         android:layout_marginEnd="8dp"
         android:layout_marginBottom="4dp"
-        android:hint="Artist"
-        android:textColorHint="@color/edit_text"
+        android:textColorHint="@color/colorPrimaryLight"
         app:boxStrokeColor="@color/edit_text"
-        app:endIconTint="@color/colorSecondaryLight"
-        app:helperTextTextColor="#FFFFFF"
         app:layout_constraintBottom_toTopOf="@+id/guideline8"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
@@ -100,7 +111,7 @@
             android:layout_height="match_parent"
             android:hint="Artist"
             android:inputType="text"
-            android:textColor="@color/colorPrimaryLight" />
+            android:textColor="@color/colorTextLight" />
 
     </com.google.android.material.textfield.TextInputLayout>
 
@@ -127,7 +138,7 @@
             android:layout_height="match_parent"
             android:hint="Album"
             android:inputType="text"
-            android:textColor="@color/colorPrimaryLight" />
+            android:textColor="@color/colorTextLight" />
 
     </com.google.android.material.textfield.TextInputLayout>
 
@@ -152,7 +163,7 @@
             android:layout_height="match_parent"
             android:hint="Genre"
             android:inputType="text"
-            android:textColor="@color/colorPrimaryLight" />
+            android:textColor="@color/colorTextLight" />
 
     </com.google.android.material.textfield.TextInputLayout>
 
@@ -177,7 +188,7 @@
             android:layout_height="match_parent"
             android:hint="Date"
             android:inputType="date"
-            android:textColor="@color/colorPrimaryLight" />
+            android:textColor="@color/colorTextLight" />
 
     </com.google.android.material.textfield.TextInputLayout>
 
@@ -202,7 +213,7 @@
             android:layout_height="match_parent"
             android:hint="Composer"
             android:inputType="text"
-            android:textColor="@color/colorPrimaryLight" />
+            android:textColor="@color/colorTextLight" />
 
     </com.google.android.material.textfield.TextInputLayout>
 
@@ -227,7 +238,7 @@
             android:layout_height="match_parent"
             android:hint="Track Nr"
             android:inputType="number"
-            android:textColor="@color/colorPrimaryLight" />
+            android:textColor="@color/colorTextLight" />
 
     </com.google.android.material.textfield.TextInputLayout>
 
@@ -254,7 +265,7 @@
             android:layout_height="match_parent"
             android:hint="Title"
             android:inputType="text"
-            android:textColor="@color/colorPrimaryLight" />
+            android:textColor="@color/colorTextLight" />
 
     </com.google.android.material.textfield.TextInputLayout>
 

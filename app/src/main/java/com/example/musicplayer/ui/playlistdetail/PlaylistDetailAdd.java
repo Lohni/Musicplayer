@@ -21,6 +21,8 @@ import android.text.TextWatcher;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.AnimationUtils;
@@ -33,6 +35,7 @@ import com.example.musicplayer.R;
 import com.example.musicplayer.adapter.TrackSelectionAdapter;
 import com.example.musicplayer.entities.MusicResolver;
 import com.example.musicplayer.ui.playlist.PlaylistInterface;
+import com.example.musicplayer.utils.NavigationControlInterface;
 import com.google.android.material.datepicker.MaterialTextInputPicker;
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
 import com.google.android.material.textfield.TextInputEditText;
@@ -51,8 +54,10 @@ public class PlaylistDetailAdd extends Fragment {
     private TrackSelectionAdapter mAdapter;
     private ExtendedFloatingActionButton confirm;
     private PlaylistInterface playlistInterface;
+    private NavigationControlInterface navigationControlInterface;
     private boolean isFiltered=false;
     private int selectedCount = 0;
+    private String title = "";
 
     public PlaylistDetailAdd() {
         // Required empty public constructor
@@ -62,10 +67,16 @@ public class PlaylistDetailAdd extends Fragment {
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
         try {
+            navigationControlInterface = (NavigationControlInterface) context;
             playlistInterface = (PlaylistInterface) context;
         } catch (ClassCastException e){
             throw new ClassCastException(context.toString() + "must implement SongListInterface");
         }
+    }
+
+    @Override
+    public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
+        super.onCreateOptionsMenu(menu, inflater);
     }
 
     @Override
@@ -79,6 +90,11 @@ public class PlaylistDetailAdd extends Fragment {
         confirm.setVisibility(View.INVISIBLE);
         permission();
         trackList = new ArrayList<>();
+
+        navigationControlInterface.isDrawerEnabledListener(false);
+        navigationControlInterface.setHomeAsUpEnabled(true);
+        navigationControlInterface.setHomeAsUpIndicator(R.drawable.ic_clear_black_24dp);
+        navigationControlInterface.setToolbarTitle(title);
 
         selection.setLayoutAnimation(AnimationUtils.loadLayoutAnimation(requireContext(),R.anim.layout_animation_fall_down));
         PlaylistSelectorViewModel model = new ViewModelProvider(this).get(PlaylistSelectorViewModel.class);
@@ -96,7 +112,6 @@ public class PlaylistDetailAdd extends Fragment {
             } else {
                 mAdapter.notifyDataSetChanged();
             }
-            playlistInterface.OnTracklistLoadedListener();
         });
 
         selection.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -147,7 +162,7 @@ public class PlaylistDetailAdd extends Fragment {
         confirm.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                playlistInterface.OnAddSongsListener();
+                playlistInterface.OnAddSongsListener(getSelected(), title);
             }
         });
 
@@ -177,7 +192,7 @@ public class PlaylistDetailAdd extends Fragment {
         ActivityCompat.requestPermissions(requireActivity(), new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, PERMISSION_REQUEST_CODE);
     }
 
-    public ArrayList getSelected(){
+    public ArrayList<MusicResolver> getSelected(){
         ArrayList<MusicResolver> selected_tracks = new ArrayList<>();
         for(int i=0;i<trackList.size();i++){
             if (trackList.get(i).isSelected())selected_tracks.add(trackList.get(i));
@@ -189,4 +204,6 @@ public class PlaylistDetailAdd extends Fragment {
     public void onResume() {
         super.onResume();
     }
+
+    public void setTitle(String title){this.title = title; }
 }
