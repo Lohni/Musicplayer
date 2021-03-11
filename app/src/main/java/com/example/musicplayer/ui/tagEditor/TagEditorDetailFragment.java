@@ -31,8 +31,10 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 
 import com.example.musicplayer.R;
+import com.example.musicplayer.adapter.EqualizerViewPagerAdapter;
 import com.example.musicplayer.entities.MusicResolver;
 import com.example.musicplayer.utils.NavigationControlInterface;
+import com.example.musicplayer.utils.Permissions;
 import com.example.musicplayer.utils.tageditor.ID3Editor;
 import com.example.musicplayer.utils.tageditor.ID3EditorInterface;
 import com.example.musicplayer.utils.tageditor.ID3V4APICFrame;
@@ -98,8 +100,6 @@ public class TagEditorDetailFragment extends Fragment{
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_tag_editor_detail, container, false);
 
-        permission();
-
         title = view.findViewById(R.id.tagEditorDetail_title);
         artist = view.findViewById(R.id.tagEditorDetail_artist);
         album = view.findViewById(R.id.tagEditorDetail_album);
@@ -120,9 +120,19 @@ public class TagEditorDetailFragment extends Fragment{
         navigationControlInterface.setHomeAsUpEnabled(true);
         navigationControlInterface.setHomeAsUpIndicator(R.drawable.ic_clear_black_24dp);
 
-        getValues();
+        if (Permissions.permission(requireActivity(), this, android.Manifest.permission.WRITE_EXTERNAL_STORAGE)){
+            getValues();
+        }
 
         return view;
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED && permissions[0].equals(android.Manifest.permission.WRITE_EXTERNAL_STORAGE)){
+            getValues();
+        }
     }
 
     public void setTrack(MusicResolver track) {
@@ -204,24 +214,6 @@ public class TagEditorDetailFragment extends Fragment{
         } catch (IOException e) {
             e.printStackTrace();
         }
-    }
-
-    //Permission
-    private void permission(){
-        if (checkPermission()) {
-            Log.e("permission", "Permission WRITE_EXTERNAL_STORAGE already granted.");
-        } else {
-            requestPermission();
-        }
-    }
-
-    private boolean checkPermission() {
-        int result = ContextCompat.checkSelfPermission(requireActivity(), Manifest.permission.WRITE_EXTERNAL_STORAGE);
-        return result == PackageManager.PERMISSION_GRANTED;
-    }
-
-    private void requestPermission() {
-        ActivityCompat.requestPermissions(requireActivity(), new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, PERMISSION_REQUEST_CODE);
     }
 
     private void selectImageFromGallery(Context context){

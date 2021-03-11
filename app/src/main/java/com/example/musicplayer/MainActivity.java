@@ -43,6 +43,7 @@ import com.example.musicplayer.ui.tagEditor.TagEditorFragment;
 import com.example.musicplayer.ui.tagEditor.TagEditorInterface;
 import com.example.musicplayer.ui.views.PlaybackControlSeekbar;
 import com.example.musicplayer.utils.NavigationControlInterface;
+import com.example.musicplayer.utils.Permissions;
 import com.google.android.material.navigation.NavigationView;
 
 import java.util.ArrayList;
@@ -71,16 +72,13 @@ public class MainActivity extends AppCompatActivity implements SongListInterface
     DrawerLayout drawer;
     MusicService musicService;
     ArrayList<MusicResolver> songlist;
+
     private PlaybackControl playcontrol;
-    private PlaylistDetailAdd selectionFragment;
     private ExpandedPlaybackControl expandedPlaybackControl;
 
     private Equalizer equalizer;
 
     private DatabaseViewmodel databaseViewmodel;
-
-    private final int MENU_CONFIG_PLAYLIST=1, MENU_CONFIG_PLAYLIST_DETAIL=2, MENU_CONFIG_TRACK_SELECTOR=3, MENU_CONFIG_TAGEDITOR_DETAIL = 4;
-    private int actionbarMenuConfig = 0;
 
     private final String playlistDetail = "FRAGMENT_PLAYLISTDETAIL";
 
@@ -97,7 +95,13 @@ public class MainActivity extends AppCompatActivity implements SongListInterface
         loadPlayControl(playcontrol = new PlaybackControl());
         loadDashboard(new DashboardFragment());
 
-        permission();
+        Intent service = new Intent(this,MusicService.class);
+        if (Permissions.permission(this, Manifest.permission.RECORD_AUDIO)){
+            bindService(service, serviceConnection, Context.BIND_AUTO_CREATE);
+            startService(service);
+        }
+        //Permissions.permission(this, android.Manifest.permission.MODIFY_AUDIO_SETTINGS);
+        //Permissions.permission(this, android.Manifest.permission.WRITE_EXTERNAL_STORAGE);
 
         databaseViewmodel=new ViewModelProvider(this).get(DatabaseViewmodel.class);
 
@@ -156,11 +160,13 @@ public class MainActivity extends AppCompatActivity implements SongListInterface
     };
 
     @Override
-    protected void onStart() {
-        super.onStart();
-        Intent service = new Intent(this,MusicService.class);
-        bindService(service, serviceConnection, Context.BIND_AUTO_CREATE);
-        startService(service);
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED && permissions[0].equals(Manifest.permission.RECORD_AUDIO)){
+            Intent service = new Intent(this,MusicService.class);
+            bindService(service, serviceConnection, Context.BIND_AUTO_CREATE);
+            startService(service);
+        }
     }
 
     @Override
@@ -364,6 +370,7 @@ public class MainActivity extends AppCompatActivity implements SongListInterface
         onBackPressed();
     }
 
+    /*
     private void permission(){
         //if (Build.VERSION.SDK_INT >= 23) {
         //Check whether your app has access to the READ permission//
@@ -390,6 +397,7 @@ public class MainActivity extends AppCompatActivity implements SongListInterface
         ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.RECORD_AUDIO}, PERMISSION_REQUEST_CODE);
         ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, PERMISSION_REQUEST_CODE);
     }
+     */
 
     @Override
     public void onPresetReverbCreated(int id) {
@@ -400,16 +408,6 @@ public class MainActivity extends AppCompatActivity implements SongListInterface
     public void onTrackSelectedListener(MusicResolver musicResolver) {
         TagEditorDetailFragment tagEditorDetailFragment = new TagEditorDetailFragment();
         tagEditorDetailFragment.setTrack(musicResolver);
-
-        toggle.setDrawerIndicatorEnabled(false);
-        actionbarMenuConfig = MENU_CONFIG_TAGEDITOR_DETAIL;
-
-        Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
-        getSupportActionBar().setHomeAsUpIndicator(R.drawable.ic_clear_black_24dp);
-
-        getSupportActionBar().setTitle("");
-        invalidateOptionsMenu();
-
         getSupportFragmentManager().beginTransaction().replace(R.id.nav_host_fragment, tagEditorDetailFragment).addToBackStack(null).commit();
     }
 

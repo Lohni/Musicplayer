@@ -36,6 +36,7 @@ import com.example.musicplayer.R;
 import com.example.musicplayer.adapter.SongListAdapter;
 import com.example.musicplayer.entities.MusicResolver;
 import com.example.musicplayer.utils.NavigationControlInterface;
+import com.example.musicplayer.utils.Permissions;
 import com.google.android.material.textview.MaterialTextView;
 
 import java.util.ArrayList;
@@ -53,6 +54,7 @@ public class SongList extends Fragment{
     private View view;
     private Map<String,Integer> mapIndex;
     private SongListAdapter songListAdapter;
+    private ViewGroup container;
 
     private ArrayList<MusicResolver> songList = new ArrayList<>();
     private SongListInterface songListInterface;
@@ -84,21 +86,15 @@ public class SongList extends Fragment{
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         view = inflater.inflate(R.layout.fragment_song_list, container, false);
-
         navigationControlInterface.isDrawerEnabledListener(true);
         navigationControlInterface.setHomeAsUpEnabled(false);
         navigationControlInterface.setToolbarTitle("Tracklist");
-
         listView = view.findViewById(R.id.songList);
         listView.setLayoutAnimation(AnimationUtils.loadLayoutAnimation(requireContext(),R.anim.layout_animation_fall_down));
-        permission();
-        fetchSongList();
-
-        Collections.sort(songList, new Comparator<MusicResolver>(){
-            public int compare(MusicResolver a, MusicResolver b){
-                return a.getTitle().compareToIgnoreCase(b.getTitle());
-            }
-        });
+        this.container = container;
+        if (Permissions.permission(requireActivity(), this, Manifest.permission.READ_EXTERNAL_STORAGE)){
+            fetchSongList();
+        }
 
         songListAdapter = new SongListAdapter(getContext(),songList);
         listView.setAdapter(songListAdapter);
@@ -110,23 +106,20 @@ public class SongList extends Fragment{
             }
         });
 
-        songListInterface.OnSongListCreatedListener(songList);
         getIndexList();
-        displayIndex(container, getResources().getDisplayMetrics().heightPixels);
+        displayIndex(getResources().getDisplayMetrics().heightPixels);
         return view;
     }
 
-    private void permission(){
-        //if (Build.VERSION.SDK_INT >= 23) {
-        //Check whether your app has access to the READ permission//
-        if (checkPermission()) {
-            //If your app has access to the device’s storage, then print the following message to Android Studio’s Logcat//
-            Log.e("permission", "Permission already granted.");
-        } else {
-            //If your app doesn’t have permission to access external storage, then call requestPermission//
-            requestPermission();
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED && permissions[0].equals(android.Manifest.permission.READ_EXTERNAL_STORAGE)) {
+            fetchSongList();
+            songListAdapter.notifyDataSetChanged();
+            getIndexList();
+            displayIndex(getResources().getDisplayMetrics().heightPixels);
         }
-        //}
     }
 
     private void fetchSongList(){
@@ -153,22 +146,19 @@ public class SongList extends Fragment{
             }
             while (musicCursor.moveToNext());
         }
+
         if(musicCursor != null)musicCursor.close();
+        Collections.sort(songList, new Comparator<MusicResolver>(){
+            public int compare(MusicResolver a, MusicResolver b){
+                return a.getTitle().compareToIgnoreCase(b.getTitle());
+            }
+        });
+
+        songListInterface.OnSongListCreatedListener(songList);
+
     }
 
-    private boolean checkPermission() {
-        //Check for READ_EXTERNAL_STORAGE access, using ContextCompat.checkSelfPermission()//
-        int result = ContextCompat.checkSelfPermission(requireActivity(), Manifest.permission.READ_EXTERNAL_STORAGE);
-        //If the app does have this permission, then return true//
-        //If the app doesn’t have this permission, then return false//
-        return result == PackageManager.PERMISSION_GRANTED;
-    }
-
-    private void requestPermission() {
-        ActivityCompat.requestPermissions(requireActivity(), new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, PERMISSION_REQUEST_CODE);
-    }
-
-    private void displayIndex(ViewGroup container,int abs_heigt) {
+    private void displayIndex(int abs_heigt) {
         LinearLayout indexLayout = view.findViewById(R.id.side_index);
 
         float dip = 61f;
@@ -219,5 +209,4 @@ public class SongList extends Fragment{
                 mapIndex.put(index, i);
         }
     }
-
 }

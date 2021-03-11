@@ -1,6 +1,8 @@
 package com.example.musicplayer.ui.equalizer;
 
+import android.Manifest;
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.media.audiofx.Equalizer;
 import android.os.Bundle;
 
@@ -18,6 +20,7 @@ import android.view.ViewGroup;
 import com.example.musicplayer.R;
 import com.example.musicplayer.adapter.EqualizerViewPagerAdapter;
 import com.example.musicplayer.utils.NavigationControlInterface;
+import com.example.musicplayer.utils.Permissions;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
 
@@ -54,11 +57,15 @@ public class EqualizerViewPager extends Fragment {
         navigationControlInterface.isDrawerEnabledListener(true);
 
         viewPager2 = view.findViewById(R.id.eualizer_viewpager);
-        mAdapter = new EqualizerViewPagerAdapter(this,equalizer,audioSessionID);
-        viewPager2.setAdapter(mAdapter);
         viewPager2.setUserInputEnabled(false);
 
         TabLayout tabLayout = view.findViewById(R.id.equalizer_tablayout);
+
+        if (Permissions.permission(requireActivity(), this, Manifest.permission.MODIFY_AUDIO_SETTINGS)){
+            mAdapter = new EqualizerViewPagerAdapter(this,equalizer,audioSessionID);
+            viewPager2.setAdapter(mAdapter);
+        }
+
         new TabLayoutMediator(tabLayout, viewPager2, ((tab, position) -> {
             if (position == 0) {
                 tab.setText("Frequenzy");
@@ -78,5 +85,14 @@ public class EqualizerViewPager extends Fragment {
 
     public void setAudioSessionID(int id){
         audioSessionID = id;
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED && permissions[0].equals(Manifest.permission.MODIFY_AUDIO_SETTINGS)){
+            mAdapter = new EqualizerViewPagerAdapter(this,equalizer,audioSessionID);
+            viewPager2.setAdapter(mAdapter);
+        }
     }
 }

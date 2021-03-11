@@ -1,7 +1,9 @@
 package com.example.musicplayer.ui.tagEditor;
 
+import android.Manifest;
 import android.content.ContentResolver;
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
 import android.nfc.Tag;
@@ -26,6 +28,7 @@ import com.example.musicplayer.adapter.TagEditorAdapter;
 import com.example.musicplayer.entities.MusicResolver;
 import com.example.musicplayer.ui.playlist.PlaylistInterface;
 import com.example.musicplayer.utils.NavigationControlInterface;
+import com.example.musicplayer.utils.Permissions;
 
 import java.util.ArrayList;
 import java.util.concurrent.ExecutorService;
@@ -77,9 +80,19 @@ public class TagEditorFragment extends Fragment {
         tagList.setHasFixedSize(true);
         tagList.setLayoutManager(new LinearLayoutManager(requireContext()));
 
-        loadTrackList();
+        if (Permissions.permission(requireActivity(), this, Manifest.permission.READ_EXTERNAL_STORAGE)){
+            loadTrackList();
+        }
 
         return view;
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED && permissions[0].equals(android.Manifest.permission.READ_EXTERNAL_STORAGE)) {
+            loadTrackList();
+        }
     }
 
     private void loadTrackList(){
