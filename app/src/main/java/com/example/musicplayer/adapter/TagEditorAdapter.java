@@ -19,7 +19,6 @@ import com.example.musicplayer.entities.MusicResolver;
 import com.example.musicplayer.ui.tagEditor.TagEditorInterface;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 
 import androidx.annotation.NonNull;
 import androidx.core.content.res.ResourcesCompat;

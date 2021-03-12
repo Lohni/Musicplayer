@@ -10,7 +10,7 @@
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/shonglist_shuffle_container"
+        android:id="@+id/songlist_shuffle_container"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toTopOf="@id/songList"
         app:layout_constraintStart_toStartOf="parent"
@@ -67,17 +67,14 @@
         </androidx.constraintlayout.widget.ConstraintLayout>
     </FrameLayout>
 
-    <ListView
+    <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/songList"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:divider="@drawable/custom_divider"
-        android:dividerHeight="1dp"
-        android:scrollbarThumbVertical="@drawable/custom_scrollbar_thumb"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/shonglist_shuffle_container"
+        app:layout_constraintTop_toBottomOf="@id/songlist_shuffle_container"
         app:layout_constraintRight_toLeftOf="@id/side_index" />
 
     <LinearLayout
@@ -88,6 +85,6 @@
         android:orientation="vertical"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/shonglist_shuffle_container">
+        app:layout_constraintTop_toBottomOf="@id/songlist_shuffle_container">
     </LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

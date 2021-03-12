@@ -11,53 +11,45 @@ import android.widget.TextView;
 
 import com.example.musicplayer.R;
 import com.example.musicplayer.entities.MusicResolver;
+import com.example.musicplayer.ui.songlist.SongListInterface;
 
 import java.util.ArrayList;
 
-public class SongListAdapter extends BaseAdapter implements Filterable {
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.RecyclerView;
 
-    private ArrayList<MusicResolver> songList, mDisplayedValues;
-    private LayoutInflater layoutInflater;
+public class SongListAdapter extends RecyclerView.Adapter<SongListAdapter.ViewHolder>{
 
-    public SongListAdapter(Context c, ArrayList<MusicResolver> songList){
+    private ArrayList<MusicResolver> songList;
+    private SongListInterface songListInterface;
+
+
+    public SongListAdapter(Context c, ArrayList<MusicResolver> songList, SongListInterface songListInterface){
         this.songList=songList;
-        this.mDisplayedValues=songList;
-        layoutInflater=LayoutInflater.from(c);
+        this.songListInterface = songListInterface;
+    }
+
+    @NonNull
+    @Override
+    public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.songlist_item, parent, false);
+        return new SongListAdapter.ViewHolder(v);
     }
 
     @Override
-    public int getCount() {
-        return mDisplayedValues.size();
+    public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
+        MusicResolver track = songList.get(position);
+        holder.artist.setText(track.getArtist());
+        holder.title.setText(track.getTitle());
+        holder.itemView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                songListInterface.OnSongSelectedListener(position);
+            }
+        });
     }
 
-    @Override
-    public MusicResolver getItem(int i) {
-        return songList.get(i);
-    }
-
-    @Override
-    public long getItemId(int i) {
-        return 0;
-    }
-
-    @Override
-    public View getView(int i, View convertview, ViewGroup viewGroup) {
-        ViewHolder viewHolder = null;
-        View view = convertview;
-        if(view==null){
-            view=layoutInflater.inflate(R.layout.songlist_item,viewGroup,false);
-            viewHolder = new ViewHolder();
-
-            viewHolder.title = view.findViewById(R.id.song_title);
-            viewHolder.artist = view.findViewById(R.id.song_artist);
-            view.setTag(viewHolder);
-        } else viewHolder = (ViewHolder) view.getTag();
-
-        viewHolder.title.setText(mDisplayedValues.get(i).getTitle());
-        viewHolder.artist.setText(mDisplayedValues.get(i).getArtist());
-        return view;
-    }
-
+    /*
     @Override
     public Filter getFilter() {
         Filter filter = new Filter() {
@@ -99,7 +91,20 @@ public class SongListAdapter extends BaseAdapter implements Filterable {
         return filter;
     }
 
-    private class ViewHolder{
+     */
+
+    @Override
+    public int getItemCount() {
+        return songList.size();
+    }
+
+    public static class ViewHolder extends RecyclerView.ViewHolder{
         TextView title, artist;
+
+        public ViewHolder(@NonNull View itemView) {
+            super(itemView);
+            title = itemView.findViewById(R.id.song_title);
+            artist = itemView.findViewById(R.id.song_artist);
+        }
     }
 }

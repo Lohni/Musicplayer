@@ -7,6 +7,8 @@ import android.content.pm.PackageManager;
 import android.content.res.ColorStateList;
 import android.content.res.Resources;
 import android.database.Cursor;
+import android.graphics.Canvas;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -16,6 +18,8 @@ import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.provider.MediaStore;
 import android.util.DisplayMetrics;
@@ -23,6 +27,7 @@ import android.util.Log;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
@@ -51,7 +56,7 @@ import java.util.Objects;
 public class SongList extends Fragment{
     private static final int PERMISSION_REQUEST_CODE = 0x03;
 
-    private ListView listView;
+    private RecyclerView listView;
     private View view;
     private Map<String,Integer> mapIndex;
     private SongListAdapter songListAdapter;
@@ -100,15 +105,14 @@ public class SongList extends Fragment{
             fetchSongList();
         }
 
-        songListAdapter = new SongListAdapter(getContext(),songList);
+        songListAdapter = new SongListAdapter(getContext(),songList, songListInterface);
         listView.setAdapter(songListAdapter);
+        listView.setHasFixedSize(true);
+        listView.setLayoutManager(new LinearLayoutManager(requireContext()));
 
-        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                songListInterface.OnSongSelectedListener(i);
-            }
-        });
+        DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(requireContext(), R.drawable.recyclerview_divider);
+        listView.addItemDecoration(dividerItemDecoration);
+
         shuffle.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -194,7 +198,7 @@ public class SongList extends Fragment{
                 @Override
                 public void onClick(View view) {
                     TextView selectedIndex = (TextView) view;
-                    listView.setSelection(mapIndex.get(selectedIndex.getText()));
+                    listView.scrollToPosition(mapIndex.get(selectedIndex.getText()));
                 }
             });
             indexLayout.addView(textView);
@@ -220,4 +224,34 @@ public class SongList extends Fragment{
                 mapIndex.put(index, i);
         }
     }
+
+    private class DividerItemDecoration extends RecyclerView.ItemDecoration{
+
+        private Drawable divider;
+        private int paddingLeft, paddingRight;
+
+        public DividerItemDecoration(Context context, int resId) {
+            divider = ContextCompat.getDrawable(context, resId);
+            paddingLeft = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 16f, context.getResources().getDisplayMetrics());
+            paddingRight = paddingLeft;
+        }
+
+        @Override
+        public void onDraw(Canvas c, RecyclerView parent, RecyclerView.State state) {
+
+            int childCount = parent.getChildCount() - 1;
+            for (int i = 0; i < childCount; i++) {
+                View child = parent.getChildAt(i);
+
+                RecyclerView.LayoutParams params = (RecyclerView.LayoutParams) child.getLayoutParams();
+
+                int top = child.getBottom() + params.bottomMargin;
+                int bottom = top + divider.getIntrinsicHeight();
+
+                divider.setBounds(paddingLeft, top, parent.getWidth() - paddingRight, bottom);
+                divider.draw(c);
+            }
+        }
+    }
+
 }
