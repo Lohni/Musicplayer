@@ -87,4 +87,25 @@
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toBottomOf="@id/songlist_shuffle_container">
     </LinearLayout>
+
+    <FrameLayout
+        android:id="@+id/songlist_indexzoom_holder"
+        android:layout_width="64dp"
+        android:layout_height="64dp"
+        android:layout_marginEnd="16dp"
+        app:layout_constraintTop_toTopOf="@id/side_index"
+        app:layout_constraintBottom_toBottomOf="@id/side_index"
+        app:layout_constraintRight_toLeftOf="@id/side_index"
+        android:background="@drawable/circular_background"
+        android:alpha="1">
+        <TextView
+            android:id="@+id/songlist_indexzoom"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:textSize="25sp"
+            android:textColor="@color/colorPrimaryNight"
+            android:text="A"/>
+    </FrameLayout>
+
 </androidx.constraintlayout.widget.ConstraintLayout>

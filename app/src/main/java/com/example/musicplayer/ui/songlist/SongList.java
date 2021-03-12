@@ -1,6 +1,7 @@
 package com.example.musicplayer.ui.songlist;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.pm.PackageManager;
@@ -33,6 +34,7 @@ import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 import android.view.animation.AnimationUtils;
 import android.widget.AdapterView;
+import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -57,6 +59,7 @@ public class SongList extends Fragment{
     private static final int PERMISSION_REQUEST_CODE = 0x03;
 
     private RecyclerView listView;
+    private LinearLayoutManager listViewManager;
     private View view;
     private Map<String,Integer> mapIndex;
     private SongListAdapter songListAdapter;
@@ -65,7 +68,8 @@ public class SongList extends Fragment{
     private ArrayList<MusicResolver> songList = new ArrayList<>();
     private SongListInterface songListInterface;
     private NavigationControlInterface navigationControlInterface;
-    private TextView shuffle_size;
+    private TextView shuffle_size, indexZoom;
+    private FrameLayout indexZoomHolder;
 
     public SongList() {
         // Required empty public constructor
@@ -99,7 +103,10 @@ public class SongList extends Fragment{
         listView = view.findViewById(R.id.songList);
         shuffle = view.findViewById(R.id.songlist_shuffle);
         shuffle_size = view.findViewById(R.id.songlist_size);
+        indexZoomHolder = view.findViewById(R.id.songlist_indexzoom_holder);
+        indexZoom = view.findViewById(R.id.songlist_indexzoom);
 
+        indexZoomHolder.setVisibility(View.GONE);
         listView.setLayoutAnimation(AnimationUtils.loadLayoutAnimation(requireContext(),R.anim.layout_animation_fall_down));
         if (Permissions.permission(requireActivity(), this, Manifest.permission.READ_EXTERNAL_STORAGE)){
             fetchSongList();
@@ -108,7 +115,8 @@ public class SongList extends Fragment{
         songListAdapter = new SongListAdapter(getContext(),songList, songListInterface);
         listView.setAdapter(songListAdapter);
         listView.setHasFixedSize(true);
-        listView.setLayoutManager(new LinearLayoutManager(requireContext()));
+        listViewManager = new LinearLayoutManager(requireContext());
+        listView.setLayoutManager(listViewManager);
 
         DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(requireContext(), R.drawable.recyclerview_divider);
         listView.addItemDecoration(dividerItemDecoration);
@@ -173,7 +181,30 @@ public class SongList extends Fragment{
     }
 
     private void displayIndex(int abs_heigt) {
-        LinearLayout indexLayout = view.findViewById(R.id.side_index);
+        LinearLayout linearLayout = view.findViewById(R.id.side_index);
+        LinearLayout indexLayout = new LinearLayout(requireActivity()){
+            @Override
+            public boolean dispatchTouchEvent(MotionEvent ev) {
+                int x = Math.round(ev.getX());
+                int y = Math.round(ev.getY());
+                for (int i=0; i<getChildCount(); i++){
+                    TextView child = (TextView) getChildAt(i);
+                    if(x > child.getLeft() && x < child.getRight() && y > child.getTop() && y < child.getBottom()){
+                        child.callOnClick();
+                        //touch is within this child
+                        if(ev.getAction() == MotionEvent.ACTION_UP){
+                            indexZoomHolder.setVisibility(View.GONE);
+                        }
+                    }
+                }
+                if(!(x > getLeft() && x < getRight() && y > getTop() && y < getBottom())){
+                    //Touch is out if Layout
+                    indexZoomHolder.setVisibility(View.GONE);
+                }
+                return true;
+            }
+        };
+        indexLayout.setOrientation(LinearLayout.VERTICAL);
 
         float dip = 61f;
         Resources r = getResources();
@@ -193,16 +224,20 @@ public class SongList extends Fragment{
             textView.setTextSize(textsize);
             textView.setTextColor(ContextCompat.getColor(requireContext(), R.color.colorTextLight));
             textView.setText(index);
+            textView.setFocusable(false);
             textView.setGravity(Gravity.CENTER);
             textView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
+                    indexZoomHolder.setVisibility(View.VISIBLE);
                     TextView selectedIndex = (TextView) view;
-                    listView.scrollToPosition(mapIndex.get(selectedIndex.getText()));
+                    indexZoom.setText(selectedIndex.getText().subSequence(0,1));
+                    listViewManager.scrollToPositionWithOffset(mapIndex.get(selectedIndex.getText()), 0);
                 }
             });
             indexLayout.addView(textView);
         }
+        linearLayout.addView(indexLayout);
     }
 
     private void getIndexList() {
