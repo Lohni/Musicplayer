@@ -203,7 +203,13 @@ public class MainActivity extends AppCompatActivity implements SongListInterface
         }
     };
 
-    //Interfaces
+    /*
+    Interfaces
+     */
+
+    /*
+    SongListInterface
+     */
     @Override
     public void OnSongListCreatedListener(ArrayList<MusicResolver> songList) {
         musicService.setSonglist(songList);
@@ -217,6 +223,18 @@ public class MainActivity extends AppCompatActivity implements SongListInterface
         else expandedPlaybackControl.setControlButton(isOnPause);
     }
 
+    @Override
+    public void OnSonglistShuffleClickListener() {
+        isOnPause=false;
+        musicService.setShuffle(true);
+        musicService.shuffle();
+        if(!isExpanded)playcontrol.setControlButton(isOnPause);
+        else expandedPlaybackControl.setControlButton(isOnPause);
+    }
+
+    /*
+
+     */
     @Override
     public void OnStateChangeListener() {
         if(isOnPause){

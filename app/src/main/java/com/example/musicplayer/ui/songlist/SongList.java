@@ -4,6 +4,7 @@ import android.Manifest;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.content.res.ColorStateList;
 import android.content.res.Resources;
 import android.database.Cursor;
 import android.net.Uri;
@@ -54,11 +55,12 @@ public class SongList extends Fragment{
     private View view;
     private Map<String,Integer> mapIndex;
     private SongListAdapter songListAdapter;
-    private ViewGroup container;
+    private ConstraintLayout shuffle;
 
     private ArrayList<MusicResolver> songList = new ArrayList<>();
     private SongListInterface songListInterface;
     private NavigationControlInterface navigationControlInterface;
+    private TextView shuffle_size;
 
     public SongList() {
         // Required empty public constructor
@@ -90,8 +92,10 @@ public class SongList extends Fragment{
         navigationControlInterface.setHomeAsUpEnabled(false);
         navigationControlInterface.setToolbarTitle("Tracklist");
         listView = view.findViewById(R.id.songList);
+        shuffle = view.findViewById(R.id.songlist_shuffle);
+        shuffle_size = view.findViewById(R.id.songlist_size);
+
         listView.setLayoutAnimation(AnimationUtils.loadLayoutAnimation(requireContext(),R.anim.layout_animation_fall_down));
-        this.container = container;
         if (Permissions.permission(requireActivity(), this, Manifest.permission.READ_EXTERNAL_STORAGE)){
             fetchSongList();
         }
@@ -103,6 +107,12 @@ public class SongList extends Fragment{
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 songListInterface.OnSongSelectedListener(i);
+            }
+        });
+        shuffle.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                songListInterface.OnSonglistShuffleClickListener();
             }
         });
 
@@ -155,7 +165,7 @@ public class SongList extends Fragment{
         });
 
         songListInterface.OnSongListCreatedListener(songList);
-
+        shuffle_size.setText(songList.size() + " Songs");
     }
 
     private void displayIndex(int abs_heigt) {
@@ -177,6 +187,7 @@ public class SongList extends Fragment{
         for (String index : indexList) {
             textView = new MaterialTextView(requireActivity());
             textView.setTextSize(textsize);
+            textView.setTextColor(ContextCompat.getColor(requireContext(), R.color.colorTextLight));
             textView.setText(index);
             textView.setGravity(Gravity.CENTER);
             textView.setOnClickListener(new View.OnClickListener() {

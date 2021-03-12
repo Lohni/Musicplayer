@@ -31,11 +31,11 @@
                 android:layout_width="30dp"
                 android:layout_height="30dp"
                 android:layout_marginEnd="8dp"
-                android:tint="@color/colorTextLight"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toStartOf="@id/playlistdetail_shuffle_text"
                 app:layout_constraintTop_toTopOf="parent"
-                app:srcCompat="@drawable/ic_shuffle_black_24dp" />
+                app:srcCompat="@drawable/ic_shuffle_black_24dp"
+                app:tint="@color/colorTextLight" />
 
             <TextView
                 android:id="@+id/playlistdetail_shuffle_text"
