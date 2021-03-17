@@ -45,6 +45,7 @@ import com.example.musicplayer.ui.views.PlaybackControlSeekbar;
 import com.example.musicplayer.utils.NavigationControlInterface;
 import com.example.musicplayer.utils.Permissions;
 import com.google.android.material.navigation.NavigationView;
+import com.google.android.material.transition.platform.MaterialContainerTransform;
 
 import java.util.ArrayList;
 import java.util.Objects;
@@ -350,7 +351,9 @@ public class MainActivity extends AppCompatActivity implements SongListInterface
 
     @Override
     public void OnClickListener(String table, View view) {
-        getSupportFragmentManager().beginTransaction().replace(R.id.nav_host_fragment, new PlaylistDetail(), playlistDetail).addToBackStack(null).commit();
+        PlaylistDetail playlistDetailFragment = new PlaylistDetail();
+
+        getSupportFragmentManager().beginTransaction().replace(R.id.nav_host_fragment, playlistDetailFragment, playlistDetail).addToBackStack(null).commit();
         databaseViewmodel.setTableName(table);
     }
 

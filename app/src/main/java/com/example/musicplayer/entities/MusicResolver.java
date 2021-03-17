@@ -1,7 +1,7 @@
 package com.example.musicplayer.entities;
 
 public class MusicResolver {
-    private long id, album_id;
+    private long id, album_id, duration=0;
     private String artist,title;
 
     private boolean isSelected;
@@ -54,4 +54,8 @@ public class MusicResolver {
     public void setSelected(boolean selected) {
         isSelected = selected;
     }
+
+    public void setDuration(long duration){this.duration = duration;}
+
+    public long getDuration(){return duration;}
 }

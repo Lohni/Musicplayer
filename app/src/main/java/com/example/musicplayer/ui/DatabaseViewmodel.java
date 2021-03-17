@@ -4,6 +4,8 @@ import android.app.Application;
 import android.content.ContentUris;
 import android.content.Context;
 import android.database.Cursor;
+import android.media.MediaMetadata;
+import android.media.MediaMetadataRetriever;
 import android.net.Uri;
 import android.provider.MediaStore;
 import android.widget.Toast;
@@ -66,7 +68,7 @@ public class DatabaseViewmodel extends AndroidViewModel {
 
     public void addTableEntries(String table, ArrayList<MusicResolver> entries){
         for(int i=0;i<entries.size();i++){
-            mDatabase.addNew(entries.get(i).getTitle(),entries.get(i).getArtist(),entries.get(i).getId(),entries.get(i).getAlbum_id(),table);
+            mDatabase.addNew(entries.get(i).getId(), table);
         }
         tableContent.setValue(entries);
     }
@@ -81,6 +83,14 @@ public class DatabaseViewmodel extends AndroidViewModel {
         }
     }
 
+    public boolean renameTable(String oldName, String newName){
+        return mDatabase.renameTable(newName, oldName);
+    }
+
+    public void switchPosition(String table, long[] newOrder){
+        mDatabase.switchPostition(table, newOrder);
+    }
+
     //Database Methods
     private boolean setNewTable(String table){
         boolean state = mDatabase.newTable(table);
@@ -88,8 +98,9 @@ public class DatabaseViewmodel extends AndroidViewModel {
         return state;
     }
 
+
     private void getTableContent(String table, Context context){
-        Cursor cursor = mDatabase.getListContents(table);
+        Cursor cursor = mDatabase.getContentOrderByPosition(table);
         tableContent = new MutableLiveData<>();
         ArrayList<MusicResolver> contents = new ArrayList<>();
         while(cursor.moveToNext()){
@@ -105,7 +116,12 @@ public class DatabaseViewmodel extends AndroidViewModel {
                         (android.provider.MediaStore.Audio.Media.ARTIST);
                 int albumid = songCursor.getColumnIndex(MediaStore.Audio.Media.ALBUM_ID);
 
-                contents.add(new MusicResolver(songCursor.getLong(idColumn), songCursor.getLong(albumid), songCursor.getString(artistColumn), songCursor.getString(titleColumn)));
+                MediaMetadataRetriever mmr = new MediaMetadataRetriever();
+                mmr.setDataSource(context, trackUri);
+
+                MusicResolver track = new MusicResolver(songCursor.getLong(idColumn), songCursor.getLong(albumid), songCursor.getString(artistColumn), songCursor.getString(titleColumn));
+                track.setDuration(Long.parseLong(mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)));
+                contents.add(track);
                 tableContent.setValue(contents);
             }
         }
