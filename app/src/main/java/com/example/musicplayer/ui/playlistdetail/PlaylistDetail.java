@@ -1,9 +1,12 @@
 package com.example.musicplayer.ui.playlistdetail;
 
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
@@ -18,6 +21,7 @@ import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.text.InputType;
 import android.transition.Explode;
 import android.transition.Slide;
 import android.util.DisplayMetrics;
@@ -31,6 +35,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.AnimationUtils;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -46,12 +51,14 @@ import com.example.musicplayer.utils.NavigationControlInterface;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.snackbar.BaseTransientBottomBar;
 import com.google.android.material.snackbar.Snackbar;
+import com.google.android.material.transition.MaterialContainerTransform;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Objects;
 
 
-public class PlaylistDetail extends Fragment {
+public class PlaylistDetail extends Fragment implements OnStartDragListener {
 
     private ArrayList<MusicResolver> trackList;
     private RecyclerView list;
@@ -60,16 +67,17 @@ public class PlaylistDetail extends Fragment {
     private DatabaseViewmodel databaseViewmodel;
     private PlaylistInterface playlistInterface;
     private NavigationControlInterface navigationControlInterface;
-    private TextView title, info;
+    private TextView info;
     private ConstraintLayout shuffle;
     private View snackbar_anchor;
     private Snackbar snackbar;
+    private ItemTouchHelper itemTouchhelper;
     private boolean isSnackbarActive = false, undo = false, isSecondDelete=false;
 
     private String table;
 
     private int deleteID, oldDeleteID=-1;
-    private MusicResolver deletedSong, newDeleteSong;
+    private MusicResolver deletedSong;
 
     public PlaylistDetail() {
         // Required empty public constructor
@@ -102,7 +110,7 @@ public class PlaylistDetail extends Fragment {
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         if(item.getItemId()==R.id.action_playlist_detail_add){
             PlaylistDetailAdd playlistDetailAdd = new PlaylistDetailAdd();
-            playlistDetailAdd.setTitle(title.getText().toString());
+            playlistDetailAdd.setTitle(table);
 
             Slide anim = new Slide();
             anim.setSlideEdge(Gravity.RIGHT);
@@ -110,6 +118,35 @@ public class PlaylistDetail extends Fragment {
 
             playlistDetailAdd.setEnterTransition(anim);
             requireActivity().getSupportFragmentManager().beginTransaction().replace(R.id.nav_host_fragment,playlistDetailAdd,"FRAGMENT_PLAYLISTDETAILADD").addToBackStack(null).commit();
+        } else if (item.getItemId() == R.id.action_playlist_detail_edit){
+            AlertDialog.Builder builder = new AlertDialog.Builder(requireContext()).setTitle("Rename playlist");
+
+            final EditText input = new EditText(requireContext());
+            input.setInputType(InputType.TYPE_CLASS_TEXT);
+            input.setText(table);
+            builder.setView(input);
+
+            builder.setPositiveButton("Rename", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    String newTable = input.getText().toString();
+                    boolean result = databaseViewmodel.renameTable(table, input.getText().toString());
+                    if (result){
+                        table = newTable;
+                        navigationControlInterface.setToolbarTitle(newTable);
+                        Toast.makeText(requireContext(), "Renamed playlist to: " + newTable, Toast.LENGTH_SHORT).show();
+                    } else {
+                        Toast.makeText(requireContext(), "Failed to rename playlist", Toast.LENGTH_SHORT).show();
+                    }
+                }
+            });
+            builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    dialogInterface.cancel();
+                }
+            });
+            builder.show();
         }
         return super.onOptionsItemSelected(item);
     }
@@ -121,7 +158,6 @@ public class PlaylistDetail extends Fragment {
         View view = inflater.inflate(R.layout.fragment_playlist_detail, container, false);
         list= view.findViewById(R.id.playlistdetail_list);
         snackbar_anchor = view.findViewById(R.id.playlist_detail_snackbar_anchor);
-        title = view.findViewById(R.id.playlistdetail_title);
         info = view.findViewById(R.id.playlistdetail_duration);
         shuffle = (ConstraintLayout) view.findViewById(R.id.playlistdetail_shuffle);
         list.setHasFixedSize(true);
@@ -130,20 +166,24 @@ public class PlaylistDetail extends Fragment {
         navigationControlInterface.isDrawerEnabledListener(false);
         navigationControlInterface.setHomeAsUpEnabled(true);
         navigationControlInterface.setHomeAsUpIndicator(R.drawable.ic_baseline_arrow_back_24);
-        navigationControlInterface.setToolbarTitle("");
 
         trackList=new ArrayList<>();
         databaseViewmodel = new ViewModelProvider(requireActivity()).get(DatabaseViewmodel.class);
 
         databaseViewmodel.getTableName().observe(getViewLifecycleOwner(), table ->{
             this.table = table;
-            title.setText(table);
-            info.setText(trackList.size()+ " songs - 00:00");
+            navigationControlInterface.setToolbarTitle(table);
 
             databaseViewmodel.fetchTableContent(table, requireContext()).observe(getViewLifecycleOwner(),trackList ->{
                 this.trackList.addAll(trackList);
                 playlistDetailAdapter.notifyDataSetChanged();
                 playlistInterface.OnPlaylistCreatedListener(this.trackList);
+
+                long duration =0;
+                for (int i = 0; i<trackList.size();i++){
+                    duration += trackList.get(i).getDuration();
+                }
+                info.setText(trackList.size()+ " songs - " + convertTime(duration));
             });
         });
 
@@ -152,14 +192,32 @@ public class PlaylistDetail extends Fragment {
 
         DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(requireContext(), R.drawable.recyclerview_divider);
         list.addItemDecoration(dividerItemDecoration);
-        list.setAdapter(playlistDetailAdapter=new PlaylistDetailAdapter(this.trackList,playlistInterface));
+        list.setAdapter(playlistDetailAdapter=new PlaylistDetailAdapter(requireContext(), this.trackList,playlistInterface, this));
         Paint p = new Paint();
         p.setColor(ContextCompat.getColor(requireContext(), R.color.colorSecondary));
         Bitmap icon = getBitmapFromVectorDrawable(requireContext(),R.drawable.ic_delete_sweep_black_24dp);
 
-        ItemTouchHelper.SimpleCallback simpleCallback = new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT) {
+        ItemTouchHelper.SimpleCallback simpleCallback = new ItemTouchHelper.SimpleCallback(ItemTouchHelper.UP | ItemTouchHelper.DOWN, ItemTouchHelper.LEFT) {
             @Override
             public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, @NonNull RecyclerView.ViewHolder target) {
+                int fromPosition = viewHolder.getAdapterPosition();
+                int toPosition = target.getAdapterPosition();
+                if (fromPosition < toPosition) {
+                    for (int i = fromPosition; i < toPosition; i++) {
+                        Collections.swap(trackList, i, i + 1);
+                    }
+                } else {
+                    for (int i = fromPosition; i > toPosition; i--) {
+                        Collections.swap(trackList, i, i - 1);
+                    }
+                }
+
+                playlistDetailAdapter.notifyItemMoved(fromPosition, toPosition);
+                long[] order = new long[trackList.size()];
+                for (int i = 0; i<order.length; i++){
+                    order[i] = trackList.get(i).getId();
+                }
+                databaseViewmodel.switchPosition(table, order);
                 return false;
             }
 
@@ -179,8 +237,13 @@ public class PlaylistDetail extends Fragment {
             }
 
             @Override
-            public void onChildDraw(@NonNull Canvas c, @NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, float dX, float dY, int actionState, boolean isCurrentlyActive) {
+            public boolean isLongPressDragEnabled() {
+                return true;
+                //return super.isLongPressDragEnabled();
+            }
 
+            @Override
+            public void onChildDraw(@NonNull Canvas c, @NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, float dX, float dY, int actionState, boolean isCurrentlyActive) {
                 if(actionState==ItemTouchHelper.ACTION_STATE_SWIPE){
                     View itemView = viewHolder.itemView;
                     int id = viewHolder.getAdapterPosition();
@@ -188,6 +251,8 @@ public class PlaylistDetail extends Fragment {
                     if(dX<0){
                         c.drawRect((float) itemView.getRight() + dX, (float) itemView.getTop(),
                                 (float) itemView.getRight(), (float) itemView.getBottom(), p);
+
+
                         if (-dX>icon.getWidth()*2){
                             c.drawBitmap(icon,(float) itemView.getRight() - convertDpToPx(16) - icon.getWidth(),
                                     (float) itemView.getTop() + ((float) itemView.getBottom() - (float) itemView.getTop() - icon.getHeight())/2,
@@ -205,8 +270,8 @@ public class PlaylistDetail extends Fragment {
             }
         });
 
-        ItemTouchHelper itemTouchHelper = new ItemTouchHelper(simpleCallback);
-        itemTouchHelper.attachToRecyclerView(list);
+        itemTouchhelper = new ItemTouchHelper(simpleCallback);
+        itemTouchhelper.attachToRecyclerView(list);
         return view;
     }
 
@@ -261,6 +326,23 @@ public class PlaylistDetail extends Fragment {
     }
 
     public String getTable(){return table;}
+
+    private String convertTime(long duration){
+        float d = (float)duration /(1000*60);
+        int min = (int)d;
+        float seconds = (d - min)*60;
+        int sec = (int)seconds;
+        String minute=min+"", second=sec+"";
+        if(min<10) minute="0"+minute;
+        if(sec<10) second="0"+second;
+        return minute + ":" + second;
+    }
+
+    @Override
+    public void onStartDrag(PlaylistDetailAdapter.ViewHolder viewHolder) {
+        itemTouchhelper.startDrag(viewHolder);
+    }
+
 
     private class DividerItemDecoration extends RecyclerView.ItemDecoration{
 

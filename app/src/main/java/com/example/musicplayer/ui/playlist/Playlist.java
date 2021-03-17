@@ -1,6 +1,7 @@
 package com.example.musicplayer.ui.playlist;
 
 
+import android.Manifest;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -11,6 +12,7 @@ import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
@@ -38,8 +40,11 @@ import com.example.musicplayer.adapter.PlaylistAdapter;
 import com.example.musicplayer.ui.DatabaseViewmodel;
 import com.example.musicplayer.ui.playlistdetail.PlaylistDetail;
 import com.example.musicplayer.utils.NavigationControlInterface;
+import com.example.musicplayer.utils.Permissions;
 import com.google.android.material.snackbar.BaseTransientBottomBar;
 import com.google.android.material.snackbar.Snackbar;
+import com.google.android.material.transition.MaterialContainerTransform;
+import com.google.android.material.transition.MaterialElevationScale;
 
 import java.util.ArrayList;
 
@@ -69,6 +74,8 @@ public class Playlist extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
+        setExitTransition(new MaterialElevationScale(false));
+        setReenterTransition(new MaterialElevationScale(true));
     }
 
     @Override
@@ -128,6 +135,8 @@ public class Playlist extends Fragment {
         navigationControlInterface.setHomeAsUpEnabled(false);
         navigationControlInterface.isDrawerEnabledListener(true);
         navigationControlInterface.setToolbarTitle("Playlist");
+
+        Permissions.permission(requireActivity(), this, Manifest.permission.READ_EXTERNAL_STORAGE);
 
         playlist_list=new ArrayList<>();
         playlist_size=new ArrayList<>();
@@ -232,6 +241,16 @@ public class Playlist extends Fragment {
         return view;
     }
 
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        postponeEnterTransition();
+        ((ViewGroup) view.getParent()).getViewTreeObserver()
+                .addOnPreDrawListener(() -> {
+                    startPostponedEnterTransition();
+                    return true;
+                });
+    }
 
     @Override
     public void onResume() {

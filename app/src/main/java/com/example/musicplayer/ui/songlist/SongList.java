@@ -76,12 +76,6 @@ public class SongList extends Fragment{
     }
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-
-    }
-
-    @Override
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
         try {
@@ -112,7 +106,7 @@ public class SongList extends Fragment{
             fetchSongList();
         }
 
-        songListAdapter = new SongListAdapter(getContext(),songList, songListInterface);
+        songListAdapter = new SongListAdapter(requireContext(),songList, songListInterface);
         listView.setAdapter(songListAdapter);
         listView.setHasFixedSize(true);
         listViewManager = new LinearLayoutManager(requireContext());
