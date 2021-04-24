@@ -1,0 +1,140 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 1,
+    "identityHash": "53a747447f9bcf03a6331f2ebc7167e8",
+    "entities": [
+      {
+        "tableName": "ReverbSettings",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`preset_id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `reverb_preset_name` TEXT NOT NULL, `isSelected` INTEGER NOT NULL DEFAULT 0, `masterLevel` INTEGER NOT NULL, `roomHFLevel` INTEGER NOT NULL, `reverbLevel` INTEGER NOT NULL, `reverbDelay` INTEGER NOT NULL, `reflectionLevel` INTEGER NOT NULL, `reflectionDelay` INTEGER NOT NULL, `diffusion` INTEGER NOT NULL, `density` INTEGER NOT NULL, `decayHFRatio` INTEGER NOT NULL, `decayTime` INTEGER NOT NULL)",
+        "fields": [
+          {
+            "fieldPath": "preset_id",
+            "columnName": "preset_id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "reverb_preset_name",
+            "columnName": "reverb_preset_name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "isSelected",
+            "columnName": "isSelected",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "0"
+          },
+          {
+            "fieldPath": "masterLevel",
+            "columnName": "masterLevel",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "roomHFLevel",
+            "columnName": "roomHFLevel",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "reverbLevel",
+            "columnName": "reverbLevel",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "reverbDelay",
+            "columnName": "reverbDelay",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "reflectionLevel",
+            "columnName": "reflectionLevel",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "reflectionDelay",
+            "columnName": "reflectionDelay",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "diffusion",
+            "columnName": "diffusion",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "density",
+            "columnName": "density",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "decayHFRatio",
+            "columnName": "decayHFRatio",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "decayTime",
+            "columnName": "decayTime",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "columnNames": [
+            "preset_id"
+          ],
+          "autoGenerate": true
+        },
+        "indices": [],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "EqualizerSettings",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`equalizer_id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `equalizer_preset_name` TEXT NOT NULL, `isSelected` INTEGER NOT NULL DEFAULT 0)",
+        "fields": [
+          {
+            "fieldPath": "equalizer_id",
+            "columnName": "equalizer_id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "equalizer_preset_name",
+            "columnName": "equalizer_preset_name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "isSelected",
+            "columnName": "isSelected",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "0"
+          }
+        ],
+        "primaryKey": {
+          "columnNames": [
+            "equalizer_id"
+          ],
+          "autoGenerate": true
+        },
+        "indices": [],
+        "foreignKeys": []
+      }
+    ],
+    "views": [],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '53a747447f9bcf03a6331f2ebc7167e8')"
+    ]
+  }
+}

@@ -27,5 +27,32 @@
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
 
+    <!-- Equalizer Fragment -->
+    <string name="equalizer_presetSelectionHint">Preset</string>
 
+    <!-- Reverb info text -->
+    <string name="reverb_delay">Sets the time between the first reflection and the reverberation.</string>
+    <string name="reverb_hflevel">Sets the volume level at 5 kHz relative to the volume level at low frequencies of the overall reverb effect. This controls a low-pass filter that will reduce the level of the high-frequency.</string>
+    <string name="reverb_level">Sets the volume level of the late reverberation. This level is combined with the overall room level.</string>
+    <string name="reflection_level">This parameter sets the level of the first group of echoes that occurs when sound waves hit walls, ceilings, etc. These reflections tend to be more defined and sound more like “echo” than “reverb.” Lowering the early reflections level also places the listener further back in the room, and more toward the middle.</string>
+    <string name="reflection_delay">Simulates the amount of time it takes for a sound to leave its sound source and create a first reflection. Increase to give the feeling of a bigger space.</string>
+    <string name="reflection_density">Lower densities give more space between the reverb’s first reflections and subsequent reflections. A lower density creates a hollow sound that is useful for simulating small reverberation spaces such as bathrooms.</string>
+    <string name="reflection_diffusion">Increasing diffusion puts reflections closer together, thickening the sound. Reducing diffusion creates more discrete echoes. Sets the echo density in the late reverberation decay. The scale should approximately map linearly to the perceived change in reverberation.</string>
+    <string name="decay_time">This determines how long it takes for the reflections in the room to run out of energy. Sets the time taken for the level of reverberation to decay by 60 dB.</string>
+    <string name="decay_hfratio">With reverbs having separate decay times for high and low frequencies, this sets the decay of high frequencies. A longer high frequency decay gives a brighter, more ethereal type of reverb that can sound great on vocals as it adds more reverb to sibilants and fricatives, while minimizing reverb on plosives and lower vocal ranges. Sets the ratio of high frequency decay time (at 5 kHz) relative to the decay time at low frequencies.</string>
+    <string name="reverb_master">Represents the size of the room where the reverb is created. Larger sizes typically correlate to longer reverb times, vary this parameter in conjunction with decay time for a smoother sound.
+    Sets the master volume level of the environmental reverb effect.</string>
+
+    <!-- SharedPreference Keys -->
+    <string name="preference_reverb_isenabled">PREFERENCE_REVERB_ISENABLED</string>
+    <string name="preference_equalizer_isenabled">PREFERENCE_EQUALIZER_ISENABLED</string>
+
+    <string name="preference_bassboost_isenabled">PREFERENCE_BASSBOOST_ISENABLED</string>
+    <string name="preference_bassboost_strength">PREFERENCE_BASSBOOST_STRENGTH</string>
+
+    <string name="preference_virtualizer_isenabled">PREFERENCE_VIRTUALIZER_ISENABLED</string>
+    <string name="preference_virtualizer_strength">PREFERENCE_VIRTUALIZER_STRENGTH</string>
+
+    <string name="preference_loudnessenhancer_isenabled">PREFERENCE_LOUDNESSENHANCER_ISENABLED</string>
+    <string name="preference_loudnessenhancer_strength">PREFERENCE_LOUDNESSENHANCER_STRENGTH</string>
 </resources>

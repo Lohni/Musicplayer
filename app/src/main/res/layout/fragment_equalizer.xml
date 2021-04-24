@@ -4,43 +4,74 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    tools:context=".ui.equalizer.EqualizerFragment">
+    tools:context=".ui.audioeffects.EqualizerFragment">
+
+    <com.google.android.material.switchmaterial.SwitchMaterial
+        android:id="@+id/equalizer_enabledSwitch"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent"/>
 
     <LinearLayout
         android:id="@+id/eqBandHolder"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:orientation="horizontal"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toTopOf="@id/equalizer_preset_header"
-        android:layout_marginBottom="16dp"/>
+        app:layout_constraintTop_toBottomOf="@id/equalizer_enabledSwitch"
+        app:layout_constraintBottom_toTopOf="@id/equalizer_textInputLayout" />
 
-    <TextView
-        android:id="@+id/equalizer_preset_header"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:paddingStart="8dp"
-        android:text="Presets"
-        android:textSize="22sp"
-        android:textColor="@color/colorTextLight"
-        app:layout_constraintTop_toBottomOf="@id/eqBandHolder"
-        app:layout_constraintBottom_toTopOf="@id/chipGroupScrollView"/>
+    <ImageButton
+        android:id="@+id/equalizer_add"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        app:layout_constraintDimensionRatio="1"
+        android:layout_marginStart="8dp"
+        android:background="@drawable/ic_add_black_24dp"
+        app:layout_constraintTop_toTopOf="@id/equalizer_textInputLayout"
+        app:layout_constraintBottom_toBottomOf="@id/equalizer_textInputLayout"
+        app:layout_constraintLeft_toRightOf="@id/equalizer_textInputLayout"
+        app:layout_constraintRight_toLeftOf="@id/equalizer_delete"/>
 
-    <HorizontalScrollView
-        android:id="@+id/chipGroupScrollView"
-        android:layout_width="match_parent"
+    <ImageButton
+        android:id="@+id/equalizer_delete"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        app:layout_constraintDimensionRatio="1"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="64dp"
+        android:background="@drawable/ic_delete_black_24dp"
+        android:backgroundTint="@color/colorTextLight"
+        app:layout_constraintTop_toTopOf="@id/equalizer_add"
+        app:layout_constraintBottom_toBottomOf="@id/equalizer_add"
+        app:layout_constraintLeft_toRightOf="@id/equalizer_add"
+        app:layout_constraintRight_toRightOf="parent"/>
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/equalizer_textInputLayout"
+        style="@style/Widget.MaterialComponents.TextInputLayout.FilledBox.Dense.ExposedDropdownMenu"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        app:layout_constraintTop_toBottomOf="@id/equalizer_preset_header"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="8dp"
+        android:hint="@string/equalizer_presetSelectionHint"
+        android:textColorHint="@color/equalizer_background"
+        app:boxBackgroundColor="@color/background_primarydark"
+        app:boxStrokeColor="@color/equalizer_background"
+        app:endIconTint="@color/equalizer_background"
+        app:hintTextColor="@color/equalizer_background"
         app:layout_constraintBottom_toBottomOf="parent"
-        android:scrollbarThumbHorizontal="@color/colorTransparent"
-        android:layout_marginBottom="16dp">
-        <com.google.android.material.chip.ChipGroup
-            android:id="@+id/chip_group"
-            android:layout_width="wrap_content"
-            android:layout_height="50dp"
-            app:singleLine="true"
-            app:singleSelection="true"
-            android:paddingStart="8dp"
-            android:paddingEnd="8dp"/>
-    </HorizontalScrollView>
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toLeftOf="@id/equalizer_add"
+        app:layout_constraintTop_toBottomOf="@id/eqBandHolder">
+        <com.google.android.material.textfield.MaterialAutoCompleteTextView
+            android:id="@+id/equalizer_autoCompleteTextView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="none"
+            android:singleLine="true"
+            android:focusable="false"
+            android:textColor="@color/colorTextLight"/>
+    </com.google.android.material.textfield.TextInputLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>
