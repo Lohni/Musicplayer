@@ -1,33 +1,30 @@
 package com.example.musicplayer;
 
 import android.Manifest;
-import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.media.audiofx.Equalizer;
+import android.media.audiofx.EnvironmentalReverb;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
-import android.text.InputType;
 import android.transition.Slide;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.MenuItem;
-import android.view.Menu;
 import android.view.View;
-import android.widget.EditText;
 
 import com.example.musicplayer.entities.MusicResolver;
 import com.example.musicplayer.ui.DatabaseViewmodel;
 import com.example.musicplayer.ui.dashboard.DashboardFragment;
-import com.example.musicplayer.ui.equalizer.EqualizerInterface;
-import com.example.musicplayer.ui.equalizer.EqualizerViewPager;
+import com.example.musicplayer.ui.audioeffects.AudioEffectViewModel;
+import com.example.musicplayer.ui.audioeffects.AudioEffectInterface;
+import com.example.musicplayer.ui.audioeffects.EqualizerViewPager;
+import com.example.musicplayer.ui.audioeffects.database.AudioEffectSettingsHelper;
 import com.example.musicplayer.ui.expandedplaybackcontrol.ExpandedPlaybackControl;
 import com.example.musicplayer.ui.expandedplaybackcontrol.ExpandedPlaybackControlInterface;
 import com.example.musicplayer.ui.playbackcontrol.PlaybackControl;
@@ -35,7 +32,6 @@ import com.example.musicplayer.ui.playbackcontrol.PlaybackControlInterface;
 import com.example.musicplayer.ui.playlist.Playlist;
 import com.example.musicplayer.ui.playlist.PlaylistInterface;
 import com.example.musicplayer.ui.playlistdetail.PlaylistDetail;
-import com.example.musicplayer.ui.playlistdetail.PlaylistDetailAdd;
 import com.example.musicplayer.ui.songlist.SongList;
 import com.example.musicplayer.ui.songlist.SongListInterface;
 import com.example.musicplayer.ui.tagEditor.TagEditorDetailFragment;
@@ -45,7 +41,6 @@ import com.example.musicplayer.ui.views.PlaybackControlSeekbar;
 import com.example.musicplayer.utils.NavigationControlInterface;
 import com.example.musicplayer.utils.Permissions;
 import com.google.android.material.navigation.NavigationView;
-import com.google.android.material.transition.platform.MaterialContainerTransform;
 
 import java.util.ArrayList;
 import java.util.Objects;
@@ -53,8 +48,6 @@ import java.util.Objects;
 import androidx.annotation.NonNull;
 
 import androidx.appcompat.app.ActionBarDrawerToggle;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
 import androidx.core.view.GravityCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
@@ -66,7 +59,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
 public class MainActivity extends AppCompatActivity implements SongListInterface, PlaybackControlInterface, NavigationView.OnNavigationItemSelectedListener,
-        ExpandedPlaybackControlInterface, PlaylistInterface, EqualizerInterface, TagEditorInterface, NavigationControlInterface {
+        ExpandedPlaybackControlInterface, PlaylistInterface, AudioEffectInterface, TagEditorInterface, NavigationControlInterface {
 
     private static final int PERMISSION_REQUEST_CODE = 0x03 ;
 
@@ -77,9 +70,8 @@ public class MainActivity extends AppCompatActivity implements SongListInterface
     private PlaybackControl playcontrol;
     private ExpandedPlaybackControl expandedPlaybackControl;
 
-    private Equalizer equalizer;
-
     private DatabaseViewmodel databaseViewmodel;
+    private AudioEffectViewModel audioEffectViewModel;
 
     private final String playlistDetail = "FRAGMENT_PLAYLISTDETAIL";
 
@@ -87,12 +79,18 @@ public class MainActivity extends AppCompatActivity implements SongListInterface
     private Handler mHandler = new Handler();
     private ActionBarDrawerToggle toggle;
 
+    private SharedPreferences sharedPreferences;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         Toolbar toolbar = findViewById(R.id.toolbar);
+        sharedPreferences = this.getPreferences(Context.MODE_PRIVATE);
+        audioEffectViewModel = new ViewModelProvider(this).get(AudioEffectViewModel.class);
+
         setSupportActionBar(toolbar);
+
         loadPlayControl(playcontrol = new PlaybackControl());
         loadDashboard(new DashboardFragment());
 
@@ -101,8 +99,6 @@ public class MainActivity extends AppCompatActivity implements SongListInterface
             bindService(service, serviceConnection, Context.BIND_AUTO_CREATE);
             startService(service);
         }
-        //Permissions.permission(this, android.Manifest.permission.MODIFY_AUDIO_SETTINGS);
-        //Permissions.permission(this, android.Manifest.permission.WRITE_EXTERNAL_STORAGE);
 
         databaseViewmodel=new ViewModelProvider(this).get(DatabaseViewmodel.class);
 
@@ -147,10 +143,21 @@ public class MainActivity extends AppCompatActivity implements SongListInterface
             musicService = binder.getServiceInstance();
             IntentFilter filter = new IntentFilter();
             filter.addAction("START");
+
+            //Init AudioEffects
             musicService.registerReceiver(broadcastReceiver,filter);
-            equalizer = new Equalizer(0,musicService.getSessionId());
             playcontrol.setAudioSessionID(musicService.getSessionId());
-            equalizer.setEnabled(true);
+            musicService.setReverbEnabled(sharedPreferences.getBoolean(getResources().getString(R.string.preference_reverb_isenabled), false));
+            musicService.setEqualizerEnabled(sharedPreferences.getBoolean(getResources().getString(R.string.preference_equalizer_isenabled), false));
+            musicService.setBassBoostEnabled(sharedPreferences.getBoolean(getResources().getString(R.string.preference_bassboost_isenabled), false));
+            musicService.setVirtualizerEnabled(sharedPreferences.getBoolean(getResources().getString(R.string.preference_virtualizer_isenabled), false));
+            musicService.setLoudnessEnhancerEnabled(sharedPreferences.getBoolean(getResources().getString(R.string.preference_loudnessenhancer_isenabled), false));
+
+            musicService.setBassBoostStrength((short) sharedPreferences.getInt(getResources().getString(R.string.preference_bassboost_strength), 0));
+            musicService.setVirtualizerStrength((short) sharedPreferences.getInt(getResources().getString(R.string.preference_virtualizer_strength), 0));
+            musicService.setLoudnessEnhancerGain(sharedPreferences.getInt(getResources().getString(R.string.preference_loudnessenhancer_strength), 0));
+            
+            initialiseAudioEffects();
         }
 
         @Override
@@ -175,7 +182,15 @@ public class MainActivity extends AppCompatActivity implements SongListInterface
         super.onDestroy();
         LocalBroadcastManager.getInstance(this).unregisterReceiver(broadcastReceiver);
         unbindService(serviceConnection);
-        equalizer.release();
+    }
+
+    private void initialiseAudioEffects(){
+        audioEffectViewModel.getCurrentActivePreset().observe(this, reverbSettings -> {
+            if (reverbSettings != null)musicService.setEnvironmentalReverbSettings(AudioEffectSettingsHelper.extractReverbValues(reverbSettings));
+        });
+        audioEffectViewModel.getCurrentActiveEqualizerPreset().observe(this, equalizerSettings -> {
+            if (equalizerSettings != null)musicService.setEqualizerBandLevels(equalizerSettings.getBandLevels());
+        });
     }
 
     private BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
@@ -207,10 +222,6 @@ public class MainActivity extends AppCompatActivity implements SongListInterface
     /*
     Interfaces
      */
-
-    /*
-    SongListInterface
-     */
     @Override
     public void OnSongListCreatedListener(ArrayList<MusicResolver> songList) {
         musicService.setSonglist(songList);
@@ -234,7 +245,7 @@ public class MainActivity extends AppCompatActivity implements SongListInterface
     }
 
     /*
-
+    Listener
      */
     @Override
     public void OnStateChangeListener() {
@@ -335,8 +346,14 @@ public class MainActivity extends AppCompatActivity implements SongListInterface
             }
             case R.id.nav_equalizer:{
                 EqualizerViewPager equalizerFragment = new EqualizerViewPager();
-                equalizerFragment.setEqualizer(equalizer);
-                equalizerFragment.setAudioSessionID(musicService.getSessionId());
+                equalizerFragment.setSettings(musicService.getReverbSettings(),
+                        musicService.isReverbEnabled(),
+                        musicService.getEqualizerBandLevels(),
+                        musicService.isEqualizerEnabled(),
+                        musicService.getEqualizerProperties(),
+                        musicService.isBassBoostEnabled(), musicService.getBassBoostStrength(),
+                        musicService.isVirtualizerEnabled(), musicService.getVirtualizerStrength(),
+                        musicService.isLoudnessEnhancerEnabled(), musicService.getLoudnessEnhancerStrength());
                 getSupportFragmentManager().beginTransaction().replace(R.id.nav_host_fragment,equalizerFragment).commit();
                 break;
             }
@@ -391,38 +408,78 @@ public class MainActivity extends AppCompatActivity implements SongListInterface
         onBackPressed();
     }
 
-    /*
-    private void permission(){
-        //if (Build.VERSION.SDK_INT >= 23) {
-        //Check whether your app has access to the READ permission//
-        if (checkPermission()) {
-            //If your app has access to the device’s storage, then print the following message to Android Studio’s Logcat//
-            Log.e("permission", "MODIFY_AUDIO_SETTINGS-Permission already granted.");
-        } else {
-            //If your app doesn’t have permission to access external storage, then call requestPermission//
-            requestPermission();
-        }
-        //}
+    @Override
+    public void onEnvironmentalReverbChanged(EnvironmentalReverb.Settings settings) {
+        musicService.setEnvironmentalReverbSettings(settings);
     }
-
-    private boolean checkPermission() {
-        //Check for READ_EXTERNAL_STORAGE access, using ContextCompat.checkSelfPermission()//
-        int result = ContextCompat.checkSelfPermission(this, Manifest.permission.MODIFY_AUDIO_SETTINGS);
-        //If the app does have this permission, then return true//
-        //If the app doesn’t have this permission, then return false//
-        return result == PackageManager.PERMISSION_GRANTED;
-    }
-
-    private void requestPermission() {
-        ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.MODIFY_AUDIO_SETTINGS}, PERMISSION_REQUEST_CODE);
-        ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.RECORD_AUDIO}, PERMISSION_REQUEST_CODE);
-        ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, PERMISSION_REQUEST_CODE);
-    }
-     */
 
     @Override
-    public void onPresetReverbCreated(int id) {
-        musicService.setEffect(id);
+    public void onEnvironmentalReverbStatusChanged(boolean status) {
+        musicService.setReverbEnabled(status);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putBoolean(getResources().getString(R.string.preference_reverb_isenabled), status);
+        editor.apply();
+    }
+
+    @Override
+    public void onEqualizerChanged(short[] bandLevel) {
+        musicService.setEqualizerBandLevels(bandLevel);
+    }
+
+    @Override
+    public void onEqualizerStatusChanged(boolean state) {
+        musicService.setEqualizerEnabled(state);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putBoolean(getResources().getString(R.string.preference_equalizer_isenabled), state);
+        editor.apply();
+    }
+
+    @Override
+    public void onBassBoostChanged(int strength) {
+        musicService.setBassBoostStrength((short) strength);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putInt(getResources().getString(R.string.preference_bassboost_strength), strength);
+        editor.apply();
+    }
+
+    @Override
+    public void onBassBoostStatusChanged(boolean state) {
+        musicService.setBassBoostEnabled(state);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putBoolean(getResources().getString(R.string.preference_bassboost_isenabled), state);
+        editor.apply();
+    }
+
+    @Override
+    public void onVirtualizerChanged(int strength) {
+        musicService.setVirtualizerStrength((short) strength);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putInt(getResources().getString(R.string.preference_virtualizer_strength), strength);
+        editor.apply();
+    }
+
+    @Override
+    public void onVirtualizerStatusChanged(boolean state) {
+        musicService.setVirtualizerEnabled(state);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putBoolean(getResources().getString(R.string.preference_virtualizer_isenabled), state);
+        editor.apply();
+    }
+
+    @Override
+    public void onLoudnessEnhancerChanged(int strength) {
+        musicService.setLoudnessEnhancerGain(strength);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putInt(getResources().getString(R.string.preference_loudnessenhancer_strength), strength);
+        editor.apply();
+    }
+
+    @Override
+    public void onLoudnessEnhancerStatusChanged(boolean state) {
+        musicService.setLoudnessEnhancerEnabled(state);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putBoolean(getResources().getString(R.string.preference_loudnessenhancer_isenabled), state);
+        editor.apply();
     }
 
     @Override

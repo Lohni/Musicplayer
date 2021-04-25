@@ -7,12 +7,15 @@
     <color name="colorSecondary">#ff7043</color>
     <color name="colorSecondaryDark">#c63f17</color>
     <color name="colorSecondaryLight">#ffa270</color>
+    <color name="colorStateDisabledPrimary">#AAAAAA</color>
+    <color name="colorStateDisabledSecondary">#5B4B43</color>
     <color name="colorTextLight">#D5D5D5</color>
     <color name="colorTextDark">#000000</color>
     <color name="colorBackgroundOne">#E2F1F8</color>
     <color name="colorBackgroundTwo">#C1D5E0</color>
     <color name="colorTransparent">#004B636E</color>
     <color name="colorSecondaryLightTrans">#ADFFA270</color>
+
 </resources>
 
 

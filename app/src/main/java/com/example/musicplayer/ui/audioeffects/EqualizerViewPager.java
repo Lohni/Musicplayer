@@ -1,9 +1,9 @@
-package com.example.musicplayer.ui.equalizer;
+package com.example.musicplayer.ui.audioeffects;
 
 import android.Manifest;
 import android.content.Context;
 import android.content.pm.PackageManager;
-import android.media.audiofx.Equalizer;
+import android.media.audiofx.EnvironmentalReverb;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -13,7 +13,6 @@ import androidx.viewpager2.widget.ViewPager2;
 
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -28,9 +27,12 @@ public class EqualizerViewPager extends Fragment {
 
     private ViewPager2 viewPager2;
     private EqualizerViewPagerAdapter mAdapter;
-    private Equalizer equalizer;
-    private int audioSessionID;
+    private EnvironmentalReverb.Settings settings;
+    private short[] equalizerBandLevels;
+    private boolean reverbEnabled = false, equalizerEnabled = false, bassBoostEnabled = false, virtuaizerEnabled = false, loudnessEnhancerEnabled = false;
     private NavigationControlInterface navigationControlInterface;
+    private EqualizerProperties equalizerProperties;
+    private int bassBoostStrength = 0, virtualizerStrength = 0, loudnessEnhancerStrength = 0;
 
     public EqualizerViewPager() {
         // Required empty public constructor
@@ -43,7 +45,6 @@ public class EqualizerViewPager extends Fragment {
         } catch (ClassCastException e){
             Log.e("EQUALIZER_CASTERROR", e.toString());
         }
-
         super.onAttach(context);
     }
 
@@ -62,7 +63,8 @@ public class EqualizerViewPager extends Fragment {
         TabLayout tabLayout = view.findViewById(R.id.equalizer_tablayout);
 
         if (Permissions.permission(requireActivity(), this, Manifest.permission.MODIFY_AUDIO_SETTINGS)){
-            mAdapter = new EqualizerViewPagerAdapter(this,equalizer,audioSessionID);
+            mAdapter = new EqualizerViewPagerAdapter(this, settings, reverbEnabled, equalizerBandLevels,
+                    equalizerEnabled, equalizerProperties, bassBoostEnabled, bassBoostStrength, virtuaizerEnabled, virtualizerStrength, loudnessEnhancerEnabled, loudnessEnhancerStrength);
             viewPager2.setAdapter(mAdapter);
         }
 
@@ -70,28 +72,41 @@ public class EqualizerViewPager extends Fragment {
             if (position == 0) {
                 tab.setText("Frequenzy");
                 tab.setIcon(ContextCompat.getDrawable(requireContext(),R.drawable.ic_equalizer_black_24dp));
-            }
-            else{
+            } else if (position == 1){
                 tab.setText("Effects");
                 tab.setIcon(ContextCompat.getDrawable(requireContext(),R.drawable.ic_baseline_hearing_24));
+            } else {
+                tab.setText("Reverb");
+                tab.setIcon(ContextCompat.getDrawable(requireContext(), R.drawable.ic_baseline_surround_sound_24));
             }
         })).attach();
         return view;
     }
 
-    public void setEqualizer(Equalizer equalizer){
-        this.equalizer = equalizer;
-    }
-
-    public void setAudioSessionID(int id){
-        audioSessionID = id;
+    public void setSettings(EnvironmentalReverb.Settings settings, boolean reverbEnabled, short[] equalizerBandLevels,
+                            boolean equalizerEnabled, EqualizerProperties equalizerProperties,
+                            boolean bassBoostEnabled, int bassBoostStrength,
+                            boolean virtuaizerEnabled, int virtualizerStrength,
+                            boolean loudnessEnhancerEnabled, int loudnessEnhancerStrength){
+        this.settings = settings;
+        this.reverbEnabled = reverbEnabled;
+        this.equalizerBandLevels = equalizerBandLevels;
+        this.equalizerEnabled = equalizerEnabled;
+        this.equalizerProperties = equalizerProperties;
+        this.bassBoostEnabled = bassBoostEnabled;
+        this.bassBoostStrength = bassBoostStrength;
+        this.virtuaizerEnabled = virtuaizerEnabled;
+        this.virtualizerStrength = virtualizerStrength;
+        this.loudnessEnhancerEnabled = loudnessEnhancerEnabled;
+        this.loudnessEnhancerStrength = loudnessEnhancerStrength;
     }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED && permissions[0].equals(Manifest.permission.MODIFY_AUDIO_SETTINGS)){
-            mAdapter = new EqualizerViewPagerAdapter(this,equalizer,audioSessionID);
+            mAdapter = new EqualizerViewPagerAdapter(this, settings, reverbEnabled, equalizerBandLevels,
+                    equalizerEnabled, equalizerProperties, bassBoostEnabled, bassBoostStrength, virtuaizerEnabled, virtualizerStrength, loudnessEnhancerEnabled, loudnessEnhancerStrength);
             viewPager2.setAdapter(mAdapter);
         }
     }
