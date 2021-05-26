@@ -23,7 +23,7 @@ public class PlaybackControlSeekbar extends View {
     private boolean mIsDragged = false, fromUser = true;
     private OnSeekbarChangeListener onSeekbarChangeListener;
     private int size, progress, width, paddingTop;
-    private Rect clipBounds;
+    private final Rect clipBounds;
     private Paint progressPrimaryBackgroundTint;
     private Paint progressSecondaryBackgroundTint;
     private Path progressPrimaryPath;
@@ -75,26 +75,27 @@ public class PlaybackControlSeekbar extends View {
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
+        if (clipBounds.contains((int) event.getX(), (int) event.getY())){
+            switch (event.getAction()){
+                case MotionEvent.ACTION_DOWN:
+                    fromUser = true;
+                    startDrag(event);
+                    break;
+                case MotionEvent.ACTION_MOVE:
+                    fromUser = true;
+                    if (mIsDragged)trackingTouch(event);
+                    else startDrag(event);
+                    return false;
 
-        switch (event.getAction()){
-
-            case MotionEvent.ACTION_DOWN:
-                fromUser = true;
-                startDrag(event);
-                break;
-            case MotionEvent.ACTION_MOVE:
-                fromUser = true;
-                if (mIsDragged)trackingTouch(event);
-                else startDrag(event);
-                break;
-            case MotionEvent.ACTION_UP:
-                fromUser = true;
-                trackingTouch(event);
-                onStopTrackingTouch();
-                invalidate();
-                break;
+                case MotionEvent.ACTION_UP:
+                    fromUser = true;
+                    trackingTouch(event);
+                    onStopTrackingTouch();
+                    invalidate();
+                    break;
+            }
+            //return true;
         }
-
         return true;
     }
 

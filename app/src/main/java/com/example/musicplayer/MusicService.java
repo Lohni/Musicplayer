@@ -26,7 +26,7 @@ import java.util.Random;
 import androidx.annotation.Nullable;
 
 public class MusicService extends Service implements MediaPlayer.OnPreparedListener, MediaPlayer.OnErrorListener, MediaPlayer.OnCompletionListener {
-    private ArrayList<MusicResolver> songlist;
+    private final ArrayList<MusicResolver> songlist = new ArrayList<>();
     private int currSongIndex;
     private boolean repeatList = true, repeatSong=false, shuffle=false;
 
@@ -91,29 +91,26 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
         virtualizer = new Virtualizer(1, player.getAudioSessionId());
         virtualizer.forceVirtualizationMode(Virtualizer.VIRTUALIZATION_MODE_AUTO);
         loudnessEnhancer = new LoudnessEnhancer(player.getAudioSessionId());
-
-        //environmentalReverb.setEnabled(true);
         super.onCreate();
     }
 
     // MediaPlayer Functions
     @Override
     public void onPrepared(MediaPlayer mediaPlayer) {
-        sendBroadcast(new Intent().setAction("START"));
+        sendBroadcast(new Intent().setAction(getString(R.string.intent_mediaplayer_play)));
         player.start();
     }
 
     @Override
     public boolean onError(MediaPlayer mediaPlayer, int i, int i1) {
         player.reset();
-        //datasource
         return true;
     }
 
     @Override
     public void onCompletion(MediaPlayer mediaPlayer) {
         if(repeatSong){
-            play((int) songlist.get(currSongIndex).getId());
+            play();
         }else {
             skip();
         }
@@ -121,21 +118,44 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
 
     //Playback functions
     public void setSonglist(ArrayList<MusicResolver> list){
-        this.songlist=list;
+        this.songlist.clear();
+        this.songlist.addAll(list);
+    }
+
+    public void playNext(ArrayList<MusicResolver> list){
+        if (songlist.size() > 0){
+            shuffle = false;
+            repeatSong = false;
+            this.songlist.addAll(1, list);
+        } else {
+            this.songlist.addAll(list);
+            play();
+        }
+    }
+
+    public void playNext(MusicResolver song){
+        if (songlist.size() > 0){
+            shuffle = false;
+            repeatSong = false;
+            this.songlist.add(1, song);
+        } else {
+            this.songlist.add(song);
+            play();
+        }
     }
 
     public void skip(){
-        if(songlist!=null){
+        if(songlist.size() > 0){
             if (shuffle){
                 Random random = new Random();
-                currSongIndex = random.nextInt((songlist.size()-1) + 1);
-                play(songlist.get(currSongIndex).getId());
+                currSongIndex = random.nextInt(songlist.size());
+                play();
             }else if(currSongIndex < songlist.size()-1){
                 currSongIndex+=1;
-                play(songlist.get(currSongIndex).getId());
+                play();
             } else if(repeatList){
                 currSongIndex=0;
-                play(songlist.get(currSongIndex).getId());
+                play();
             } else {
                 player.stop();
             }
@@ -154,17 +174,17 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
 
     public void setSong(int index){
         currSongIndex = index;
-        play(songlist.get(index).getId());
+        play();
     }
 
     public void setProgress(int progress){
         player.seekTo(progress);
     }
 
-    public void play(long songID){
-        player.reset();
-        if(songlist!=null){
-            Uri trackUri = ContentUris.withAppendedId(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,songID);
+    public void play(){
+        if(songlist.size() > 0){
+            player.reset();
+            Uri trackUri = ContentUris.withAppendedId(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,songlist.get(currSongIndex).getId());
             try{
                 player.setDataSource(getApplicationContext(),trackUri);
                 player.attachAuxEffect(environmentalReverb.getId());
@@ -177,7 +197,7 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
     }
 
     public MusicResolver getCurrSong(){
-        if(songlist!=null)return songlist.get(currSongIndex);
+        if(songlist!=null && !songlist.isEmpty())return songlist.get(currSongIndex);
         else return null;
     }
 

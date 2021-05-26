@@ -3,6 +3,7 @@ package com.example.musicplayer.entities;
 public class MusicResolver {
     private long id, album_id, duration=0;
     private String artist,title;
+    private int trackNr = 0;
 
     private boolean isSelected;
 
@@ -58,4 +59,12 @@ public class MusicResolver {
     public void setDuration(long duration){this.duration = duration;}
 
     public long getDuration(){return duration;}
+
+    public int getTrackNr() {
+        return trackNr;
+    }
+
+    public void setTrackNr(int trackNr) {
+        this.trackNr = trackNr;
+    }
 }

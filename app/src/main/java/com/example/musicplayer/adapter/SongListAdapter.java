@@ -76,8 +76,6 @@ public class SongListAdapter extends RecyclerView.Adapter<SongListAdapter.ViewHo
         },500);
     }
 
-
-
     /*
     @Override
     public Filter getFilter() {

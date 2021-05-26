@@ -1,6 +1,7 @@
 package com.example.musicplayer;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
@@ -13,13 +14,19 @@ import android.media.audiofx.EnvironmentalReverb;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
+import android.transition.Fade;
 import android.transition.Slide;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 
 import com.example.musicplayer.entities.MusicResolver;
+import com.example.musicplayer.transition.AlbumDetailTransition;
 import com.example.musicplayer.ui.DatabaseViewmodel;
+import com.example.musicplayer.ui.album.AlbumDetailFragment;
+import com.example.musicplayer.ui.album.AlbumFragment;
 import com.example.musicplayer.ui.dashboard.DashboardFragment;
 import com.example.musicplayer.ui.audioeffects.AudioEffectViewModel;
 import com.example.musicplayer.ui.audioeffects.AudioEffectInterface;
@@ -38,6 +45,7 @@ import com.example.musicplayer.ui.tagEditor.TagEditorDetailFragment;
 import com.example.musicplayer.ui.tagEditor.TagEditorFragment;
 import com.example.musicplayer.ui.tagEditor.TagEditorInterface;
 import com.example.musicplayer.ui.views.PlaybackControlSeekbar;
+import com.example.musicplayer.ui.views.TestMotionLayout;
 import com.example.musicplayer.utils.NavigationControlInterface;
 import com.example.musicplayer.utils.Permissions;
 import com.google.android.material.navigation.NavigationView;
@@ -48,6 +56,7 @@ import java.util.Objects;
 import androidx.annotation.NonNull;
 
 import androidx.appcompat.app.ActionBarDrawerToggle;
+import androidx.constraintlayout.motion.widget.MotionLayout;
 import androidx.core.view.GravityCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
@@ -59,9 +68,10 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
 public class MainActivity extends AppCompatActivity implements SongListInterface, PlaybackControlInterface, NavigationView.OnNavigationItemSelectedListener,
-        ExpandedPlaybackControlInterface, PlaylistInterface, AudioEffectInterface, TagEditorInterface, NavigationControlInterface {
+        ExpandedPlaybackControlInterface, PlaylistInterface, AudioEffectInterface, TagEditorInterface, NavigationControlInterface, AlbumDetailFragment.AlbumDetailListener, AlbumFragment.AlbumFragmentCallback {
 
     private static final int PERMISSION_REQUEST_CODE = 0x03 ;
+    private int motionLayout_transition_state, motionLayout_startState, motionLayout_endState;
 
     DrawerLayout drawer;
     MusicService musicService;
@@ -69,18 +79,21 @@ public class MainActivity extends AppCompatActivity implements SongListInterface
 
     private PlaybackControl playcontrol;
     private ExpandedPlaybackControl expandedPlaybackControl;
+    private TestMotionLayout motionLayout;
 
     private DatabaseViewmodel databaseViewmodel;
     private AudioEffectViewModel audioEffectViewModel;
 
     private final String playlistDetail = "FRAGMENT_PLAYLISTDETAIL";
 
-    private boolean isOnPause = true, isExpanded=false;
+    private boolean isOnPause = true, isExpanded=false, isTransitionFragmentChanged = false;
     private Handler mHandler = new Handler();
     private ActionBarDrawerToggle toggle;
 
     private SharedPreferences sharedPreferences;
+    private Fragment selectedDrawerFragment;
 
+    @SuppressLint("ClickableViewAccessibility")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -105,6 +118,54 @@ public class MainActivity extends AppCompatActivity implements SongListInterface
         drawer = findViewById(R.id.drawer_layout);
         NavigationView navigationView = findViewById(R.id.nav_view);
 
+        motionLayout = findViewById(R.id.parentContainer);
+        motionLayout_transition_state = motionLayout.getStartState();
+        motionLayout_startState = motionLayout.getStartState();
+        motionLayout_endState = motionLayout.getEndState();
+        motionLayout.setTransitionListener(new MotionLayout.TransitionListener() {
+            @Override
+            public void onTransitionStarted(MotionLayout motionLayout, int i, int i1) {
+            }
+
+            @Override
+            public void onTransitionChange(MotionLayout layout, int i, int i1, float progress) {
+                if (motionLayout_transition_state == motionLayout_startState){
+                    if (progress > 0.6 && !isTransitionFragmentChanged){
+                        expandedPlaybackControl = new ExpandedPlaybackControl();
+                        expandedPlaybackControl.setEnterTransition(new Fade().setDuration(500));
+                        expandedPlaybackControl.setSharedElementEnterTransition(new AlbumDetailTransition());
+                        expandedPlaybackControl.setSharedElementReturnTransition(new AlbumDetailTransition());
+
+                        playcontrol.setExitTransition(new Fade().setDuration(500));
+
+                        getSupportFragmentManager().beginTransaction()
+                                .addSharedElement(playcontrol.getParentView(), getResources().getString(R.string.transition_playback_layout))
+                                .addSharedElement(playcontrol.getTitleView(), getResources().getString(R.string.transition_playback_title))
+                                .replace(R.id.playbackcontrol_holder,expandedPlaybackControl, getString(R.string.fragment_expandedPlaybackControl)).commit();
+
+                        isTransitionFragmentChanged = true;
+                    }
+                } else if (motionLayout_transition_state == motionLayout_endState){
+                    if (progress < 0.5 && !isTransitionFragmentChanged){
+                        playcontrol = new PlaybackControl();
+                        getSupportFragmentManager().beginTransaction().replace(R.id.playbackcontrol_holder, playcontrol).commit();
+                        isTransitionFragmentChanged = true;
+                        //motionLayout.transitionToStart();
+                    }
+                }
+            }
+            @Override
+            public void onTransitionCompleted(MotionLayout motionLayout, int reachedState) {
+                isTransitionFragmentChanged = false;
+                motionLayout_transition_state = reachedState;
+            }
+
+            @Override
+            public void onTransitionTrigger(MotionLayout motionLayout, int i, boolean b, float v) {
+
+            }
+        });
+
         toggle = new ActionBarDrawerToggle(this, drawer,toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawer.addDrawerListener(toggle);
 
@@ -115,10 +176,35 @@ public class MainActivity extends AppCompatActivity implements SongListInterface
                 onBackPressed();
             }
         });
-
         songlist=new ArrayList<>();
+
+        drawer.addDrawerListener(new DrawerLayout.DrawerListener() {
+            @Override
+            public void onDrawerSlide(@NonNull View drawerView, float slideOffset) {
+
+            }
+
+            @Override
+            public void onDrawerOpened(@NonNull View drawerView) {
+
+            }
+
+            @Override
+            public void onDrawerClosed(@NonNull View drawerView) {
+                if (selectedDrawerFragment != null){
+                    getSupportFragmentManager().beginTransaction().replace(R.id.nav_host_fragment,selectedDrawerFragment).commit();
+                }
+            }
+
+            @Override
+            public void onDrawerStateChanged(int newState) {
+
+            }
+        });
+
         runnable.run();
         navigationView.setNavigationItemSelectedListener(this);
+
     }
 
     private void loadDashboard(Fragment fragment){
@@ -142,7 +228,7 @@ public class MainActivity extends AppCompatActivity implements SongListInterface
             MusicService.MusicBinder binder = (MusicService.MusicBinder)iBinder;
             musicService = binder.getServiceInstance();
             IntentFilter filter = new IntentFilter();
-            filter.addAction("START");
+            filter.addAction(getString(R.string.intent_mediaplayer_play));
 
             //Init AudioEffects
             musicService.registerReceiver(broadcastReceiver,filter);
@@ -193,11 +279,11 @@ public class MainActivity extends AppCompatActivity implements SongListInterface
         });
     }
 
-    private BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
+    private final BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             if (intent.getAction() != null){
-                if ("START".equals(intent.getAction())) {
+                if (intent.getAction().equals(getString(R.string.intent_mediaplayer_play))) {
                     MusicResolver currsong = musicService.getCurrSong();
                     if (!isExpanded)
                         playcontrol.setSongInfo(currsong.getTitle(), currsong.getArtist(), musicService.getDuration());
@@ -219,6 +305,12 @@ public class MainActivity extends AppCompatActivity implements SongListInterface
         }
     };
 
+    private void updatePlaybackControlState(boolean state){
+        isOnPause = state;
+        if(!isExpanded)playcontrol.setControlButton(state);
+        else expandedPlaybackControl.setControlButton(state);
+    }
+
     /*
     Interfaces
      */
@@ -229,19 +321,15 @@ public class MainActivity extends AppCompatActivity implements SongListInterface
 
     @Override
     public void OnSongSelectedListener(int index) {
-        isOnPause=false;
         musicService.setSong(index);
-        if(!isExpanded)playcontrol.setControlButton(isOnPause);
-        else expandedPlaybackControl.setControlButton(isOnPause);
+        updatePlaybackControlState(false);
     }
 
     @Override
     public void OnSonglistShuffleClickListener() {
-        isOnPause=false;
         musicService.setShuffle(true);
         musicService.shuffle();
-        if(!isExpanded)playcontrol.setControlButton(isOnPause);
-        else expandedPlaybackControl.setControlButton(isOnPause);
+        updatePlaybackControlState(false);
     }
 
     /*
@@ -250,14 +338,12 @@ public class MainActivity extends AppCompatActivity implements SongListInterface
     @Override
     public void OnStateChangeListener() {
         if(isOnPause){
-            isOnPause=false;
             musicService.resume();
         } else {
-            isOnPause = true;
             musicService.pause();
         }
-        if(!isExpanded)playcontrol.setControlButton(isOnPause);
-        else expandedPlaybackControl.setControlButton(isOnPause);
+        isOnPause = !isOnPause;
+        updatePlaybackControlState(isOnPause);
     }
 
     @Override
@@ -276,30 +362,20 @@ public class MainActivity extends AppCompatActivity implements SongListInterface
     }
 
     @Override
-    public void OnExpandListener(PlaybackControlSeekbar view, View text) {
-        FragmentTransaction ft = this.getSupportFragmentManager().beginTransaction();
-        expandedPlaybackControl = new ExpandedPlaybackControl();
-        expandedPlaybackControl.setAudioSessionID(musicService.getSessionId());
-        Slide anim = new Slide();
-        anim.setSlideEdge(Gravity.BOTTOM);
-        anim.setDuration(100);
-
-        expandedPlaybackControl.setEnterTransition(anim);
-        ft.replace(R.id.parentContainer,expandedPlaybackControl).addToBackStack(null).commit();
-
-        postponeEnterTransition();
+    public void OnExpandListener(ExpandedPlaybackControl expandedPlaybackControl) {
+        this.expandedPlaybackControl = expandedPlaybackControl;
     }
 
-    @Override
-    public void OnCloseListener() {
+
+    private void onPlaybackControlStarted(){
         isExpanded=false;
+        playcontrol.setControlButton(isOnPause);
+        playcontrol.setAudioSessionID(musicService.getSessionId());
         MusicResolver currsong = musicService.getCurrSong();
         if(currsong!=null)playcontrol.setSongInfo(currsong.getTitle(),currsong.getArtist(),musicService.getDuration());
-        playcontrol.setControlButton(isOnPause);
     }
 
-    @Override
-    public void OnStartListener(){
+    private void onExpandedPlaybackControlStarted(){
         if(musicService!=null){
             isExpanded=true;
             MusicResolver currsong = musicService.getCurrSong();
@@ -308,6 +384,7 @@ public class MainActivity extends AppCompatActivity implements SongListInterface
             expandedPlaybackControl.setShuffleButton(musicService.getShuffle());
             expandedPlaybackControl.setRepeatButton(musicService.getRepeat());
             expandedPlaybackControl.setLoopButton(musicService.getRepeatSong());
+            expandedPlaybackControl.setAudioSessionID(musicService.getSessionId());
         }
     }
 
@@ -337,11 +414,16 @@ public class MainActivity extends AppCompatActivity implements SongListInterface
         getSupportFragmentManager().popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
         switch (item.getItemId()){
             case R.id.nav_tracklist:{
-                getSupportFragmentManager().beginTransaction().replace(R.id.nav_host_fragment,new SongList()).commit();
+                selectedDrawerFragment = new SongList();
+                //getSupportFragmentManager().beginTransaction().replace(R.id.nav_host_fragment,new SongList()).commit();
                 break;
             }
             case R.id.nav_playlist:{
-                getSupportFragmentManager().beginTransaction().replace(R.id.nav_host_fragment, new Playlist()).commit();
+                //getSupportFragmentManager().beginTransaction().replace(R.id.nav_host_fragment, new Playlist()).commit();
+                AlbumFragment albumFragment = new AlbumFragment();
+                albumFragment.setQueueDestination(playcontrol.getQueueScreenLocation());
+                selectedDrawerFragment = albumFragment;
+                //getSupportFragmentManager().beginTransaction().replace(R.id.nav_host_fragment, albumFragment).commit();
                 break;
             }
             case R.id.nav_equalizer:{
@@ -354,14 +436,17 @@ public class MainActivity extends AppCompatActivity implements SongListInterface
                         musicService.isBassBoostEnabled(), musicService.getBassBoostStrength(),
                         musicService.isVirtualizerEnabled(), musicService.getVirtualizerStrength(),
                         musicService.isLoudnessEnhancerEnabled(), musicService.getLoudnessEnhancerStrength());
-                getSupportFragmentManager().beginTransaction().replace(R.id.nav_host_fragment,equalizerFragment).commit();
+                selectedDrawerFragment = equalizerFragment;
+                //getSupportFragmentManager().beginTransaction().replace(R.id.nav_host_fragment,equalizerFragment).commit();
                 break;
             }
             case R.id.nav_tagEditor:{
-                getSupportFragmentManager().beginTransaction().replace(R.id.nav_host_fragment,new TagEditorFragment()).commit();
+                selectedDrawerFragment = new TagEditorFragment();
+                //getSupportFragmentManager().beginTransaction().replace(R.id.nav_host_fragment,new TagEditorFragment()).commit();
                 break;
             }
         }
+
         drawer.closeDrawer(GravityCompat.START);
         return true;
     }
@@ -387,19 +472,15 @@ public class MainActivity extends AppCompatActivity implements SongListInterface
 
     @Override
     public void OnPlaylistItemSelectedListener(int index){
-        isOnPause=false;
         musicService.setSong(index);
-        if(!isExpanded)playcontrol.setControlButton(isOnPause);
-        else expandedPlaybackControl.setControlButton(isOnPause);
+        updatePlaybackControlState(false);
     }
 
     @Override
     public void OnShuffle() {
-        isOnPause=false;
         musicService.setShuffle(true);
         musicService.shuffle();
-        if(!isExpanded)playcontrol.setControlButton(isOnPause);
-        else expandedPlaybackControl.setControlButton(isOnPause);
+        updatePlaybackControlState(false);
     }
 
     @Override
@@ -516,5 +597,38 @@ public class MainActivity extends AppCompatActivity implements SongListInterface
     @Override
     public void setToolbarTitle(String title) {
         getSupportActionBar().setTitle(title);
+    }
+
+    /*
+    Album Interfaces
+     */
+
+    @Override
+    public void onAlbumTrackClickedListener(int position, ArrayList<MusicResolver> albumTracks, boolean shuffle) {
+        musicService.setSonglist(albumTracks);
+        musicService.setShuffle(shuffle);
+        if (shuffle){
+            musicService.shuffle();
+        } else {
+            musicService.setSong(position);
+        }
+        updatePlaybackControlState(false);
+    }
+
+    @Override
+    public void onPlayAlbumListener(ArrayList<MusicResolver> albumTrackList, boolean shuffle) {
+        musicService.setSonglist(albumTrackList);
+        musicService.setShuffle(shuffle);
+        if (shuffle){
+            musicService.shuffle();
+        } else {
+            musicService.setSong(0);
+        }
+        updatePlaybackControlState(false);
+    }
+
+    @Override
+    public void onQueueAlbumListener(ArrayList<MusicResolver> albumTrackList) {
+        //Todo: Implement Queue
     }
 }

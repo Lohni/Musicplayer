@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<MotionScene xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <ConstraintSet android:id="@+id/motion_start">
+        <Constraint
+            android:id="@+id/albumItem_optionsContainer"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="8dp"
+            android:layout_marginEnd="8dp"
+            android:layout_marginStart="8dp"
+            app:layout_constraintTop_toTopOf="@id/albumItem_cover"
+            app:layout_constraintEnd_toEndOf="@id/albumItem_cover"
+            app:layout_constraintStart_toStartOf="@id/albumItem_cover" />
+    </ConstraintSet>
+
+    <ConstraintSet android:id="@+id/end">
+        <Constraint
+            android:id="@+id/albumItem_optionsContainer"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="8dp"
+            android:layout_marginEnd="8dp"
+            android:layout_marginStart="8dp"
+            android:focusable="true"
+            android:nestedScrollingEnabled="true"
+            app:layout_constraintTop_toTopOf="@id/albumItem_cover"
+            app:layout_constraintLeft_toLeftOf="@id/albumItem_cover"
+            app:layout_constraintRight_toRightOf="@id/albumItem_cover"
+            app:layout_constraintBottom_toBottomOf="@id/albumItem_cover" />
+    </ConstraintSet>
+
+    <Transition
+        app:constraintSetEnd="@+id/end"
+        app:constraintSetStart="@+id/motion_start">
+    </Transition>
+</MotionScene>

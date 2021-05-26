@@ -5,6 +5,7 @@
     android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     tools:context=".ui.expandedplaybackcontrol.ExpandedPlaybackControl"
+    android:transitionName="@string/transition_playback_layout"
     android:clickable="true">
 
     <ImageButton
@@ -84,7 +85,7 @@
                 android:singleLine="true"
                 android:textColor="@color/colorSecondaryLight"
                 android:textSize="20sp"
-                android:transitionName="playback_title"/>
+                android:transitionName="transition_playback_title"/>
 
             <com.google.android.material.textview.MaterialTextView
                 android:id="@+id/expanded_control_artist"

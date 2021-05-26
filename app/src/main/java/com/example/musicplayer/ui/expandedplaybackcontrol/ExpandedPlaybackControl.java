@@ -15,6 +15,7 @@ import android.net.Uri;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.content.res.AppCompatResources;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -65,6 +66,7 @@ public class ExpandedPlaybackControl extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        postponeEnterTransition();
     }
 
     @Override
@@ -75,6 +77,12 @@ public class ExpandedPlaybackControl extends Fragment {
         } catch (ClassCastException e){
             throw new ClassCastException(context.toString() + "must implement PlaybackControlInterface");
         }
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        if (audioVisualizerView != null)audioVisualizerView.release();
     }
 
     @Override
@@ -98,7 +106,6 @@ public class ExpandedPlaybackControl extends Fragment {
         collapse = view.findViewById(R.id.expanded_control_collapse);
         cover = view.findViewById(R.id.expanded_cover);
 
-        permission();
         expanded_title.setSelected(true);
 
         requireActivity().startPostponedEnterTransition();
@@ -151,16 +158,20 @@ public class ExpandedPlaybackControl extends Fragment {
                 seekbarUserAction=false;
             }
         });
-        epcInterface.OnStartListener();
-        audioVisualizerView.initVisualizer(audioSessionID);
+
         return view;
+    }
+
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        startPostponedEnterTransition();
     }
 
     @Override
     public void onPause() {
         super.onPause();
-        epcInterface.OnCloseListener();
-        audioVisualizerView.setenableVisualizer(false);
+        if (audioVisualizerView != null)audioVisualizerView.setenableVisualizer(false);
     }
 
     public void updateSeekbar(int time){
@@ -189,6 +200,8 @@ public class ExpandedPlaybackControl extends Fragment {
 
     public void setAudioSessionID(int audioSessionID){
         this.audioSessionID=audioSessionID;
+        permission();
+        audioVisualizerView.initVisualizer(audioSessionID);
     }
 
     public void setControlButton(boolean isOnPause){
@@ -220,30 +233,30 @@ public class ExpandedPlaybackControl extends Fragment {
     public void setShuffleButton(boolean shuffle){
         if(!shuffle){
             //expanded_shuffle.setBackgroundTintList(getResources().getColorStateList(R.color.colorTransparent));
-            Toast.makeText(requireContext(),"Disable shuffle list",Toast.LENGTH_LONG).show();
+            //Toast.makeText(requireContext(),"Disable shuffle list",Toast.LENGTH_LONG).show();
         } else{
             //expanded_shuffle.setBackgroundTintList(getResources().getColorStateList(R.color.colorPrimaryDark));
-            Toast.makeText(requireContext(),"Shuffle list",Toast.LENGTH_LONG).show();
+            //Toast.makeText(requireContext(),"Shuffle list",Toast.LENGTH_LONG).show();
         }
     }
 
     public void setRepeatButton(boolean repeat){
         if(!repeat){
             //expanded_repeat.setBackgroundTintList(getResources().getColorStateList(R.color.colorTransparent));
-            Toast.makeText(requireContext(),"Disable repeat list",Toast.LENGTH_LONG).show();
+           /// Toast.makeText(requireContext(),"Disable repeat list",Toast.LENGTH_LONG).show();
         } else{
             //expanded_repeat.setBackgroundTintList(getResources().getColorStateList(R.color.colorPrimaryDark));
-            Toast.makeText(requireContext(),"Repeat list",Toast.LENGTH_LONG).show();
+           // Toast.makeText(requireContext(),"Repeat list",Toast.LENGTH_LONG).show();
         }
     }
 
     public void setLoopButton(boolean loop){
         if(!loop){
             //expanded_loop.setBackgroundTintList(getResources().getColorStateList(R.color.colorTransparent));
-            Toast.makeText(requireContext(),"Disable looping",Toast.LENGTH_LONG).show();
+            //Toast.makeText(requireContext(),"Disable looping",Toast.LENGTH_LONG).show();
         } else{
             //expanded_loop.setBackgroundTintList(getResources().getColorStateList(R.color.colorPrimaryDark));
-            Toast.makeText(requireContext(),"Loop current song",Toast.LENGTH_LONG).show();
+           // Toast.makeText(requireContext(),"Loop current song",Toast.LENGTH_LONG).show();
         }
     }
 

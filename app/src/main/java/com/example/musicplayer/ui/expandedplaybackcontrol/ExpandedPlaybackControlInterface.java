@@ -5,8 +5,6 @@ public interface ExpandedPlaybackControlInterface {
     void OnSeekbarChangeListener(int  progress);
     void OnSkipPressedListener();
     void OnSkipPreviousListener();
-    void OnCloseListener();
-    void OnStartListener();
     void OnShuffleClickListener();
     void OnRepeatClickListener();
     void OnLoopClickListener();
