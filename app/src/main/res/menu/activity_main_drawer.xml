@@ -14,6 +14,10 @@
             android:id="@+id/nav_playlist"
             android:title="Playlist"/>
         <item
+            android:id="@+id/nav_album"
+            android:icon="@drawable/ic_album_black_24dp"
+            android:title="Album"/>
+        <item
             android:icon="@drawable/ic_equalizer_black_24dp"
             android:id="@+id/nav_equalizer"
             android:title="Equalizer"/>

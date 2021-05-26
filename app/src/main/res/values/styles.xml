@@ -12,7 +12,7 @@
         <item name="colorOnPrimary">@color/colorTextLight</item>
         <!-- <item name="android:colorBackground">@color/colorBackground</item> -->
         <item name="colorControlNormal">@color/colorTextLight</item>
-        <item name="android:navigationBarColor">@color/colorPrimaryNight</item>
+        <item name="android:navigationBarColor">@color/colorPrimaryInfinite</item>
         <item name="android:statusBarColor">@color/colorPrimaryNight</item>
         <item name="android:windowContentTransitions">true</item>
         <item name="android:windowAllowEnterTransitionOverlap">true</item>
@@ -23,4 +23,10 @@
         <item name="cornerFamily">rounded</item>
         <item name="cornerSize">12dp</item>
     </style>
+
+    <style name="PopupAnimation">
+        <item name="android:windowEnterAnimation">@anim/popupwindow_show</item>
+        <item name="android:windowExitAnimation">@anim/popupwindow_dismiss</item>
+    </style>
+
 </resources>

@@ -3,10 +3,8 @@ package com.example.musicplayer.ui.playlistdetail;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
@@ -16,13 +14,11 @@ import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
-import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.text.InputType;
-import android.transition.Explode;
 import android.transition.Slide;
 import android.util.DisplayMetrics;
 import android.util.TypedValue;
@@ -34,28 +30,21 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.AnimationUtils;
-import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.example.musicplayer.MainActivity;
 import com.example.musicplayer.R;
 import com.example.musicplayer.adapter.PlaylistDetailAdapter;
-import com.example.musicplayer.adapter.SongListAdapter;
 import com.example.musicplayer.entities.MusicResolver;
 import com.example.musicplayer.ui.DatabaseViewmodel;
 import com.example.musicplayer.ui.playlist.PlaylistInterface;
 import com.example.musicplayer.utils.NavigationControlInterface;
-import com.google.android.material.button.MaterialButton;
 import com.google.android.material.snackbar.BaseTransientBottomBar;
 import com.google.android.material.snackbar.Snackbar;
-import com.google.android.material.transition.MaterialContainerTransform;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Objects;
 
 
 public class PlaylistDetail extends Fragment implements OnStartDragListener {
@@ -177,6 +166,7 @@ public class PlaylistDetail extends Fragment implements OnStartDragListener {
             databaseViewmodel.fetchTableContent(table, requireContext()).observe(getViewLifecycleOwner(),trackList ->{
                 this.trackList.addAll(trackList);
                 playlistDetailAdapter.notifyDataSetChanged();
+                //Todo: Change Listener to only set tracklist when item/shuffle is clicked
                 playlistInterface.OnPlaylistCreatedListener(this.trackList);
 
                 long duration =0;
@@ -266,7 +256,7 @@ public class PlaylistDetail extends Fragment implements OnStartDragListener {
         shuffle.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                playlistInterface.OnShuffle();
+                playlistInterface.OnPlaylistShuffle();
             }
         });
 

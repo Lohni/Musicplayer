@@ -1,24 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout
+    android:id="@+id/playbackcontrol_parent"
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    tools:context=".ui.playbackcontrol.PlaybackControl">
+    android:filterTouchesWhenObscured="true"
+    tools:context=".ui.playbackcontrol.PlaybackControl"
+    android:transitionName="@string/transition_playback_layout">
 
     <com.example.musicplayer.ui.views.PlaybackControlSeekbar
         android:id="@+id/new_seekbar"
         android:layout_width="match_parent"
         android:layout_height="8dp"
-        android:focusable="true"
-        android:focusableInTouchMode="true"
-        app:layout_constraintBottom_toTopOf="@id/control_holder"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintBottom_toTopOf="@id/playbackcontrol_visualizer"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"/>
 
     <com.example.musicplayer.ui.views.AudioVisualizerView
         android:id="@+id/playbackcontrol_visualizer"
         android:layout_width="match_parent"
         android:layout_height="0dp"
+        android:focusable="false"
+        app:visualizerColor="@color/colorPrimaryInfinite"
+        android:filterTouchesWhenObscured="true"
         app:layout_constraintTop_toBottomOf="@id/new_seekbar"
         app:layout_constraintBottom_toBottomOf="parent"/>
 
@@ -27,7 +34,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
-        android:orientation="vertical"
+        android:focusable="false"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toBottomOf="@id/new_seekbar">
@@ -36,8 +43,10 @@
             android:id="@+id/control_play"
             android:layout_width="48dp"
             android:layout_height="48dp"
+            android:clickable="true"
+            android:focusable="true"
             android:background="@drawable/play_to_pause_anim"
-            android:backgroundTint="@color/colorSecondaryLight"
+            android:backgroundTint="@color/colorTextLight"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintLeft_toRightOf="@id/control_title"
             app:layout_constraintRight_toLeftOf="@id/control_skip"
@@ -48,7 +57,7 @@
             android:layout_width="48dp"
             android:layout_height="48dp"
             android:background="@drawable/anim_skip_forward"
-            android:backgroundTint="@color/colorSecondaryLight"
+            android:backgroundTint="@color/colorTextLight"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintLeft_toRightOf="@id/control_play"
             app:layout_constraintRight_toRightOf="parent"
@@ -58,31 +67,59 @@
             android:id="@+id/control_title"
             android:layout_width="0dp"
             android:layout_height="24dp"
-            android:layout_marginStart="48dp"
-            android:textColor="@color/colorSecondaryLight"
+            android:layout_marginStart="8dp"
+            android:textColor="@color/colorTextLight"
+            android:focusable="false"
             android:textSize="16sp"
-            android:focusable="true"
-            android:focusableInTouchMode="true"
             android:ellipsize="marquee"
             android:marqueeRepeatLimit="marquee_forever"
             android:scrollHorizontally="true"
             android:singleLine="true"
-            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintLeft_toRightOf="@id/control_queue"
             app:layout_constraintRight_toLeftOf="@id/control_play"
             app:layout_constraintTop_toTopOf="parent"
-            android:transitionName="playback_title"/>
+            android:transitionName="@string/transition_playback_title"/>
 
         <com.google.android.material.textview.MaterialTextView
             android:id="@+id/control_artist"
             android:layout_width="0dp"
             android:layout_height="24dp"
-            android:layout_marginStart="48dp"
-            android:textColor="@color/colorSecondaryLight"
+            android:layout_marginStart="8dp"
+            android:textColor="@color/colorTextLight"
             android:textSize="16sp"
+            android:focusable="false"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintLeft_toRightOf="@id/control_queue"
             app:layout_constraintRight_toLeftOf="@id/control_play"
             app:layout_constraintTop_toBottomOf="@id/control_title" />
 
+        <ImageButton
+            android:id="@+id/control_queue"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_marginStart="8dp"
+            android:focusable="false"
+            android:backgroundTint="@color/colorTextLight"
+            android:background="@drawable/ic_baseline_queue_music_24"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent" />
+
+        <TextView
+            android:id="@+id/playbackcontrol_queue_count"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/circular_badge"
+            android:backgroundTint="@color/colorSecondaryLight"
+            android:textColor="@color/colorPrimaryInfinite"
+            android:gravity="center"
+            android:layout_marginTop="3dp"
+            android:layout_marginStart="6dp"
+            android:paddingStart="3dp"
+            android:paddingEnd="3dp"
+            android:textSize="11sp"
+            android:textStyle="bold"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

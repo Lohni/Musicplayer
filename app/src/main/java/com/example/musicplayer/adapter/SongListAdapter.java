@@ -56,7 +56,8 @@ public class SongListAdapter extends RecyclerView.Adapter<SongListAdapter.ViewHo
         holder.coverImage.setImageDrawable(customCoverImage);
         holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View view) {
+            public void onClick(View view){
+                songListInterface.OnSongListCreatedListener(songList);
                 songListInterface.OnSongSelectedListener(position);
             }
         });
@@ -75,8 +76,6 @@ public class SongListAdapter extends RecyclerView.Adapter<SongListAdapter.ViewHo
             }
         },500);
     }
-
-
 
     /*
     @Override

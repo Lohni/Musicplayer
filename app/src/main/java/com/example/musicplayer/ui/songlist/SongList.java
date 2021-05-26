@@ -65,7 +65,7 @@ public class SongList extends Fragment{
     private SongListAdapter songListAdapter;
     private ConstraintLayout shuffle;
 
-    private ArrayList<MusicResolver> songList = new ArrayList<>();
+    private final ArrayList<MusicResolver> songList = new ArrayList<>();
     private SongListInterface songListInterface;
     private NavigationControlInterface navigationControlInterface;
     private TextView shuffle_size, indexZoom;
@@ -118,6 +118,7 @@ public class SongList extends Fragment{
         shuffle.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                songListInterface.OnSongListCreatedListener(songList);
                 songListInterface.OnSonglistShuffleClickListener();
             }
         });
@@ -170,7 +171,6 @@ public class SongList extends Fragment{
             }
         });
 
-        songListInterface.OnSongListCreatedListener(songList);
         shuffle_size.setText(songList.size() + " Songs");
     }
 
