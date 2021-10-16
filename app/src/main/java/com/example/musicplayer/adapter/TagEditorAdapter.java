@@ -50,25 +50,17 @@ public class TagEditorAdapter extends RecyclerView.Adapter<TagEditorAdapter.View
         MusicResolver track = trackList.get(position);
         holder.artist.setText(track.getArtist());
         holder.title.setText(track.getTitle());
-        holder.itemView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                tagEditorInterface.onTrackSelectedListener(track);
-            }
-        });
+        holder.itemView.setOnClickListener(view -> tagEditorInterface.onTrackSelectedListener(track));
         holder.cover.setImageDrawable(customDrawable);
 
-        holder.cover.post(new Runnable() {
-            @Override
-            public void run() {
-                Uri trackUri = ContentUris.withAppendedId(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,track.getId());
-                MediaMetadataRetriever mmr = new MediaMetadataRetriever();
-                mmr.setDataSource(context,trackUri);
-                byte [] thumbnail = mmr.getEmbeddedPicture();
-                mmr.release();
-                if (thumbnail != null){
-                    holder.cover.setImageDrawable(new BitmapDrawable(context.getResources(), BitmapFactory.decodeByteArray(thumbnail, 0, thumbnail.length)));
-                }
+        holder.cover.post(() -> {
+            Uri trackUri = ContentUris.withAppendedId(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,track.getId());
+            MediaMetadataRetriever mmr = new MediaMetadataRetriever();
+            mmr.setDataSource(context,trackUri);
+            byte [] thumbnail = mmr.getEmbeddedPicture();
+            mmr.release();
+            if (thumbnail != null){
+                holder.cover.setImageDrawable(new BitmapDrawable(context.getResources(), BitmapFactory.decodeByteArray(thumbnail, 0, thumbnail.length)));
             }
         });
     }

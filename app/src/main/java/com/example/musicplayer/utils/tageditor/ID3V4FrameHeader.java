@@ -3,7 +3,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
 public class ID3V4FrameHeader {
-
+    public static final int FRAME_HEADER_LENGTH = 10;
     public int FRAME_SIZE, TAG_ALTER_PRESERVATION, FILE_ALTER_PRESERVATION,
             READONLY, GROUPING, COMPRESSION, ENCRYPTION, UNSYNCHRONISATION, DATA_LENGTH_INDICATOR;
 

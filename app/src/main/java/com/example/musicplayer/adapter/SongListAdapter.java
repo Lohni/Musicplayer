@@ -37,8 +37,8 @@ public class SongListAdapter extends RecyclerView.Adapter<SongListAdapter.ViewHo
     public SongListAdapter(Context c, ArrayList<MusicResolver> songList, SongListInterface songListInterface){
         this.songList=songList;
         this.songListInterface = songListInterface;
-        context = c;
-        customCoverImage = ResourcesCompat.getDrawable(c.getResources(),R.drawable.ic_baseline_music_note_24,null);
+        this.context = c;
+        this.customCoverImage = ResourcesCompat.getDrawable(c.getResources(),R.drawable.ic_baseline_music_note_24,null);
     }
 
     @NonNull
@@ -54,25 +54,19 @@ public class SongListAdapter extends RecyclerView.Adapter<SongListAdapter.ViewHo
         holder.artist.setText(track.getArtist());
         holder.title.setText(track.getTitle());
         holder.coverImage.setImageDrawable(customCoverImage);
-        holder.itemView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view){
-                songListInterface.OnSongListCreatedListener(songList);
-                songListInterface.OnSongSelectedListener(position);
-            }
+        holder.itemView.setOnClickListener(view -> {
+            songListInterface.OnSongListCreatedListener(songList);
+            songListInterface.OnSongSelectedListener(position);
         });
 
-        holder.coverImage.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                Uri trackUri = ContentUris.withAppendedId(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,track.getId());
-                MediaMetadataRetriever mmr = new MediaMetadataRetriever();
-                mmr.setDataSource(context,trackUri);
-                byte [] thumbnail = mmr.getEmbeddedPicture();
-                mmr.release();
-                if (thumbnail != null){
-                    holder.coverImage.setImageBitmap(BitmapFactory.decodeByteArray(thumbnail, 0, thumbnail.length));
-                }
+        holder.coverImage.postDelayed(() -> {
+            Uri trackUri = ContentUris.withAppendedId(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,track.getId());
+            MediaMetadataRetriever mmr = new MediaMetadataRetriever();
+            mmr.setDataSource(context,trackUri);
+            byte [] thumbnail = mmr.getEmbeddedPicture();
+            mmr.release();
+            if (thumbnail != null){
+                holder.coverImage.setImageBitmap(BitmapFactory.decodeByteArray(thumbnail, 0, thumbnail.length));
             }
         },500);
     }
