@@ -61,7 +61,7 @@ public class ControlKnob extends View {
         disabledPrimaryStroke.setColor(ContextCompat.getColor(context, R.color.colorPrimaryNight));
         disabledPrimaryStroke.setStyle(Paint.Style.STROKE);
         progressThickness = dipTOPx(2f,context);
-        paddingKnobToProgress = dipTOPx(8f,context);
+        paddingKnobToProgress = dipTOPx(6f,context);
         primaryStroke.setStrokeWidth(progressThickness);
         secondary.setStrokeWidth(progressThickness);
         progressSecondary.setColor(ContextCompat.getColor(context, R.color.colorPrimary));

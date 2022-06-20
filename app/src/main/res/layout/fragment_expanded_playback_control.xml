@@ -139,12 +139,12 @@
             android:id="@+id/expanded_control_skipforward"
             android:layout_width="48dp"
             android:layout_height="48dp"
-            android:background="@drawable/ic_skip_next_black_24dp"
+            android:background="@drawable/anim_skip_forward"
             android:backgroundTint="@color/colorTextLight"
             app:layout_constraintBottom_toBottomOf="@id/expanded_control_play"
             app:layout_constraintLeft_toRightOf="@id/expanded_control_play"
             app:layout_constraintRight_toRightOf="parent"
-            app:layout_constraintTop_toTopOf="@id/expanded_control_play"/>
+            app:layout_constraintTop_toTopOf="@id/expanded_control_play" />
 
         <com.google.android.material.textview.MaterialTextView
             android:id="@+id/expanded_current_time"

@@ -2,25 +2,16 @@ package com.example.musicplayer.ui.audioeffects;
 
 import android.app.AlertDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.res.ColorStateList;
 import android.content.res.Resources;
 import android.os.Bundle;
-
-import androidx.annotation.NonNull;
-import androidx.core.content.ContextCompat;
-import androidx.fragment.app.Fragment;
-import androidx.lifecycle.ViewModelProvider;
-
 import android.text.InputType;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
@@ -28,17 +19,23 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 
 import com.example.musicplayer.R;
-import com.example.musicplayer.ui.audioeffects.database.EqualizerSettings;
+import com.example.musicplayer.database.entity.EqualizerPreset;
+import com.example.musicplayer.database.viewmodel.AudioEffectViewModel;
 import com.google.android.material.switchmaterial.SwitchMaterial;
 import com.google.android.material.textfield.MaterialAutoCompleteTextView;
 import com.google.android.material.textfield.TextInputLayout;
 
 import java.util.ArrayList;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
+import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
+
 public class EqualizerFragment extends Fragment {
     private EqualizerProperties equalizerProperties;
-    private short[] bandlevel;
-    private ArrayList<EqualizerSettings> equalizerPresets= new ArrayList<>();
+    private short[] bandlevel = new short[5];
     private View view;
     private MaterialAutoCompleteTextView mACT;
     private TextInputLayout textInputLayout;
@@ -47,13 +44,14 @@ public class EqualizerFragment extends Fragment {
 
     private AudioEffectInterface audioEffectInterface;
     private AudioEffectViewModel audioEffectViewModel;
-    private ArrayAdapter<EqualizerSettings> arrayAdapter;
+    private ArrayAdapter<EqualizerPreset> arrayAdapter;
+
+    private ArrayList<EqualizerPreset> equalizerPresets = new ArrayList<>();
 
     private int selectedIndex = -1;
     private boolean equalizerEnabled = false;
 
     public EqualizerFragment() {
-        // Required empty public constructor
     }
 
     @Override
@@ -61,9 +59,16 @@ public class EqualizerFragment extends Fragment {
         super.onAttach(context);
         try {
             audioEffectInterface = (AudioEffectInterface) context;
-        } catch (ClassCastException e){
-            throw new ClassCastException(context.toString() + "must implement AudioEffectInterface");
+        } catch (ClassCastException e) {
+            throw new ClassCastException(context + "must implement AudioEffectInterface");
         }
+    }
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        audioEffectViewModel = new ViewModelProvider(this).get(AudioEffectViewModel.class);
     }
 
     @Override
@@ -77,12 +82,11 @@ public class EqualizerFragment extends Fragment {
         presetAdd = view.findViewById(R.id.equalizer_add);
         presetDelete = view.findViewById(R.id.equalizer_delete);
 
-        audioEffectViewModel = new ViewModelProvider(requireActivity()).get(AudioEffectViewModel.class);
         audioEffectViewModel.getAllEqualizerPresets().observe(getViewLifecycleOwner(), list -> {
-            if (list != null){
+            if (list != null) {
                 equalizerPresets.clear();
                 equalizerPresets.addAll(list);
-                if (arrayAdapter == null){
+                if (arrayAdapter == null) {
                     arrayAdapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_list_item_1, equalizerPresets);
                     mACT.setAdapter(arrayAdapter);
                 }
@@ -90,76 +94,69 @@ public class EqualizerFragment extends Fragment {
             }
         });
 
-        mACT.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                EqualizerSettings activePreset = equalizerPresets.get(i);
-                activePreset.setIsSelected(1);
+        mACT.setOnItemClickListener((adapterView, view, i, l) -> {
+            EqualizerPreset activePreset = equalizerPresets.get(i);
+            activePreset.setEqActive(1);
 
-                if (selectedIndex >= 0){
-                    EqualizerSettings unActivePreset = equalizerPresets.get(selectedIndex);
-                    unActivePreset.setIsSelected(0);
-
-                    selectedIndex = i;
-
-                    audioEffectViewModel.updateEqualizerSettings(unActivePreset, activePreset);
-                } else{
-                    audioEffectViewModel.updateEqualizerSetting(activePreset);
-                }
+            if (selectedIndex >= 0) {
+                EqualizerPreset unActivePreset = equalizerPresets.get(selectedIndex);
+                unActivePreset.setEqActive(0);
+                selectedIndex = i;
+                audioEffectViewModel.updateEqualizerPreset(unActivePreset);
             }
+
+            audioEffectViewModel.updateEqualizerPreset(activePreset);
         });
 
         createLayout();
         setViewsEnabled();
+
         presetAdd.setOnClickListener((button -> {
-            if (equalizerEnabled)showAddPresetDialog();
+            if (equalizerEnabled) showAddPresetDialog();
         }));
+
         presetDelete.setOnClickListener(button -> {
-            if (equalizerEnabled)showPresetDeleteDialog();
+            if (equalizerEnabled) showPresetDeleteDialog();
         });
-        enabledSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
-                audioEffectInterface.onEqualizerStatusChanged(b);
-                equalizerEnabled = b;
-                setViewsEnabled();
-            }
+
+        enabledSwitch.setOnCheckedChangeListener((compoundButton, b) -> {
+            audioEffectInterface.onEqualizerStatusChanged(b);
+            equalizerEnabled = b;
+            setViewsEnabled();
         });
         enabledSwitch.setChecked(equalizerEnabled);
 
         return view;
     }
 
-    public void initEqualizerFragment(short[] equalizerBandLevels, boolean equalizerEnabled, EqualizerProperties equalizerProperties){
+    public void initEqualizerFragment(short[] equalizerBandLevels, boolean equalizerEnabled, EqualizerProperties equalizerProperties) {
         this.bandlevel = equalizerBandLevels;
         this.equalizerEnabled = equalizerEnabled;
         this.equalizerProperties = equalizerProperties;
     }
 
-
-    private void getCurrentActive(){
-        for (int i = 0; i<equalizerPresets.size(); i++){
-            EqualizerSettings equalizerSettings = equalizerPresets.get(i);
-            if (equalizerSettings.getIsSelected() == 1){
+    private void getCurrentActive() {
+        for (int i = 0; i < equalizerPresets.size(); i++) {
+            EqualizerPreset equalizerSettings = equalizerPresets.get(i);
+            if (equalizerSettings.getEqActive().equals(1)) {
                 selectedIndex = i;
-                bandlevel = equalizerSettings.getBandLevels();
-                mACT.setText(equalizerSettings.toString(), false);
+                mACT.setText(equalizerSettings.getEqName(), false);
                 updateSeekbars();
-                audioEffectInterface.onEqualizerChanged(bandlevel);
+                audioEffectInterface.onEqualizerChanged(equalizerSettings);
                 break;
             }
         }
     }
 
-    private void updateSeekbars(){
-        for (short i=0; i < bandlevel.length;i++){
+    private void updateSeekbars() {
+        for (short i = 0; i < bandlevel.length; i++) {
             SeekBar seekBar = view.findViewById(i);
             int bandlevel = this.bandlevel[i];
             seekBar.setProgress(bandlevel - equalizerProperties.getLowerBandLevel());
         }
     }
 
-    private void createLayout(){
+    private void createLayout() {
         int numberFreqBands = (short) bandlevel.length;
         short lowerEQBandLevel = equalizerProperties.getLowerBandLevel();
         short upperEQBandLevel = equalizerProperties.getUpperBandLevel();
@@ -169,10 +166,10 @@ public class EqualizerFragment extends Fragment {
         long width = getResources().getDisplayMetrics().widthPixels;
         long height = getResources().getDisplayMetrics().heightPixels;
 
-        int laywidth = (int) (width/(numberFreqBands));
+        int laywidth = (int) (width / (numberFreqBands));
         Resources r = getResources();
 
-        int playbackControlHeight =(int) TypedValue.applyDimension(
+        int playbackControlHeight = (int) TypedValue.applyDimension(
                 TypedValue.COMPLEX_UNIT_DIP,
                 64f,
                 r.getDisplayMetrics()
@@ -216,13 +213,13 @@ public class EqualizerFragment extends Fragment {
 
         float navigationBarHeight = getResources().getDimensionPixelSize(getResources().getIdentifier("navigation_bar_height", "dimen", "android"));
 
-        for(short i=0;i<numberFreqBands;i++){
+        for (short i = 0; i < numberFreqBands; i++) {
             final short bandIndex = i;
             LinearLayout.LayoutParams textLay = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-            textLay.gravity=Gravity.CENTER;
+            textLay.gravity = Gravity.CENTER;
             TextView freq = new TextView(requireContext());
             freq.setGravity(Gravity.CENTER);
-            freq.setText((equalizerProperties.getCenterFreqAtIndex(i))/1000 + "Hz");
+            freq.setText((equalizerProperties.getCenterFreqAtIndex(i)) / 1000 + "Hz");
             freq.setTextSize(TypedValue.COMPLEX_UNIT_SP, 16f);
             freq.setTextColor(ContextCompat.getColor(requireContext(), R.color.colorTextLight));
 
@@ -231,13 +228,13 @@ public class EqualizerFragment extends Fragment {
             rowLayout.setLayoutParams(new ViewGroup.LayoutParams(laywidth, ViewGroup.LayoutParams.MATCH_PARENT));
 
             LinearLayout.LayoutParams lowBandlvlLay = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-            lowBandlvlLay.gravity=Gravity.CENTER;
+            lowBandlvlLay.gravity = Gravity.CENTER;
 
             LinearLayout.LayoutParams seeklay = new LinearLayout.LayoutParams(
-                    (int) (height-appBarHeight-playbackControlHeight - seekbarMargin - freqtextHeight - headertextHeight - chipLayoutHeight - statusBarHeight - navigationBarHeight),
+                    (int) (height - appBarHeight - playbackControlHeight - seekbarMargin - freqtextHeight - headertextHeight - chipLayoutHeight - statusBarHeight - navigationBarHeight),
                     10);
-            seeklay.weight=1;
-            seeklay.gravity=Gravity.CENTER;
+            seeklay.weight = 1;
+            seeklay.gravity = Gravity.CENTER;
 
             final SeekBar seekBar = new SeekBar(requireContext());
             seekBar.setId(i);
@@ -250,20 +247,25 @@ public class EqualizerFragment extends Fragment {
             seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
                 @Override
                 public void onProgressChanged(SeekBar seekBar, int value, boolean b) {
-                    bandlevel[bandIndex] = (short)(value+lowerEQBandLevel);
+                    bandlevel[bandIndex] = (short) (value + lowerEQBandLevel);
                 }
 
                 @Override
                 public void onStartTrackingTouch(SeekBar seekBar) {
-
                 }
 
                 @Override
                 public void onStopTrackingTouch(SeekBar seekBar) {
-                    if (selectedIndex >= 0){
-                        EqualizerSettings equalizerSettings = equalizerPresets.get(selectedIndex);
-                        equalizerSettings.setBandLevels(bandlevel);
-                        audioEffectViewModel.updateEqualizerSetting(equalizerSettings);
+                    if (selectedIndex >= 0) {
+                        EqualizerPreset equalizerSettings = equalizerPresets.get(selectedIndex);
+
+                        equalizerSettings.setEqLevel1((int) bandlevel[0]);
+                        equalizerSettings.setEqLevel2((int) bandlevel[1]);
+                        equalizerSettings.setEqLevel3((int) bandlevel[2]);
+                        equalizerSettings.setEqLevel4((int) bandlevel[3]);
+                        equalizerSettings.setEqLevel5((int) bandlevel[4]);
+
+                        audioEffectViewModel.updateEqualizerPreset(equalizerSettings);
                     }
                 }
             });
@@ -274,11 +276,11 @@ public class EqualizerFragment extends Fragment {
         }
     }
 
-    private void setViewsEnabled(){
+    private void setViewsEnabled() {
         textInputLayout.setEnabled(equalizerEnabled);
         presetDelete.setEnabled(equalizerEnabled);
         presetAdd.setEnabled(equalizerEnabled);
-        for (short i=0; i < bandlevel.length;i++){
+        for (short i = 0; i < bandlevel.length; i++) {
             SeekBar seekBar = view.findViewById(i);
             seekBar.setEnabled(equalizerEnabled);
         }
@@ -287,60 +289,53 @@ public class EqualizerFragment extends Fragment {
     /*
     Dialogs
     */
-    private void showAddPresetDialog(){
+    private void showAddPresetDialog() {
         AlertDialog.Builder builder = new AlertDialog.Builder(requireContext()).setTitle("New preset");
 
         final EditText input = new EditText(requireContext());
         input.setInputType(InputType.TYPE_CLASS_TEXT);
         builder.setView(input);
 
-        builder.setPositiveButton("Create", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                EqualizerSettings equalizerSettings = new EqualizerSettings();
-                equalizerSettings.setEqualizer_preset_name(input.getText().toString());
-                equalizerSettings.setBandLevels(bandlevel);
-                equalizerSettings.setIsSelected(1);
-                mACT.setText(equalizerSettings.toString(), false);
+        builder.setPositiveButton("Create", (dialogInterface, i) -> {
+            EqualizerPreset equalizerSettings = new EqualizerPreset();
+            equalizerSettings.setEqName(input.getText().toString());
 
-                if (selectedIndex >= 0) {
-                    EqualizerSettings unActivePreset = equalizerPresets.get(selectedIndex);
-                    unActivePreset.setIsSelected(0);
-                    audioEffectViewModel.updateEqualizerSetting(unActivePreset);
-                }
+            equalizerSettings.setEqLevel1((int) bandlevel[0]);
+            equalizerSettings.setEqLevel2((int) bandlevel[1]);
+            equalizerSettings.setEqLevel3((int) bandlevel[2]);
+            equalizerSettings.setEqLevel4((int) bandlevel[3]);
+            equalizerSettings.setEqLevel5((int) bandlevel[4]);
 
-                audioEffectViewModel.createNewEqualizerPreset(equalizerSettings);
+            equalizerSettings.setEqActive(1);
+            mACT.setText(equalizerSettings.toString(), false);
+
+            if (selectedIndex >= 0) {
+                EqualizerPreset unActivePreset = equalizerPresets.get(selectedIndex);
+                unActivePreset.setEqActive(0);
+                audioEffectViewModel.updateEqualizerPreset(unActivePreset);
             }
+
+            audioEffectViewModel.insertEqualizerPreset(equalizerSettings);
         });
-        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                dialogInterface.cancel();
-            }
-        });
+
+        builder.setNegativeButton("Cancel", (dialogInterface, i) -> dialogInterface.cancel());
+
         builder.show();
     }
 
-    private void showPresetDeleteDialog(){
-        if (selectedIndex >= 0){
-            EqualizerSettings equalizerSettings = equalizerPresets.get(selectedIndex);
+    private void showPresetDeleteDialog() {
+        if (selectedIndex >= 0) {
+            EqualizerPreset equalizerSettings = equalizerPresets.get(selectedIndex);
+
             AlertDialog.Builder builder = new AlertDialog.Builder(requireContext()).setTitle("Delete");
-            builder.setMessage("Delete preset " + equalizerSettings.toString() + "?");
-            builder.setPositiveButton("Delete", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialogInterface, int i) {
-                    selectedIndex = -1;
-                    mACT.setText("", false);
-                    mACT.clearFocus();
-                    audioEffectViewModel.deleteEqualizerPreset(equalizerSettings);
-                }
+            builder.setMessage("Delete preset " + equalizerSettings.getEqName() + "?");
+            builder.setPositiveButton("Delete", (dialogInterface, i) -> {
+                selectedIndex = -1;
+                mACT.setText("", false);
+                mACT.clearFocus();
+                audioEffectViewModel.deleteEqualizerPreset(equalizerSettings);
             });
-            builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialogInterface, int i) {
-                    dialogInterface.cancel();
-                }
-            });
+            builder.setNegativeButton("Cancel", (dialogInterface, i) -> dialogInterface.cancel());
             builder.show();
         }
     }

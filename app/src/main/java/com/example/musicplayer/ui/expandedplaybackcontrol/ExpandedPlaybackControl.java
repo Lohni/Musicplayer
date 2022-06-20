@@ -1,34 +1,28 @@
 package com.example.musicplayer.ui.expandedplaybackcontrol;
 
 import android.Manifest;
+import android.content.BroadcastReceiver;
 import android.content.ContentUris;
 import android.content.Context;
-import android.content.pm.PackageManager;
-import android.content.res.ColorStateList;
-import android.content.res.Resources;
+import android.content.Intent;
 import android.graphics.BitmapFactory;
+import android.graphics.drawable.AnimatedVectorDrawable;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
-import android.graphics.drawable.VectorDrawable;
 import android.media.MediaMetadataRetriever;
 import android.net.Uri;
 import android.os.Bundle;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.content.res.AppCompatResources;
-import androidx.core.app.ActivityCompat;
+import androidx.constraintlayout.motion.widget.MotionLayout;
 import androidx.core.content.ContextCompat;
 import androidx.core.content.res.ResourcesCompat;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentActivity;
-import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentPagerAdapter;
-import androidx.viewpager2.adapter.FragmentStateAdapter;
-import androidx.viewpager2.widget.ViewPager2;
 
 import android.provider.MediaStore;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -36,10 +30,10 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.example.musicplayer.R;
-import com.example.musicplayer.entities.MusicResolver;
+import com.example.musicplayer.inter.PlaybackControlInterface;
+import com.example.musicplayer.inter.ServiceTriggerInterface;
 import com.example.musicplayer.ui.views.AudioVisualizerView;
 import com.example.musicplayer.utils.Permissions;
 import com.example.musicplayer.utils.enums.PlaybackBehaviour;
@@ -52,10 +46,12 @@ public class ExpandedPlaybackControl extends Fragment {
     private SeekBar expanded_seekbar;
     private PlaybackBehaviour.PlaybackBehaviourState playbackBehaviour;
     private View view;
+    private MotionLayout parentContainer;
 
-    private ExpandedPlaybackControlInterface epcInterface;
+    private PlaybackControlInterface epcInterface;
+    private ServiceTriggerInterface serviceTriggerInterface;
 
-    private int newProgress, audioSessionID, queue_size = 0, queue_index = 0;
+    private int newProgress, queue_size = 0, queue_index = 0;
     private boolean seekbarUserAction=false;
 
     public ExpandedPlaybackControl() {
@@ -65,14 +61,24 @@ public class ExpandedPlaybackControl extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        OnBackPressedCallback callback = new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                parentContainer.setInteractionEnabled(true);
+                parentContainer.transitionToStart();
+            }
+        };
+        requireActivity().getOnBackPressedDispatcher().addCallback(this, callback);
         postponeEnterTransition();
+        serviceTriggerInterface.triggerCurrentDataBroadcast();
     }
 
     @Override
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
         try {
-            epcInterface = (ExpandedPlaybackControlInterface) context;
+            epcInterface = (PlaybackControlInterface) context;
+            serviceTriggerInterface = (ServiceTriggerInterface) context;
         } catch (ClassCastException e){
             throw new ClassCastException(context.toString() + "must implement PlaybackControlInterface");
         }
@@ -87,8 +93,8 @@ public class ExpandedPlaybackControl extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
         view = inflater.inflate(R.layout.fragment_expanded_playback_control, container, false);
+        parentContainer = view.findViewById(R.id.parentContainer);
         expanded_title = view.findViewById(R.id.expanded_control_title);
         expanded_artist = view.findViewById(R.id.expanded_control_artist);
         expanded_play = view.findViewById(R.id.expanded_control_play);
@@ -108,13 +114,17 @@ public class ExpandedPlaybackControl extends Fragment {
         
         requireActivity().startPostponedEnterTransition();
 
-        expanded_play.setOnClickListener(view -> epcInterface.OnStateChangeListener());
+        expanded_play.setOnClickListener(view -> epcInterface.onStateChangeListener());
 
-        expanded_skipforward.setOnClickListener(view -> epcInterface.OnSkipPressedListener());
+        expanded_skipforward.setOnClickListener(view -> {
+            AnimatedVectorDrawable animatedVectorDrawable = (AnimatedVectorDrawable) expanded_skipforward.getBackground();
+            animatedVectorDrawable.start();
+            epcInterface.onNextClickListener();
+        });
 
-        expanded_skipback.setOnClickListener(view -> epcInterface.OnSkipPreviousListener());
+        expanded_skipback.setOnClickListener(view -> epcInterface.onPreviousClickListener());
 
-        collapse.setOnClickListener(view -> epcInterface.OnCloseListener());
+        collapse.setOnClickListener(view -> {parentContainer.setInteractionEnabled(true); parentContainer.transitionToStart();});
 
         expanded_seekbar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
@@ -129,14 +139,14 @@ public class ExpandedPlaybackControl extends Fragment {
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
-                epcInterface.OnSeekbarChangeListener(newProgress);
+                epcInterface.onProgressChangeListener(newProgress);
                 seekbarUserAction=false;
             }
         });
 
         expanded_behaviourControl.setOnClickListener((imageview -> {
             playbackBehaviour = PlaybackBehaviour.getNextState(playbackBehaviour);
-            epcInterface.OnBehaviourChangedListener(playbackBehaviour);
+            epcInterface.onPlaybackBehaviourChangeListener(playbackBehaviour);
             updateBehaviourImage();
         }));
         return view;
@@ -201,7 +211,6 @@ public class ExpandedPlaybackControl extends Fragment {
     }
 
     public void setAudioSessionID(int audioSessionID){
-        this.audioSessionID=audioSessionID;
         Permissions.permission(requireActivity(), this, Manifest.permission.RECORD_AUDIO);
         audioVisualizerView.initVisualizer(audioSessionID);
     }
@@ -247,4 +256,21 @@ public class ExpandedPlaybackControl extends Fragment {
         updateQueueState();
     }
 
+    private BroadcastReceiver receiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            Bundle bundle = intent.getExtras();
+            setSongInfo(bundle.getString("TITLE"),
+                    bundle.getString("ARTIST"),
+                    bundle.getInt("DURATION"),
+                    bundle.getLong("ID"));
+
+            setAudioSessionID(bundle.getInt("SESSION_ID"));
+            setControlButton(bundle.getBoolean("ISONPAUSE"));
+            updateSeekbar(bundle.getInt("CURRENT_POSITION"));
+            setQueueSize(bundle.getInt("QUEUE_SIZE"));
+            setQueueIndex(bundle.getInt("QUEUE_INDEX"));
+            setBehaviourState(PlaybackBehaviour.getStateFromInteger(bundle.getInt("BEHAVIOUR_STATE")));
+        }
+    };
 }

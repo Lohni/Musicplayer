@@ -16,7 +16,7 @@ public class ID3V4TextFrame extends ID3V4Frame<String> {
     public void setFrameData(String frameData) {
         FRAME_DATA = frameData;
         //+1 for encoding byte
-        frameHeader.setNewFrameSize(frameData.length() + 1);
+        frameHeader.setNewFrameSize(getFrameContentAsBytes().length + 1);
     }
 
     @Override
@@ -54,11 +54,11 @@ public class ID3V4TextFrame extends ID3V4Frame<String> {
 
     @Override
     public int getFrameContentSize() {
-        return FRAME_DATA.length() + 1;
+        return getFrameContentAsBytes().length + 1;
     }
 
     public int getFrameSize() {
-        return ID3V4FrameHeader.FRAME_HEADER_LENGTH + FRAME_ENCODING_LENGHT + FRAME_DATA.length();
+        return ID3V4FrameHeader.FRAME_HEADER_LENGTH + FRAME_ENCODING_LENGHT + getFrameContentAsBytes().length;
     }
 
     public String getFrameId() {

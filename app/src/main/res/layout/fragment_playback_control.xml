@@ -24,7 +24,7 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:focusable="false"
-        app:visualizerColor="@color/colorPrimaryInfinite"
+        app:visualizerColor="@color/colorDarkSurface8Percent"
         android:filterTouchesWhenObscured="true"
         app:layout_constraintTop_toBottomOf="@id/new_seekbar"
         app:layout_constraintBottom_toBottomOf="parent"/>

@@ -93,7 +93,7 @@ public class ID3V2TagHeader {
         header[0] = tagIdentifier[0];
         header[1] = tagIdentifier[1];
         header[2] = tagIdentifier[2];
-        header[3] = (byte) TAG_VERSION_MAJOR;
+        header[3] = (byte) 4; //Allways write tag as version 4
         header[4] = (byte) TAG_VERSION_REVISION;
         header[5] = getFlagsAsByte();
         byte[] encodedSizeBytes = getEncodedSize();

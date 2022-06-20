@@ -1,33 +1,30 @@
 package com.example.musicplayer.ui.playbackcontrol;
 
 import android.Manifest;
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.drawable.AnimatedVectorDrawable;
 import android.os.Bundle;
+import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ImageButton;
+import android.widget.TextView;
+
+import com.example.musicplayer.R;
+import com.example.musicplayer.inter.PlaybackControlInterface;
+import com.example.musicplayer.ui.views.AudioVisualizerView;
+import com.example.musicplayer.ui.views.PlaybackControlSeekbar;
+import com.example.musicplayer.inter.ServiceTriggerInterface;
 
 import androidx.annotation.NonNull;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
-
-import android.transition.Fade;
-import android.util.Log;
-import android.view.DragEvent;
-import android.view.LayoutInflater;
-import android.view.MotionEvent;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.ImageButton;
-import android.widget.SeekBar;
-import android.widget.TextView;
-
-import com.example.musicplayer.R;
-import com.example.musicplayer.transition.AlbumDetailTransition;
-import com.example.musicplayer.ui.expandedplaybackcontrol.ExpandedPlaybackControl;
-import com.example.musicplayer.ui.views.AudioVisualizerView;
-import com.example.musicplayer.ui.views.PlaybackControlSeekbar;
 
 
 public class PlaybackControl extends Fragment {
@@ -39,10 +36,11 @@ public class PlaybackControl extends Fragment {
     private AudioVisualizerView audioVisualizerView;
     private ConstraintLayout parentLayout;
 
-    private int newProgress,audioSessionID, queueCount = 0;
-    private boolean seekbarUserAction=false;
+    private int newProgress, queueCount = 0;
+    private boolean seekbarUserAction = false;
 
     private PlaybackControlInterface playbackControlInterface;
+    private ServiceTriggerInterface serviceTriggerInterface;
 
     public PlaybackControl() {
         // Required empty public constructor
@@ -51,6 +49,7 @@ public class PlaybackControl extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        serviceTriggerInterface.triggerCurrentDataBroadcast();
     }
 
     @Override
@@ -58,7 +57,8 @@ public class PlaybackControl extends Fragment {
         super.onAttach(context);
         try {
             playbackControlInterface = (PlaybackControlInterface) context;
-        } catch (ClassCastException e){
+            serviceTriggerInterface = (ServiceTriggerInterface) context;
+        } catch (ClassCastException e) {
             throw new ClassCastException(context.toString() + "must implement PlaybackControlInterface");
         }
     }
@@ -81,21 +81,13 @@ public class PlaybackControl extends Fragment {
         queue_count.setVisibility(View.GONE);
 
         playbackControlSeekbar = view.findViewById(R.id.new_seekbar);
-        playbackControlSeekbar.init(R.color.colorSecondaryLight,R.color.colorPrimaryNight);
+        playbackControlSeekbar.init(R.color.colorSecondaryLight, R.color.colorPrimaryNight);
 
-        play.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                playbackControlInterface.OnStateChangeListener();
-            }
-        });
-        skip_forward.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                AnimatedVectorDrawable animatedVectorDrawable = (AnimatedVectorDrawable) skip_forward.getBackground();
-                animatedVectorDrawable.start();
-                playbackControlInterface.OnSkipPressedListener();
-            }
+        play.setOnClickListener(view -> playbackControlInterface.onStateChangeListener());
+        skip_forward.setOnClickListener(view -> {
+            AnimatedVectorDrawable animatedVectorDrawable = (AnimatedVectorDrawable) skip_forward.getBackground();
+            animatedVectorDrawable.start();
+            playbackControlInterface.onNextClickListener();
         });
 
         playbackControlSeekbar.setSeekbarChangeListener(new PlaybackControlSeekbar.OnSeekbarChangeListener() {
@@ -106,24 +98,24 @@ public class PlaybackControl extends Fragment {
 
             @Override
             public void onStartTrackingTouch(PlaybackControlSeekbar seekbar) {
-                seekbarUserAction=true;
+                seekbarUserAction = true;
             }
 
             @Override
             public void onStopTrackingTouch(PlaybackControlSeekbar seekbar) {
-                playbackControlInterface.OnSeekbarChangeListener(newProgress);
-                seekbarUserAction=false;
+                playbackControlInterface.onProgressChangeListener(newProgress);
+                seekbarUserAction = false;
             }
         });
 
         return view;
     }
 
-    public View getParentView(){
+    public View getParentView() {
         return parentLayout;
     }
 
-    public View getTitleView(){
+    public View getTitleView() {
         return control_title;
     }
 
@@ -139,123 +131,101 @@ public class PlaybackControl extends Fragment {
         super.onPause();
     }
 
-    public void setSongInfo(String title, String artist, int length){
+    public void setSongInfo(String title, String artist, int length) {
         control_title.setText(title);
         control_artist.setText(artist);
 
         playbackControlSeekbar.setMax(length);
     }
 
-    public void updateQueueCount(int newCount){
-        if (newCount>0)queue_count.setVisibility(View.VISIBLE);
+    public void updateQueueCount(int newCount) {
+        if (newCount > 0) queue_count.setVisibility(View.VISIBLE);
         else queue_count.setVisibility(View.GONE);
         animateCount(queueCount, newCount);
         queueCount = newCount;
     }
 
-    private void animateCount(int old, int newCount){
-        if (old == newCount){
+    private void animateCount(int old, int newCount) {
+        if (old == newCount) {
             return;
         }
-        int dur = 500/Math.abs(old-newCount);
-        if (old < newCount){
-            new Thread(new Runnable() {
-                public void run() {
-                    int i = old;
-                    while (i < newCount) {
-                        try {
-                            Thread.sleep(dur);
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
-                        int finalI = i;
-                        queue_count.post(new Runnable() {
-                            public void run() {
-                                queue_count.setText(String.valueOf(finalI));
-                            }
-                        });
-                        i++;
+        int dur = 500 / Math.abs(old - newCount);
+        if (old < newCount) {
+            new Thread(() -> {
+                int i = old;
+                while (i < newCount) {
+                    try {
+                        Thread.sleep(dur);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
                     }
-                    if (newCount == 0){
-                        queue_count.setText("");
-                    }
+                    int finalI = i;
+                    queue_count.post(() -> queue_count.setText(String.valueOf(finalI)));
+                    i++;
+                }
+                if (newCount == 0) {
+                    queue_count.setText("");
                 }
             }).start();
         } else {
-            new Thread(new Runnable() {
-                public void run() {
-                    int i = old;
-                    while (i > newCount) {
-                        try {
-                            Thread.sleep(dur);
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
-                        int finalI = i;
-                        queue_count.post(new Runnable() {
-                            public void run() {
-                                queue_count.setText(String.valueOf(finalI));
-                            }
-                        });
-                        i--;
+            new Thread(() -> {
+                int i = old;
+                while (i > newCount) {
+                    try {
+                        Thread.sleep(dur);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
                     }
-                    if (newCount == 0){
-                        queue_count.setText("");
-                    }
+                    int finalI = i;
+                    queue_count.post(() -> queue_count.setText(String.valueOf(finalI)));
+                    i--;
+                }
+                if (newCount == 0) {
+                    queue_count.setText("");
                 }
             }).start();
         }
     }
 
-    public void updateSeekbar(int time){
-        if (!seekbarUserAction){
+    public void updateSeekbar(int time) {
+        if (!seekbarUserAction) {
             playbackControlSeekbar.setProgress(time);
         }
     }
 
-    public void setAudioSessionID(int audioSessionID){
-        this.audioSessionID=audioSessionID;
+    public void setAudioSessionID(int audioSessionID) {
         permission();
         audioVisualizerView.initVisualizer(audioSessionID);
     }
 
-    public int[] getQueueScreenLocation(){
+    public int[] getQueueScreenLocation() {
         int[] loc = new int[2];
-        if (queue != null)queue.getLocationOnScreen(loc);
+        if (queue != null) queue.getLocationOnScreen(loc);
         return loc;
     }
 
-    public void setControlButton(boolean isOnPause){
-        if(!isOnPause){
-            play.setBackground(ContextCompat.getDrawable(requireContext(),R.drawable.play_to_pause_anim));
+    public void setControlButton(boolean isOnPause) {
+        if (!isOnPause) {
+            play.setBackground(ContextCompat.getDrawable(requireContext(), R.drawable.play_to_pause_anim));
             AnimatedVectorDrawable animatedVectorDrawable = (AnimatedVectorDrawable) play.getBackground();
             animatedVectorDrawable.start();
-            //play.setBackground(ContextCompat.getDrawable(requireContext(),R.drawable.ic_pause_black_24dp));
         } else {
-            play.setBackground(ContextCompat.getDrawable(requireContext(),R.drawable.pause_to_play_anim));
+            play.setBackground(ContextCompat.getDrawable(requireContext(), R.drawable.pause_to_play_anim));
             AnimatedVectorDrawable animatedVectorDrawable = (AnimatedVectorDrawable) play.getBackground();
             animatedVectorDrawable.start();
         }
     }
 
-    private void permission(){
-        //if (Build.VERSION.SDK_INT >= 23) {
-        //Check whether your app has access to the READ permission//
+    private void permission() {
         if (checkPermission()) {
-            //If your app has access to the device’s storage, then print the following message to Android Studio’s Logcat//
             Log.e("permission", "Permission already granted.");
         } else {
-            //If your app doesn’t have permission to access external storage, then call requestPermission//
             requestPermission();
         }
-        //}
     }
 
     private boolean checkPermission() {
-        //Check for READ_EXTERNAL_STORAGE access, using ContextCompat.checkSelfPermission()//
         int result = ContextCompat.checkSelfPermission(requireActivity(), Manifest.permission.RECORD_AUDIO);
-        //If the app does have this permission, then return true//
-        //If the app doesn’t have this permission, then return false//
         return result == PackageManager.PERMISSION_GRANTED;
     }
 
@@ -263,4 +233,17 @@ public class PlaybackControl extends Fragment {
         ActivityCompat.requestPermissions(requireActivity(), new String[]{Manifest.permission.RECORD_AUDIO}, PERMISSION_REQUEST_CODE);
     }
 
+    private BroadcastReceiver receiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            Bundle bundle = intent.getExtras();
+            setSongInfo(bundle.getString("TITLE"),
+                    bundle.getString("ARTIST"),
+                    bundle.getInt("DURATION"));
+
+            setAudioSessionID(bundle.getInt("SESSION_ID"));
+            setControlButton(bundle.getBoolean("ISONPAUSE"));
+            updateSeekbar(bundle.getInt("CURRENT_POSITION"));
+        }
+    };
 }

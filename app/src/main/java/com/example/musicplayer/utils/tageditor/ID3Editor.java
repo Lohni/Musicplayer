@@ -42,7 +42,7 @@ public class ID3Editor {
                 if (isID3V2HeaderPresent(is, header)) {
                     ID3V2TagHeader tagHeader = new ID3V2TagHeader(header);
                     track = new ID3V4Track(tagHeader);
-                    if (tagHeader.getTAG_VERSION_MAJOR() == 4) {
+                    if (tagHeader.getTAG_VERSION_MAJOR() == 4 || tagHeader.getTAG_VERSION_MAJOR() == 3) {
                         processFrames(is);
                     }
                 } else {
@@ -73,7 +73,7 @@ public class ID3Editor {
             while (readBytes < tagSize) {
                 int read = is.read(frameHeaderBytes, 0, frameHeaderBytes.length);
                 if (read == frameHeaderBytes.length) {
-                    ID3V4FrameHeader frameHeader = new ID3V4FrameHeader(frameHeaderBytes);
+                    ID3V4FrameHeader frameHeader = new ID3V4FrameHeader(frameHeaderBytes, track.getTagHeader().getTAG_VERSION_MAJOR());
                     //Necessary?
                     if (frameHeader.FRAME_ID.equals(String.copyValueOf(new char[]{0x00, 0x00, 0x00, 0x00}))) {
                         track.setPaddingBytes(tagSize - readBytes);
@@ -125,7 +125,7 @@ public class ID3Editor {
             offset += frameBytes.length;
         }
 
-        Arrays.fill(newTag, offset, newTag.length-1, (byte) 0x00);
+        Arrays.fill(newTag, offset, newTag.length, (byte) 0x00);
 
         ParcelFileDescriptor parcelFileDescriptor = context
                 .getContentResolver()

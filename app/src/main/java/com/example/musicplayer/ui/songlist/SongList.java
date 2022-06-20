@@ -45,6 +45,7 @@ import com.example.musicplayer.adapter.SongListAdapter;
 import com.example.musicplayer.entities.MusicResolver;
 import com.example.musicplayer.utils.NavigationControlInterface;
 import com.example.musicplayer.utils.Permissions;
+import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textview.MaterialTextView;
 
 import java.util.ArrayList;
@@ -63,7 +64,7 @@ public class SongList extends Fragment{
     private View view;
     private Map<String,Integer> mapIndex;
     private SongListAdapter songListAdapter;
-    private ConstraintLayout shuffle;
+    private MaterialButton shuffle;
 
     private final ArrayList<MusicResolver> songList = new ArrayList<>();
     private SongListInterface songListInterface;
@@ -108,9 +109,6 @@ public class SongList extends Fragment{
         listView.setHasFixedSize(true);
         listViewManager = new LinearLayoutManager(requireContext());
         listView.setLayoutManager(listViewManager);
-
-        DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(requireContext(), R.drawable.recyclerview_divider);
-        listView.addItemDecoration(dividerItemDecoration);
 
         shuffle.setOnClickListener(view -> {
             songListInterface.OnSongListCreatedListener(songList);
@@ -203,7 +201,7 @@ public class SongList extends Fragment{
         for (String index : indexList) {
             textView = new MaterialTextView(requireActivity());
             textView.setTextSize(textsize);
-            textView.setTextColor(ContextCompat.getColor(requireContext(), R.color.colorTextLight));
+            textView.setTextColor(ContextCompat.getColor(requireContext(), R.color.colorDarkOnBackground));
             textView.setText(index);
             textView.setFocusable(false);
             textView.setGravity(Gravity.CENTER);

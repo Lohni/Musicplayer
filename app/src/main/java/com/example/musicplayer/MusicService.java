@@ -1,8 +1,19 @@
 package com.example.musicplayer;
 
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.Service;
+import android.content.BroadcastReceiver;
 import android.content.ContentUris;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Color;
+import android.media.MediaMetadataRetriever;
 import android.media.MediaPlayer;
 import android.media.audiofx.BassBoost;
 import android.media.audiofx.EnvironmentalReverb;
@@ -11,28 +22,40 @@ import android.media.audiofx.LoudnessEnhancer;
 import android.media.audiofx.Virtualizer;
 import android.net.Uri;
 import android.os.Binder;
+import android.os.Build;
+import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
 import android.os.PowerManager;
 import android.provider.MediaStore;
+import android.support.v4.media.MediaMetadataCompat;
+import android.support.v4.media.session.MediaSessionCompat;
 import android.util.Log;
+import android.view.KeyEvent;
+import android.widget.RemoteViews;
 
-import com.example.musicplayer.entities.MusicResolver;
+import com.example.musicplayer.database.entity.EqualizerPreset;
+import com.example.musicplayer.database.entity.Track;
 import com.example.musicplayer.ui.audioeffects.EqualizerProperties;
 import com.example.musicplayer.utils.enums.PlaybackBehaviour;
+import com.example.musicplayer.utils.images.BitmapColorExtractor;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Random;
+import java.util.concurrent.atomic.AtomicInteger;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.app.NotificationCompat;
+import androidx.core.app.NotificationManagerCompat;
 
 public class MusicService extends Service implements MediaPlayer.OnPreparedListener, MediaPlayer.OnErrorListener, MediaPlayer.OnCompletionListener {
-    private final ArrayList<MusicResolver> songlist = new ArrayList<>();
+    private final ArrayList<Track> songlist = new ArrayList<>();
     private int currSongIndex;
     private PlaybackBehaviour.PlaybackBehaviourState playbackBehaviour = PlaybackBehaviour.PlaybackBehaviourState.REPEAT_LIST;
 
     private MediaPlayer player;
-    private boolean isStopped=false;
     private final IBinder mBinder = new MusicBinder();
 
     private EnvironmentalReverb environmentalReverb;
@@ -41,9 +64,23 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
     private Virtualizer virtualizer;
     private LoudnessEnhancer loudnessEnhancer;
 
+    private MediaSessionCompat mediaSession;
+    private MediaMetadataCompat metadataCompat;
+
+    private int MEDIA_BUTTON_DOWN_COUNT = 0;
+    Handler handler;
+    Runnable mediaButtonCounterRunnable, createMetadataRunnable;
+
+    private Bitmap customCoverImage;
+    private BitmapColorExtractor bitmapColorExtractor;
+    private final int NOTIFICATION_ID = 123456;
+    private int bitmapWidth, bitmapHeight;
+
+    private boolean isOnPause = false;
+
     //return service instance
-    public class MusicBinder extends Binder{
-        public MusicService getServiceInstance(){
+    public class MusicBinder extends Binder {
+        public MusicService getServiceInstance() {
             return MusicService.this;
         }
     }
@@ -57,6 +94,7 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
 
     @Override
     public boolean onUnbind(Intent intent) {
+        isOnPause = true;
         player.stop();
         player.release();
         environmentalReverb.release();
@@ -70,41 +108,140 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
     @Override
     public void onDestroy() {
         super.onDestroy();
-        if(player!=null)player.release();
-        if (environmentalReverb!=null)environmentalReverb.release();
-        if (equalizer != null)equalizer.release();
-        if (bassBoost != null)bassBoost.release();
-        if (virtualizer != null)virtualizer.release();
+        isOnPause = true;
+        if (player != null) player.release();
+        if (environmentalReverb != null) environmentalReverb.release();
+        if (equalizer != null) equalizer.release();
+        if (bassBoost != null) bassBoost.release();
+        if (virtualizer != null) virtualizer.release();
         if (loudnessEnhancer != null) loudnessEnhancer.release();
+        NotificationManagerCompat managerCompat = NotificationManagerCompat.from(this);
+        managerCompat.cancelAll();
+        this.unregisterReceiver(this.broadcastReceiver);
     }
 
     @Override
     public void onCreate() {
+        createNotificationChannel();
+
+        bitmapWidth = getResources().getDimensionPixelSize(android.R.dimen.notification_large_icon_width);
+        bitmapHeight = getResources().getDimensionPixelSize(android.R.dimen.notification_large_icon_height);
+
         player = new MediaPlayer();
         player.setWakeMode(getApplicationContext(), PowerManager.PARTIAL_WAKE_LOCK);
         //player.setAudioStreamType(AudioManager.STREAM_MUSIC);
         player.setOnPreparedListener(this);
         player.setOnErrorListener(this);
         player.setOnCompletionListener(this);
-        environmentalReverb = new EnvironmentalReverb(1,0);
+        environmentalReverb = new EnvironmentalReverb(1, 0);
         equalizer = new Equalizer(0, player.getAudioSessionId());
         bassBoost = new BassBoost(1, player.getAudioSessionId());
         virtualizer = new Virtualizer(1, player.getAudioSessionId());
         virtualizer.forceVirtualizationMode(Virtualizer.VIRTUALIZATION_MODE_AUTO);
         loudnessEnhancer = new LoudnessEnhancer(player.getAudioSessionId());
+
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(getString(R.string.notification_action_next));
+        filter.addAction(getString(R.string.notification_action_pause));
+        filter.addAction(getString(R.string.notification_action_play));
+        this.registerReceiver(this.broadcastReceiver, filter);
+
+        customCoverImage = BitmapFactory.decodeResource(this.getResources(), R.drawable.ic_baseline_music_note_24);
+
+        handler = new Handler();
+        mediaButtonCounterRunnable = () -> MEDIA_BUTTON_DOWN_COUNT = 0;
+        createMetadataRunnable = () -> {
+            Uri trackUri = ContentUris.withAppendedId(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, songlist.get(currSongIndex).getTId());
+            MediaMetadataRetriever mmr = new MediaMetadataRetriever();
+            mmr.setDataSource(this, trackUri);
+            byte[] thumbnail = mmr.getEmbeddedPicture();
+            mmr.release();
+            Bitmap coverImage;
+            if (thumbnail != null) {
+                coverImage = Bitmap.createScaledBitmap(BitmapFactory.decodeByteArray(thumbnail, 0, thumbnail.length), bitmapWidth, bitmapHeight, false);
+            } else {
+                coverImage = customCoverImage;
+            }
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                bitmapColorExtractor = new BitmapColorExtractor(this, coverImage);
+            } else {
+                bitmapColorExtractor = new BitmapColorExtractor(this, coverImage, Color.WHITE);
+            }
+
+            metadataCompat = new MediaMetadataCompat.Builder()
+                    .putString(MediaMetadataCompat.METADATA_KEY_TITLE, songlist.get(currSongIndex).getTTitle())
+                    .putString(MediaMetadataCompat.METADATA_KEY_ARTIST, songlist.get(currSongIndex).getTArtist())
+                    .putBitmap(MediaMetadataCompat.METADATA_KEY_ALBUM_ART, coverImage)
+                    .build();
+            mediaSession.setMetadata(metadataCompat);
+            createNotification();
+        };
+
+        //metadataCompat = new MediaMetadataCompat.Builder().build();
+
+        mediaSession = new MediaSessionCompat(getApplicationContext(), "MUSICPLAYER_MEDIASESSION");
+        mediaSession.setCallback(new MediaSessionCompat.Callback() {
+
+            @Override
+            public boolean onMediaButtonEvent(@NonNull Intent mediaButtonIntent) {
+                String intentAction = mediaButtonIntent.getAction();
+                if (Intent.ACTION_MEDIA_BUTTON.equals(intentAction)) {
+                    KeyEvent event = mediaButtonIntent.getParcelableExtra(Intent.EXTRA_KEY_EVENT);
+                    if (event != null && event.getAction() == KeyEvent.ACTION_DOWN) {
+                        if (MEDIA_BUTTON_DOWN_COUNT == 0) {
+                            handler.postDelayed(mediaButtonCounterRunnable, 600);
+                        }
+                        MEDIA_BUTTON_DOWN_COUNT++;
+                        if (MEDIA_BUTTON_DOWN_COUNT < 2) {
+                            if (isOnPause) {
+                                resume();
+                            } else {
+                                pause();
+                            }
+                        } else {
+                            skip();
+                        }
+                    }
+                }
+                return true;
+            }
+        });
+        mediaSession.setFlags(MediaSessionCompat.FLAG_HANDLES_MEDIA_BUTTONS | MediaSessionCompat.FLAG_HANDLES_TRANSPORT_CONTROLS);
+        mediaSession.setActive(true);
+
         super.onCreate();
     }
+
+    private final BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (intent.getAction() != null) {
+                if (intent.getAction().equals(getString(R.string.notification_action_play))) {
+                    resume();
+                } else if (intent.getAction().equals(getString(R.string.notification_action_pause))) {
+                    pause();
+                } else if (intent.getAction().equals(getString(R.string.notification_action_next))) {
+                    skip();
+                }
+                createNotification();
+            }
+        }
+    };
 
     // MediaPlayer Functions
     @Override
     public void onPrepared(MediaPlayer mediaPlayer) {
-        sendBroadcast(new Intent().setAction(getString(R.string.intent_mediaplayer_play)));
-        player.start();
+        sendCurrentStateToPlaybackControl();
+        //sendBroadcast(new Intent().setAction(getString(R.string.intent_mediaplayer_play)));
+        handler.post(createMetadataRunnable);
+        resume();
     }
 
     @Override
     public boolean onError(MediaPlayer mediaPlayer, int i, int i1) {
         player.reset();
+        isOnPause = false;
         return true;
     }
 
@@ -114,14 +251,20 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
     }
 
     //Playback functions
-    public void setSonglist(ArrayList<MusicResolver> list){
+    public void setSonglist(ArrayList<Track> list) {
         this.songlist.clear();
         this.songlist.addAll(list);
-        sendBroadcast(new Intent().setAction("MUSICPLAYER_QUEUE_SIZE").putExtra("MUSICPLAYER_QUEUE_SIZE", songlist.size()));
+        sendCurrentStateToPlaybackControl();
+        //sendBroadcast(new Intent().setAction("MUSICPLAYER_QUEUE_SIZE").putExtra("MUSICPLAYER_QUEUE_SIZE", songlist.size()));
     }
 
-    public void playNext(ArrayList<MusicResolver> list){
-        if (songlist.size() > 0){
+    public void addToSonglist(ArrayList<Track> toAdd) {
+        this.songlist.addAll(toAdd);
+        sendCurrentStateToPlaybackControl();
+    }
+
+    public void playNext(ArrayList<Track> list) {
+        if (songlist.size() > 0) {
             this.songlist.addAll(0, list);
         } else {
             this.songlist.addAll(list);
@@ -131,8 +274,8 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
         play();
     }
 
-    public void playNext(MusicResolver song){
-        if (songlist.size() > 0){
+    public void playNext(Track song) {
+        if (songlist.size() > 0) {
             this.songlist.add(0, song);
         } else {
             this.songlist.add(song);
@@ -141,16 +284,16 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
         play();
     }
 
-    public void skip(){
-        if(songlist.size() > 0){
-            switch (playbackBehaviour){
+    public void skip() {
+        if (songlist.size() > 0) {
+            switch (playbackBehaviour) {
                 case SHUFFLE:
                     Random random = new Random();
                     currSongIndex = random.nextInt(songlist.size());
                     break;
                 case REPEAT_LIST:
                     currSongIndex++;
-                    if (currSongIndex == songlist.size()){
+                    if (currSongIndex == songlist.size()) {
                         currSongIndex = 0;
                     }
                     break;
@@ -164,74 +307,90 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
         }
     }
 
-    public void skipPrevious(){
+    public void skipPrevious() {
 
     }
 
-    public void pause(){
-        player.pause();
-    }
-
-    public void resume(){player.start();}
-
-    public void setSong(int index){
-        currSongIndex = index;
-        play();
-    }
-
-    public void setProgress(int progress){
-        player.seekTo(progress);
-    }
-
-    public void play(){
-        if(songlist.size() > 0){
-            player.reset();
-            Uri trackUri = ContentUris.withAppendedId(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,songlist.get(currSongIndex).getId());
-            try{
-                player.setDataSource(getApplicationContext(),trackUri);
-                player.attachAuxEffect(environmentalReverb.getId());
-                player.setAuxEffectSendLevel(1f);
-            } catch (IOException e){
-                Log.e("MUSIC-SERVICE","Failed to set MediaPlayer-DataSource:",e);
-            }
-            player.prepareAsync();
-            sendBroadcast(new Intent().setAction("MUSICPLAYER_CURRENT_INDEX").putExtra("MUSICPLAYER_CURRENT_INDEX", currSongIndex));
+    public void pause() {
+        if (player.isPlaying()) {
+            isOnPause = true;
+            player.pause();
+            sendCurrentStateToPlaybackControl();
+            //sendBroadcast(new Intent().setAction(getString(R.string.music_service_action_pause)));
         }
     }
 
-    public MusicResolver getCurrSong(){
-        if(!songlist.isEmpty())return songlist.get(currSongIndex);
+    public void resume() {
+        isOnPause = false;
+        player.start();
+        sendCurrentStateToPlaybackControl();
+        //sendBroadcast(new Intent().setAction(getString(R.string.music_service_action_resume)));
+    }
+
+    public void setSong(Track track) {
+        for (int i = 0; i < songlist.size(); i++) {
+            if (songlist.get(i).getTId().equals(track.getTId())) {
+                currSongIndex = i;
+            }
+        }
+        play();
+    }
+
+    public void setProgress(int progress) {
+        player.seekTo(progress);
+    }
+
+    public void play() {
+        if (songlist.size() > 0) {
+            player.reset();
+            Uri trackUri = ContentUris.withAppendedId(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, songlist.get(currSongIndex).getTId());
+            try {
+                player.setDataSource(getApplicationContext(), trackUri);
+                player.attachAuxEffect(environmentalReverb.getId());
+                player.setAuxEffectSendLevel(1f);
+            } catch (IOException e) {
+                Log.e("MUSIC-SERVICE", "Failed to set MediaPlayer-DataSource:", e);
+            }
+            player.prepareAsync();
+            sendCurrentStateToPlaybackControl();
+        }
+    }
+
+    public Track getCurrSong() {
+        if (!songlist.isEmpty()) return songlist.get(currSongIndex);
         else return null;
     }
 
-    public int getCurrentSongIndex(){
+    public int getCurrentSongIndex() {
         return currSongIndex;
     }
 
-    public int getQueueSize(){
+    public int getQueueSize() {
         return songlist.size();
     }
 
-    public int getDuration(){
-        if(player.isPlaying()) return player.getDuration();
+    public int getDuration() {
+        if (player.isPlaying() || isOnPause) return player.getDuration();
         else return 0;
     }
 
-    public int getCurrentPosition(){
+    public int getCurrentPosition() {
         return player.getCurrentPosition();
     }
 
-    public void setPlaybackBehaviour(PlaybackBehaviour.PlaybackBehaviourState newState){
+    public void setPlaybackBehaviour(PlaybackBehaviour.PlaybackBehaviourState newState) {
         playbackBehaviour = newState;
     }
 
-    public PlaybackBehaviour.PlaybackBehaviourState getPlaybackBehaviour(){
+    public PlaybackBehaviour.PlaybackBehaviourState getPlaybackBehaviour() {
         return playbackBehaviour;
     }
 
-    public int getSessionId(){return player.getAudioSessionId();}
+    public int getSessionId() {
+        return player.getAudioSessionId();
+    }
 
-    public void shuffle(){
+    public void shuffle() {
         skip();
     }
 
@@ -239,74 +398,216 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
     Audio Effects
      */
 
-    public EnvironmentalReverb.Settings getReverbSettings(){
+    public EnvironmentalReverb.Settings getReverbSettings() {
         return environmentalReverb.getProperties();
     }
 
-    public void setEnvironmentalReverbSettings(EnvironmentalReverb.Settings settings){
+    public void setEnvironmentalReverbSettings(EnvironmentalReverb.Settings settings) {
         environmentalReverb.setProperties(settings);
     }
 
-    public boolean isReverbEnabled(){return environmentalReverb.getEnabled();}
+    public boolean isReverbEnabled() {
+        return environmentalReverb.getEnabled();
+    }
 
-    public void setReverbEnabled(boolean status){
+    public void setReverbEnabled(boolean status) {
         environmentalReverb.setEnabled(status);
     }
 
-    public short[] getEqualizerBandLevels(){
+    public short[] getEqualizerBandLevels() {
         int numberBands = equalizer.getNumberOfBands();
         short[] bandLevels = new short[numberBands];
-        for (short i = 0; i< numberBands;i++){
+        for (short i = 0; i < numberBands; i++) {
             bandLevels[i] = equalizer.getBandLevel(i);
         }
         return bandLevels;
     }
 
-    public void setEqualizerBandLevels(short[] bandLevels){
-        if (equalizer.getNumberOfBands() == bandLevels.length){
-            for (short i = 0; i < bandLevels.length; i++){
-                equalizer.setBandLevel(i, bandLevels[i]);
+    public void setEqualizerBandLevels(EqualizerPreset equalizerPreset) {
+        short[] bandLevel = new short[5];
+
+        bandLevel[0] = equalizerPreset.getEqLevel1().shortValue();
+        bandLevel[1] = equalizerPreset.getEqLevel2().shortValue();
+        bandLevel[2] = equalizerPreset.getEqLevel3().shortValue();
+        bandLevel[3] = equalizerPreset.getEqLevel4().shortValue();
+        bandLevel[4] = equalizerPreset.getEqLevel5().shortValue();
+
+        if (equalizer.getNumberOfBands() == bandLevel.length) {
+            for (short i = 0; i < bandLevel.length; i++) {
+                equalizer.setBandLevel(i, bandLevel[i]);
             }
         }
     }
 
-    public boolean isEqualizerEnabled(){return equalizer.getEnabled();}
+    public boolean isEqualizerEnabled() {
+        return equalizer.getEnabled();
+    }
 
-    public void setEqualizerEnabled(boolean status){equalizer.setEnabled(status);}
+    public void setEqualizerEnabled(boolean status) {
+        equalizer.setEnabled(status);
+    }
 
-    public EqualizerProperties getEqualizerProperties(){
+    public EqualizerProperties getEqualizerProperties() {
         int[] centerFreq = new int[equalizer.getNumberOfBands()];
-        for (short i = 0; i < centerFreq.length; i++){
+        for (short i = 0; i < centerFreq.length; i++) {
             centerFreq[i] = equalizer.getCenterFreq(i);
         }
         return new EqualizerProperties(equalizer.getNumberOfBands(), equalizer.getBandLevelRange(), centerFreq);
     }
 
-    public boolean isBassBoostEnabled(){return bassBoost.getEnabled(); }
+    public boolean isBassBoostEnabled() {
+        return bassBoost.getEnabled();
+    }
 
-    public void setBassBoostEnabled(boolean state){ bassBoost.setEnabled(state);}
+    public void setBassBoostEnabled(boolean state) {
+        bassBoost.setEnabled(state);
+    }
 
-    public void setBassBoostStrength(short strength){ bassBoost.setStrength(strength);}
+    public void setBassBoostStrength(short strength) {
+        bassBoost.setStrength(strength);
+    }
 
-    public short getBassBoostStrength(){return bassBoost.getRoundedStrength();}
+    public short getBassBoostStrength() {
+        return bassBoost.getRoundedStrength();
+    }
+
+    public boolean isVirtualizerEnabled() {
+        return virtualizer.getEnabled();
+    }
+
+    public void setVirtualizerEnabled(boolean state) {
+        virtualizer.setEnabled(state);
+    }
+
+    public void setVirtualizerStrength(short strength) {
+        virtualizer.setStrength(strength);
+    }
+
+    public short getVirtualizerStrength() {
+        return virtualizer.getRoundedStrength();
+    }
 
 
-    public boolean isVirtualizerEnabled(){return virtualizer.getEnabled();}
+    public boolean isLoudnessEnhancerEnabled() {
+        return loudnessEnhancer.getEnabled();
+    }
 
-    public void setVirtualizerEnabled(boolean state){virtualizer.setEnabled(state);}
+    public void setLoudnessEnhancerEnabled(boolean state) {
+        loudnessEnhancer.setEnabled(state);
+    }
 
-    public void setVirtualizerStrength(short strength){virtualizer.setStrength(strength);}
+    public void setLoudnessEnhancerGain(int gain) {
+        loudnessEnhancer.setTargetGain(gain);
+    }
 
-    public short getVirtualizerStrength(){return virtualizer.getRoundedStrength();}
+    public int getLoudnessEnhancerStrength() {
+        return (int) loudnessEnhancer.getTargetGain();
+    }
 
 
-    public boolean isLoudnessEnhancerEnabled(){return loudnessEnhancer.getEnabled();}
+    private void createNotification() {
+        RemoteViews remoteViews = new RemoteViews(getPackageName(), R.layout.notification_custom);
 
-    public void setLoudnessEnhancerEnabled(boolean state){loudnessEnhancer.setEnabled(state);}
+        setNotificationValues(remoteViews);
+        createNotificationActions(remoteViews);
 
-    public void setLoudnessEnhancerGain(int gain){
-        loudnessEnhancer.setTargetGain(gain);}
+        NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this, "MUSICSERVICE_CHANNEL")
+                .setStyle(new androidx.media.app.NotificationCompat.DecoratedMediaCustomViewStyle().setMediaSession(mediaSession.getSessionToken()))
+                .setCustomContentView(remoteViews)
+                .setColor(bitmapColorExtractor.getBackgroundColor())
+                .setSmallIcon(R.drawable.ic_baseline_music_note_24)
+                .setPriority(NotificationCompat.PRIORITY_HIGH)
+                .setOnlyAlertOnce(true)
+                .setAutoCancel(false)
+                .setOngoing(true)
+                .setColorized(true)
+                .setContentInfo("Test")
+                .setContentIntent(PendingIntent.getActivity(this, 0, new Intent(this, MainActivity.class), 0))
+                .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+                .setLargeIcon(metadataCompat.getBitmap(MediaMetadataCompat.METADATA_KEY_ALBUM_ART))
+                .setShowWhen(false)
+                .setVibrate(new long[]{0});
 
-    public int getLoudnessEnhancerStrength(){return (int) loudnessEnhancer.getTargetGain();}
+        //https://stackoverflow.com/questions/8471236/finding-the-dominant-color-of-an-image-in-an-android-drawable
+        NotificationManagerCompat managerCompat = NotificationManagerCompat.from(this);
 
+        Notification n = notificationBuilder.build();
+        managerCompat.notify(NOTIFICATION_ID, n);
+    }
+
+    private void setNotificationValues(RemoteViews remoteViews) {
+        remoteViews.setTextViewText(R.id.notification_title, songlist.get(currSongIndex).getTTitle());
+        remoteViews.setTextViewText(R.id.notification_artist, songlist.get(currSongIndex).getTArtist());
+        if (isOnPause) {
+            remoteViews.setImageViewResource(R.id.notification_pause, R.drawable.ic_play_arrow_black_24dp);
+        } else {
+            remoteViews.setImageViewResource(R.id.notification_pause, R.drawable.ic_pause_black_24dp);
+        }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            remoteViews.setInt(R.id.notification_skip, "setColorFilter", bitmapColorExtractor.getPrimaryTextColor());
+            remoteViews.setInt(R.id.notification_pause, "setColorFilter", bitmapColorExtractor.getPrimaryTextColor());
+            remoteViews.setInt(R.id.notification_title, "setTextColor", bitmapColorExtractor.getPrimaryTextColor());
+            remoteViews.setInt(R.id.notification_artist, "setTextColor", bitmapColorExtractor.getPrimaryTextColor());
+        }
+    }
+
+    private void createNotificationActions(RemoteViews remoteViews) {
+        Intent nextIntent = new Intent();
+        nextIntent.setAction(getString(R.string.notification_action_next));
+
+        Intent pauseIntent = new Intent();
+        pauseIntent.setAction(getString(R.string.notification_action_pause));
+
+        Intent playIntent = new Intent();
+        playIntent.setAction(getString(R.string.notification_action_play));
+
+        remoteViews.setOnClickPendingIntent(R.id.notification_skip, PendingIntent.getBroadcast(this, 0, nextIntent, 0));
+
+        if (isOnPause) {
+            remoteViews.setOnClickPendingIntent(R.id.notification_pause, PendingIntent.getBroadcast(this, 1, playIntent, 0));
+        } else {
+            remoteViews.setOnClickPendingIntent(R.id.notification_pause, PendingIntent.getBroadcast(this, 2, pauseIntent, 0));
+        }
+
+
+    }
+
+    private void createNotificationChannel() {
+        // Create the NotificationChannel, but only on API 26+ because
+        // the NotificationChannel class is new and not in the support library
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            CharSequence name = "MUSICSERVICE_CHANNEl";
+            String description = "PLAYBACK_CONTROL";
+            int importance = NotificationManager.IMPORTANCE_DEFAULT;
+            NotificationChannel channel = new NotificationChannel("MUSICSERVICE_CHANNEL", name, importance);
+            channel.setDescription(description);
+            // Register the channel with the system; you can't change the importance
+            // or other notification behaviors after this
+            NotificationManager notificationManager = getSystemService(NotificationManager.class);
+            notificationManager.createNotificationChannel(channel);
+        }
+    }
+
+    public void sendCurrentStateToPlaybackControl() {
+        Track currSong = getCurrSong();
+        if (currSong != null) {
+            Bundle bundle = new Bundle();
+
+            bundle.putString("TITLE", currSong.getTTitle());
+            bundle.putString("ARTIST", currSong.getTArtist());
+            bundle.putLong("DURATION", currSong.getTDuration());
+            bundle.putLong("ID", currSong.getTId());
+
+            bundle.putInt("QUEUE_SIZE", songlist.size());
+            bundle.putInt("QUEUE_INDEX", currSongIndex);
+            bundle.putBoolean("ISONPAUSE", isOnPause);
+            bundle.putInt("BEHAVIOUR_STATE", PlaybackBehaviour.getStateAsInteger(playbackBehaviour));
+            bundle.putInt("SESSION_ID", getSessionId());
+            bundle.putInt("CURRENT_POSITION", getCurrentPosition());
+
+            sendBroadcast(new Intent().setAction(getString(R.string.playback_control_values)).putExtras(bundle));
+        }
+
+    }
 }   

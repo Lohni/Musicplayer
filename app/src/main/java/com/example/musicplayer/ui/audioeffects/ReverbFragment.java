@@ -2,26 +2,20 @@ package com.example.musicplayer.ui.audioeffects;
 
 import android.app.AlertDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.media.audiofx.EnvironmentalReverb;
 import android.os.Bundle;
-
-import androidx.annotation.NonNull;
-import androidx.fragment.app.Fragment;
-import androidx.lifecycle.ViewModelProvider;
-
 import android.text.InputType;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ImageButton;
 
 import com.example.musicplayer.R;
+import com.example.musicplayer.database.entity.AdvancedReverbPreset;
+import com.example.musicplayer.database.viewmodel.AudioEffectViewModel;
 import com.example.musicplayer.ui.audioeffects.database.AudioEffectSettingsHelper;
-import com.example.musicplayer.ui.audioeffects.database.ReverbSettings;
 import com.example.musicplayer.ui.views.ControlKnob;
 import com.google.android.material.switchmaterial.SwitchMaterial;
 import com.google.android.material.textfield.MaterialAutoCompleteTextView;
@@ -29,21 +23,26 @@ import com.google.android.material.textfield.TextInputLayout;
 
 import java.util.ArrayList;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 
-public class ReverbFragment extends Fragment{
+
+public class ReverbFragment extends Fragment {
 
     private ControlKnob reverb_delay, reverb_hflevel, reverb_level, reflection_level, reflection_delay,
-                        reflection_density, reflection_diffusion, decay_time, decay_hfratio, master;
+            reflection_density, reflection_diffusion, decay_time, decay_hfratio, master;
     private SwitchMaterial reverb_switch;
     private ImageButton addPreset, deletePreset;
     private TextInputLayout textInputLayout;
     private int selectedIndex = -1;
 
     private AudioEffectViewModel audioEffectViewModel;
-    private ArrayList<ReverbSettings> reverb_presets = new ArrayList<>();
+    private ArrayList<AdvancedReverbPreset> reverb_presets = new ArrayList<>();
 
     private MaterialAutoCompleteTextView mACT;
-    private ArrayAdapter<ReverbSettings> arrayAdapter;
+    private ArrayAdapter<AdvancedReverbPreset> arrayAdapter;
     private EnvironmentalReverb.Settings settings;
     private AudioEffectInterface audioEffectInterface;
     private boolean enabled = false;
@@ -57,9 +56,16 @@ public class ReverbFragment extends Fragment{
         super.onAttach(context);
         try {
             audioEffectInterface = (AudioEffectInterface) context;
-        } catch (ClassCastException e){
-            throw new ClassCastException(context.toString() + "must implement EqualizerInterface");
+        } catch (ClassCastException e) {
+            throw new ClassCastException(context + "must implement EqualizerInterface");
         }
+    }
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        audioEffectViewModel = new ViewModelProvider(requireActivity()).get(AudioEffectViewModel.class);
     }
 
     @Override
@@ -69,39 +75,36 @@ public class ReverbFragment extends Fragment{
         View view = inflater.inflate(R.layout.fragment_reverb, container, false);
         mACT = view.findViewById(R.id.reverb_autocompletetextView);
         textInputLayout = view.findViewById(R.id.reverb_textField);
-        audioEffectViewModel = new ViewModelProvider(requireActivity()).get(AudioEffectViewModel.class);
 
-        mACT.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                ReverbSettings activePreset = reverb_presets.get(i);
-                activePreset.setIsSelected(1);
-
-                if (selectedIndex >= 0){
-                    ReverbSettings unActivePreset = reverb_presets.get(selectedIndex);
-                    unActivePreset.setIsSelected(0);
-
-                    selectedIndex = i;
-
-                    audioEffectViewModel.updateReverbPresets(unActivePreset, activePreset);
-                } else{
-                    audioEffectViewModel.updateReverbPreset(activePreset);
-                }
-            }
-        });
-
-        audioEffectViewModel.getAllReverbPresets().observe(getViewLifecycleOwner(), reverb_presets -> {
-            if (reverb_presets != null){
+        audioEffectViewModel.getAllAdvancedReverbPresets().observe(getViewLifecycleOwner(), reverb_presets -> {
+            if (reverb_presets != null) {
                 this.reverb_presets.clear();
                 this.reverb_presets.addAll(reverb_presets);
 
-                if (arrayAdapter == null){
+                if (arrayAdapter == null) {
                     arrayAdapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_list_item_1, this.reverb_presets);
                     mACT.setAdapter(arrayAdapter);
                 }
                 getCurrentActive();
             }
         });
+
+        mACT.setOnItemClickListener((adapterView, view1, i, l) -> {
+            AdvancedReverbPreset activePreset = reverb_presets.get(i);
+            activePreset.setArActive(1);
+
+            if (selectedIndex >= 0) {
+                AdvancedReverbPreset unActivePreset = reverb_presets.get(selectedIndex);
+                unActivePreset.setArActive(0);
+
+                selectedIndex = i;
+
+                audioEffectViewModel.updateAdvancedReverbPreset(unActivePreset);
+            }
+
+            audioEffectViewModel.updateAdvancedReverbPreset(activePreset);
+        });
+
 
         addPreset = view.findViewById(R.id.reverb_add);
         deletePreset = view.findViewById(R.id.reverb_delete);
@@ -124,7 +127,7 @@ public class ReverbFragment extends Fragment{
         }));
 
         deletePreset.setOnClickListener((btnView -> {
-            if (selectedIndex >= 0){
+            if (selectedIndex >= 0) {
                 showPresetDeleteDialog();
             }
         }));
@@ -136,13 +139,13 @@ public class ReverbFragment extends Fragment{
     Utils
      */
 
-    public void setSettings(EnvironmentalReverb.Settings settings, boolean enabled){
+    public void setSettings(EnvironmentalReverb.Settings settings, boolean enabled) {
         this.enabled = enabled;
         this.settings = settings;
     }
 
-    private void updateKnobs(){
-        if (settings != null){
+    private void updateKnobs() {
+        if (settings != null) {
             reverb_delay.setCurrentValue(settings.reverbDelay);
             reverb_hflevel.setCurrentValue(settings.roomHFLevel);
             reverb_level.setCurrentValue(settings.reverbLevel);
@@ -156,7 +159,7 @@ public class ReverbFragment extends Fragment{
         }
     }
 
-    private void updateKnobsState(boolean state){
+    private void updateKnobsState(boolean state) {
         reverb_delay.isEnabled(state);
         reverb_hflevel.isEnabled(state);
         reverb_level.isEnabled(state);
@@ -172,10 +175,10 @@ public class ReverbFragment extends Fragment{
         addPreset.setEnabled(state);
     }
 
-    private void getCurrentActive(){
-        for (int i = 0; i<reverb_presets.size(); i++){
-            ReverbSettings reverbSettings = reverb_presets.get(i);
-            if (reverbSettings.getIsSelected() == 1){
+    private void getCurrentActive() {
+        for (int i = 0; i < reverb_presets.size(); i++) {
+            AdvancedReverbPreset reverbSettings = reverb_presets.get(i);
+            if (reverbSettings.getArActive().equals(1)) {
                 selectedIndex = i;
                 settings = AudioEffectSettingsHelper.extractReverbValues(reverbSettings);
                 mACT.setText(reverbSettings.toString(), false);
@@ -186,16 +189,16 @@ public class ReverbFragment extends Fragment{
         }
     }
 
-    private void persistControlKnobChanged(){
-        if (selectedIndex >= 0){
-            audioEffectViewModel.updateReverbPreset(AudioEffectSettingsHelper.updateReverbSettingsValues(reverb_presets.get(selectedIndex), this.settings));
+    private void persistControlKnobChanged() {
+        if (selectedIndex >= 0) {
+            audioEffectViewModel.updateAdvancedReverbPreset(AudioEffectSettingsHelper.updateReverbSettingsValues(reverb_presets.get(selectedIndex), this.settings));
         }
     }
 
     /*
     Init views
      */
-    private void initialiseViews(View view){
+    private void initialiseViews(View view) {
         reverb_delay = view.findViewById(R.id.reverb_delay);
         reverb_hflevel = view.findViewById(R.id.reverb_hfLevel);
         reverb_level = view.findViewById(R.id.reverb_level);
@@ -209,21 +212,21 @@ public class ReverbFragment extends Fragment{
         reverb_switch = view.findViewById(R.id.reverb_enabled);
     }
 
-    private void initialiseValues(){
+    private void initialiseValues() {
         //Set Min-Max recording to dev-documentation
-        reverb_delay.setRange(0,100);
-        reverb_hflevel.setRange(-9000,0);
-        reverb_level.setRange(-9000,2000);
-        reflection_level.setRange(-9000,1000);
-        reflection_delay.setRange(0,300);
-        reflection_density.setRange(0,1000);
-        reflection_diffusion.setRange(0,1000);
-        decay_time.setRange(100,20000);
-        decay_hfratio.setRange(100,2000);
-        master.setRange(-9000,0);
+        reverb_delay.setRange(0, 100);
+        reverb_hflevel.setRange(-9000, 0);
+        reverb_level.setRange(-9000, 2000);
+        reflection_level.setRange(-9000, 1000);
+        reflection_delay.setRange(0, 300);
+        reflection_density.setRange(0, 1000);
+        reflection_diffusion.setRange(0, 1000);
+        decay_time.setRange(100, 20000);
+        decay_hfratio.setRange(100, 2000);
+        master.setRange(-9000, 0);
     }
 
-    private void initialiseListener(ControlKnob.OnInfoClickedListener onInfoClickedListener, ControlKnob.OnControlKnobActionUpListener onControlKnobActionUpListener){
+    private void initialiseListener(ControlKnob.OnInfoClickedListener onInfoClickedListener, ControlKnob.OnControlKnobActionUpListener onControlKnobActionUpListener) {
         reverb_level.setOnControlKnobChangeListener((view, value) -> {
             settings.reverbLevel = (short) value;
             audioEffectInterface.onEnvironmentalReverbChanged(settings);
@@ -288,7 +291,7 @@ public class ReverbFragment extends Fragment{
         master.setOnControlKnobActionUpListener(onControlKnobActionUpListener);
     }
 
-    private void initialiseInfo(){
+    private void initialiseInfo() {
         reverb_delay.setInfoText(requireContext().getResources().getString(R.string.reverb_delay));
         reverb_hflevel.setInfoText(requireContext().getResources().getString(R.string.reverb_hflevel));
         reverb_level.setInfoText(requireContext().getResources().getString(R.string.reverb_level));
@@ -304,70 +307,49 @@ public class ReverbFragment extends Fragment{
     /*
     Dialogs
      */
-    private void showAddPresetDialog(){
+    private void showAddPresetDialog() {
         AlertDialog.Builder builder = new AlertDialog.Builder(requireContext()).setTitle("New preset");
 
         final EditText input = new EditText(requireContext());
         input.setInputType(InputType.TYPE_CLASS_TEXT);
         builder.setView(input);
 
-        builder.setPositiveButton("Create", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                ReverbSettings reverbSettings = AudioEffectSettingsHelper.createReverbSettings(settings, input.getText().toString());
-                reverbSettings.setIsSelected(1);
-                mACT.setText(reverbSettings.toString(), false);
+        builder.setPositiveButton("Create", (dialogInterface, i) -> {
+            AdvancedReverbPreset reverbSettings = AudioEffectSettingsHelper.createReverbSettings(settings, input.getText().toString());
+            reverbSettings.setArActive(1);
+            mACT.setText(reverbSettings.toString(), false);
 
-                if (selectedIndex >= 0) {
-                    ReverbSettings unActivePreset = reverb_presets.get(selectedIndex);
-                    unActivePreset.setIsSelected(0);
-                    audioEffectViewModel.updateReverbPreset(unActivePreset);
-                }
+            if (selectedIndex >= 0) {
+                AdvancedReverbPreset unActivePreset = reverb_presets.get(selectedIndex);
+                unActivePreset.setArActive(0);
+                audioEffectViewModel.updateAdvancedReverbPreset(unActivePreset);
+            }
 
-                audioEffectViewModel.createNewReverbPreset(reverbSettings);
-            }
+            audioEffectViewModel.insertAdvancedReverbPreset(reverbSettings);
         });
-        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                dialogInterface.cancel();
-            }
-        });
+        builder.setNegativeButton("Cancel", (dialogInterface, i) -> dialogInterface.cancel());
         builder.show();
     }
 
-    private void showPresetDeleteDialog(){
-        if (selectedIndex >= 0){
-            ReverbSettings reverbSettings = reverb_presets.get(selectedIndex);
+    private void showPresetDeleteDialog() {
+        if (selectedIndex >= 0) {
+            AdvancedReverbPreset reverbSettings = reverb_presets.get(selectedIndex);
             AlertDialog.Builder builder = new AlertDialog.Builder(requireContext()).setTitle("Delete");
             builder.setMessage("Delete preset " + reverbSettings.toString() + "?");
-            builder.setPositiveButton("Delete", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialogInterface, int i) {
-                    selectedIndex = -1;
-                    mACT.setText("", false);
-                    audioEffectViewModel.deletePreset(reverbSettings);
-                }
+            builder.setPositiveButton("Delete", (dialogInterface, i) -> {
+                selectedIndex = -1;
+                mACT.setText("", false);
+                audioEffectViewModel.deleteAdvancedReverbPreset(reverbSettings);
             });
-            builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialogInterface, int i) {
-                    dialogInterface.cancel();
-                }
-            });
+            builder.setNegativeButton("Cancel", (dialogInterface, i) -> dialogInterface.cancel());
             builder.show();
         }
     }
 
-    private void showInfoDialog(String infoText){
+    private void showInfoDialog(String infoText) {
         AlertDialog.Builder builder = new AlertDialog.Builder(requireContext()).setTitle("Info");
         builder.setMessage(infoText);
-        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                dialogInterface.cancel();
-            }
-        });
+        builder.setNegativeButton("Cancel", (dialogInterface, i) -> dialogInterface.cancel());
         builder.show();
     }
 }

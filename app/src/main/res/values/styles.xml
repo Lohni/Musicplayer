@@ -12,8 +12,8 @@
         <item name="colorOnPrimary">@color/colorTextLight</item>
         <!-- <item name="android:colorBackground">@color/colorBackground</item> -->
         <item name="colorControlNormal">@color/colorTextLight</item>
-        <item name="android:navigationBarColor">@color/colorPrimaryInfinite</item>
-        <item name="android:statusBarColor">@color/colorPrimaryNight</item>
+        <item name="android:navigationBarColor">@color/colorDarkSurface8Percent</item>
+        <item name="android:statusBarColor">@color/colorDarkSurface8Percent</item>
         <item name="android:windowContentTransitions">true</item>
         <item name="android:windowAllowEnterTransitionOverlap">true</item>
         <item name="actionBarSize">50dp</item>
