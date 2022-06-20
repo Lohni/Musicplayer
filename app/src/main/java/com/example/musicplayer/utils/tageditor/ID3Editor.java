@@ -1,160 +1,195 @@
 package com.example.musicplayer.utils.tageditor;
 
+import android.content.ContentUris;
 import android.content.Context;
+import android.database.Cursor;
+import android.media.MediaScannerConnection;
 import android.net.Uri;
+import android.os.ParcelFileDescriptor;
+import android.provider.MediaStore;
+import android.util.Log;
 
-import java.io.ByteArrayInputStream;
-import java.io.FileNotFoundException;
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
+import java.util.List;
 
 public class ID3Editor {
-
-    //Size in bytes
     private static final int HEADER_SIZE = 10;
-    private long trackID;
-    private ID3V2TagHeader tagHeader;
-    private TagResolver track;
+    private final byte[] id3Identifier = {0x49, 0x44, 0x33};
 
-    private Context context;
-    private ID3EditorInterface id3EditorInterface;
+    private ID3V4Track track;
 
-    public ID3Editor(Uri uri, Context context, long trackID, ID3EditorInterface id3EditorInterface){
+    private final long trackId;
+    private final Context context;
+    private final ID3EditorInterface id3EditorInterface;
+
+    public ID3Editor(Uri uri, Context context, long trackId, ID3EditorInterface id3EditorInterface) {
         this.context = context;
-        this.trackID = trackID;
+        this.trackId = trackId;
         this.id3EditorInterface = id3EditorInterface;
         decode(uri);
     }
 
-    private boolean decode(Uri uri){
-        InputStream is;
-        try {
-            is = context.getContentResolver().openInputStream(uri);
-
-            byte[] header = new byte[HEADER_SIZE];
-            is.read(header, 0, header.length);
-
-            if (checkIfV2TagIsPresent(Arrays.copyOfRange(header,0, 3))){
-                tagHeader = new ID3V2TagHeader(header);
-
-                byte[] data = new byte[tagHeader.getTAG_SIZE()];
-                is.read(data, 0, data.length);
-
-
-                switch (tagHeader.getTAG_VERSION_MAJOR()){
-                    case 2:{
-
+    private void decode(Uri uri) {
+        try (InputStream is = context.getContentResolver().openInputStream(uri)) {
+            if (is != null && is.available() > 0) {
+                byte[] header = new byte[HEADER_SIZE];
+                if (isID3V2HeaderPresent(is, header)) {
+                    ID3V2TagHeader tagHeader = new ID3V2TagHeader(header);
+                    track = new ID3V4Track(tagHeader);
+                    if (tagHeader.getTAG_VERSION_MAJOR() == 4 || tagHeader.getTAG_VERSION_MAJOR() == 3) {
+                        processFrames(is);
                     }
-                    case 3:{
-
-                    }
-                    case 4:{
-                        getV4Frames(data);
-                    }
-                    default:{
-
-                    }
+                } else {
+                    ID3V2TagHeader tagHeader = new ID3V2TagHeader();
+                    track = new ID3V4Track(tagHeader);
                 }
-            } else {
-                tagHeader = new ID3V2TagHeader();
             }
-            is.close();
-
-        } catch (FileNotFoundException e){
-            System.out.println(e);
-        } catch (IOException e){
-            System.out.println(e);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-        return true;
     }
 
-    private void processFrames(byte[] data){
+    private boolean isID3V2HeaderPresent(InputStream is, byte[] headerData) throws IOException {
+        return headerData.length == is.read(headerData, 0, headerData.length)
+                && checkIfV2TagIsPresent(Arrays.copyOfRange(headerData, 0, 3));
+    }
+
+    private boolean checkIfV2TagIsPresent(byte[] tagIdent) {
+        return Arrays.equals(tagIdent, id3Identifier);
+    }
+
+    private void processFrames(InputStream is) throws IOException {
+        byte[] frameHeaderBytes = new byte[10];
+        byte[] frameData;
+        int readBytes = 0;
         try {
-            ByteArrayInputStream bis = new ByteArrayInputStream(data);
-            track = new TagResolver(trackID);
-
-            byte[] header = new byte[10];
-            while (bis.available() > 0){
-
-                int bytesRead = bis.read(header,0,HEADER_SIZE);
-                if (bytesRead == HEADER_SIZE){
-                    ID3V4FrameHeader frameHeader = new ID3V4FrameHeader(header);
-                    int frameSize = frameHeader.FRAME_SIZE;
-                    byte[] frameData = new byte[frameSize];
-                    bis.read(frameData,0,frameSize);
-
-                    if (frameHeader.FRAME_ID.equals("APIC")){
-                        track.setFrame(new ID3V4APICFrame(frameData, frameHeader));
-                    }
-
-                    ID3V4Frame frame = new ID3V4Frame(frameData, frameHeader);
-                    if (frame.getFrameContent() != null){
-                        setTrackData(frame);
+            int tagSize = track.getTagHeader().getTAG_SIZE();
+            while (readBytes < tagSize) {
+                int read = is.read(frameHeaderBytes, 0, frameHeaderBytes.length);
+                if (read == frameHeaderBytes.length) {
+                    ID3V4FrameHeader frameHeader = new ID3V4FrameHeader(frameHeaderBytes, track.getTagHeader().getTAG_VERSION_MAJOR());
+                    //Necessary?
+                    if (frameHeader.FRAME_ID.equals(String.copyValueOf(new char[]{0x00, 0x00, 0x00, 0x00}))) {
+                        track.setPaddingBytes(tagSize - readBytes);
+                        readBytes += tagSize - readBytes;
+                    } else {
+                        frameData = new byte[frameHeader.FRAME_SIZE];
+                        read = is.read(frameData, 0, frameData.length);
+                        if (read == frameData.length) {
+                            ID3V4Frame newFrame = ID3V4Frame.newInstance(frameHeader, frameData);
+                            track.setFrame(newFrame);
+                        } else {
+                            throw new Exception("Bytes read does not match Framesize");
+                        }
+                        readBytes += frameHeaderBytes.length + frameData.length;
                     }
                 }
             }
-            bis.close();
-            track.calculateCombinedSize();
             id3EditorInterface.onDataLoadedListener(track);
-        } catch (IOException e){
-            System.out.println(e);
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            is.close();
         }
     }
 
-    private void setTrackData(ID3V4Frame frame){
-        switch (frame.getFrameId()){
-            case ID3V2FrameIDs.TPE2:{
-                track.setFrame(TagResolver.FRAME_ARTIST,frame);
-                break;
-            }
-            case ID3V2FrameIDs.TDRC:{
-                track.setFrame(TagResolver.FRAME_YEAR,frame);
-                break;
-            }
-            case ID3V2FrameIDs.TRCK:{
-                track.setFrame(TagResolver.FRAME_TRACKID,frame);
-                break;
-            }
-            case ID3V2FrameIDs.TCON:{
-                track.setFrame(TagResolver.FRAME_GENRE,frame);
-                break;
-            }
-            case ID3V2FrameIDs.TCOM:{
-                track.setFrame(TagResolver.FRAME_COMPOSER,frame);
-                break;
-            }
-            case ID3V2FrameIDs.TIT2:{
-                track.setFrame(TagResolver.FRAME_TITLE,frame);
-                break;
-            }
-            case ID3V2FrameIDs.TALB: {
-                track.setFrame(TagResolver.FRAME_ALBUM,frame);
-                break;
-            }
-            default:{
-                break;
-            }
-        }
-    }
-
-    private void checkFooter(InputStream is){
-
-    }
-
-    private boolean checkIfV2TagIsPresent(byte[] tagIdent){
-        if (tagIdent[0] == 0x49 && tagIdent[1] == 0x44 && tagIdent[2] == 0x33)return true;
-        else return false;
-    }
-
-    private void getV4Frames(byte[] data){
-            processFrames(data);
-    }
-
-    public TagResolver getTrackData(){
+    public ID3V4Track getTrackData() {
         return track;
     }
 
-    public ID3V2TagHeader getTagHeader(){return tagHeader;}
+    public long getTrackId() {
+        return trackId;
+    }
+
+    public void saveTrack() throws IOException {
+        ID3V2TagHeader tagHeader = track.getTagHeader();
+        int oldTagSize = tagHeader.getTAG_SIZE();
+        tagHeader.setNewTagSize(getNewTagSize());
+        byte[] newTag = new byte[tagHeader.getTAG_SIZE() + tagHeader.getTagHeaderLength()];
+
+        byte[] tagHeaderBytes = tagHeader.toBytes();
+        System.arraycopy(tagHeaderBytes, 0, newTag, 0, tagHeaderBytes.length);
+
+        int offset = tagHeader.getTagHeaderLength();
+
+        List<ID3V4Frame> frameList = track.getAllFrames();
+        for (ID3V4Frame frame : frameList) {
+            byte[] frameBytes = frame.getFrameAsBytes();
+            System.arraycopy(frameBytes, 0, newTag, offset, frameBytes.length);
+            offset += frameBytes.length;
+        }
+
+        Arrays.fill(newTag, offset, newTag.length, (byte) 0x00);
+
+        ParcelFileDescriptor parcelFileDescriptor = context
+                .getContentResolver()
+                .openFileDescriptor(ContentUris
+                                .withAppendedId(
+                                        MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, trackId),
+                        "rw");
+
+        File tempAudioData = File.createTempFile("tempAudioData", null, context.getCacheDir());
+        FileOutputStream tmpOutputStream = new FileOutputStream(tempAudioData);
+
+        int chunkSize = 8192;
+        byte[] chunk = new byte[chunkSize];
+        InputStream is = new FileInputStream(parcelFileDescriptor.getFileDescriptor());
+        is.skip(oldTagSize);
+        BufferedInputStream bufferedInputStream = new BufferedInputStream(is, chunkSize);
+
+        //Read Chunkwise
+        while (bufferedInputStream.available() > 0) {
+            bufferedInputStream.read(chunk, 0, chunkSize);
+            tmpOutputStream.write(chunk);
+        }
+
+        //Read last chunk < chunkSize
+        byte[] lastChunk = new byte[bufferedInputStream.available()];
+        bufferedInputStream.read(lastChunk);
+        tmpOutputStream.write(lastChunk);
+
+        bufferedInputStream.close();
+        tmpOutputStream.close();
+        is.close();
+
+        //Write Tag
+        FileOutputStream fileOutputStream = new FileOutputStream(parcelFileDescriptor.getFileDescriptor());
+        fileOutputStream.getChannel().truncate(0);
+        fileOutputStream.write(newTag);
+
+        //Write AudioData from tmpFile to AudioFile, reuse InputStream; BufferedInputStream
+        is = new FileInputStream(tempAudioData);
+        bufferedInputStream = new BufferedInputStream(is, chunkSize);
+
+        while (bufferedInputStream.available() > 0) {
+            bufferedInputStream.read(chunk, 0, chunkSize);
+            fileOutputStream.write(chunk);
+        }
+        lastChunk = new byte[bufferedInputStream.available()];
+        bufferedInputStream.read(lastChunk);
+        fileOutputStream.write(lastChunk);
+
+        is.close();
+        bufferedInputStream.close();
+        fileOutputStream.close();
+        tempAudioData.delete();
+        parcelFileDescriptor.close();
+    }
+
+    private int getNewTagSize() {
+        List<ID3V4Frame> frameList = track.getAllFrames();
+
+        int tagSize = 0;
+        for (ID3V4Frame frame : frameList) {
+            tagSize += frame.getFrameSize();
+        }
+        return tagSize + track.getPaddingBytes();
+    }
 
 }

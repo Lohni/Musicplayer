@@ -2,8 +2,8 @@ package com.example.musicplayer.adapter;
 
 import android.content.ContentUris;
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.media.MediaMetadataRetriever;
 import android.net.Uri;
@@ -11,12 +11,14 @@ import android.provider.MediaStore;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.BaseAdapter;
-import android.widget.Filter;
-import android.widget.Filterable;
+import android.view.animation.AlphaAnimation;
+import android.view.animation.Animation;
+import android.view.animation.DecelerateInterpolator;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.bumptech.glide.load.DecodeFormat;
+import com.bumptech.glide.request.RequestOptions;
 import com.example.musicplayer.R;
 import com.example.musicplayer.entities.MusicResolver;
 import com.example.musicplayer.ui.songlist.SongListInterface;
@@ -27,56 +29,66 @@ import androidx.annotation.NonNull;
 import androidx.core.content.res.ResourcesCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
-public class SongListAdapter extends RecyclerView.Adapter<SongListAdapter.ViewHolder>{
+public class SongListAdapter extends RecyclerView.Adapter<SongListAdapter.ViewHolder> {
 
     private ArrayList<MusicResolver> songList;
     private SongListInterface songListInterface;
     private Drawable customCoverImage;
     private Context context;
+    private RequestOptions requestOptions;
+    private int imagesLoading = 0;
 
-    public SongListAdapter(Context c, ArrayList<MusicResolver> songList, SongListInterface songListInterface){
-        this.songList=songList;
+    public SongListAdapter(Context c, ArrayList<MusicResolver> songList, SongListInterface songListInterface) {
+        this.songList = songList;
         this.songListInterface = songListInterface;
-        context = c;
-        customCoverImage = ResourcesCompat.getDrawable(c.getResources(),R.drawable.ic_baseline_music_note_24,null);
+        this.context = c;
+        this.customCoverImage = ResourcesCompat.getDrawable(c.getResources(), R.drawable.ic_baseline_music_note_24, null);
+        requestOptions = new RequestOptions().error(R.drawable.ic_album_black_24dp)
+                .format(DecodeFormat.PREFER_RGB_565);
     }
 
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.tageditor_item, parent, false);
+        View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.tracklist_item, parent, false);
         return new SongListAdapter.ViewHolder(v);
     }
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         MusicResolver track = songList.get(position);
+        holder.position = holder.getAbsoluteAdapterPosition();
         holder.artist.setText(track.getArtist());
         holder.title.setText(track.getTitle());
         holder.coverImage.setImageDrawable(customCoverImage);
-        holder.itemView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                songListInterface.OnSongSelectedListener(position);
-            }
+        holder.itemView.setOnClickListener(view -> {
+            songListInterface.OnSongListCreatedListener(songList);
+            songListInterface.OnSongSelectedListener(position);
         });
 
-        holder.coverImage.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                Uri trackUri = ContentUris.withAppendedId(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,track.getId());
+        int pos = holder.getAbsoluteAdapterPosition();
+        imagesLoading++;
+        holder.coverImage.postDelayed(() -> {
+            if (holder.position == pos) {
+                Uri trackUri = ContentUris.withAppendedId(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, track.getId());
                 MediaMetadataRetriever mmr = new MediaMetadataRetriever();
-                mmr.setDataSource(context,trackUri);
-                byte [] thumbnail = mmr.getEmbeddedPicture();
+                mmr.setDataSource(context, trackUri);
+                byte[] thumbnail = mmr.getEmbeddedPicture();
                 mmr.release();
-                if (thumbnail != null){
-                    holder.coverImage.setImageBitmap(BitmapFactory.decodeByteArray(thumbnail, 0, thumbnail.length));
+                if (thumbnail != null) {
+                    Bitmap cover = BitmapFactory.decodeByteArray(thumbnail, 0, thumbnail.length);
+                    //ImageTransformUtil.getRoundedCornerBitmap(cover, context.getResources())
+                    holder.coverImage.setClipToOutline(true);
+                    holder.coverImage.setImageBitmap(cover);
+                    Animation fadeIn = new AlphaAnimation(0, 1);
+                    fadeIn.setInterpolator(new DecelerateInterpolator());
+                    fadeIn.setDuration(350);
+                    holder.coverImage.setAnimation(fadeIn);
                 }
             }
-        },500);
+            imagesLoading--;
+        }, 300 + (30L * imagesLoading));
     }
-
-
 
     /*
     @Override
@@ -127,14 +139,16 @@ public class SongListAdapter extends RecyclerView.Adapter<SongListAdapter.ViewHo
         return songList.size();
     }
 
-    public class ViewHolder extends RecyclerView.ViewHolder{
+    public class ViewHolder extends RecyclerView.ViewHolder {
         TextView title, artist;
         ImageView coverImage;
+        int position;
+
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
-            title = itemView.findViewById(R.id.tagEditorList_title);
-            artist = itemView.findViewById(R.id.tagEditorList_artist);
-            coverImage = itemView.findViewById(R.id.tagEditorList_cover);
+            title = itemView.findViewById(R.id.tracklist_title);
+            artist = itemView.findViewById(R.id.tracklist_artist);
+            coverImage = itemView.findViewById(R.id.tracklist_cover);
         }
     }
 }

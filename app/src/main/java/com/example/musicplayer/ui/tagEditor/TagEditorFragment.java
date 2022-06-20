@@ -47,9 +47,7 @@ public class TagEditorFragment extends Fragment {
     private TagEditorInterface tagEditorInterface;
     private NavigationControlInterface navigationControlInterface;
 
-    public TagEditorFragment() {
-        // Required empty public constructor
-    }
+    public TagEditorFragment() {}
 
     @Override
     public void onAttach(@NonNull Context context) {
@@ -65,7 +63,6 @@ public class TagEditorFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_tag_editor, container, false);
         tagList = view.findViewById(R.id.tagEditor_songlist);
         search = view.findViewById(R.id.tagEditor_search);
@@ -98,60 +95,55 @@ public class TagEditorFragment extends Fragment {
     private void loadTrackList(){
 
         ExecutorService executorService = Executors.newSingleThreadExecutor();
-        Runnable task = new Runnable() {
-            @Override
-            public void run() {
-                ContentResolver contentResolver = requireContext().getContentResolver();
-                Uri musicUri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
-                Cursor musicCursor = contentResolver.query(musicUri, null, null, null, null);
-                if(musicCursor!=null && musicCursor.moveToFirst()){
-                    //get columns
-                    int titleColumn = musicCursor.getColumnIndex
-                            (android.provider.MediaStore.Audio.Media.TITLE);
-                    int idColumn = musicCursor.getColumnIndex
-                            (MediaStore.Audio.Media._ID);
-                    int artistColumn = musicCursor.getColumnIndex
-                            (android.provider.MediaStore.Audio.Media.ARTIST);
-                    int albumid = musicCursor.getColumnIndex(MediaStore.Audio.Media.ALBUM_ID);
+        Runnable task = () -> {
+            ContentResolver contentResolver = requireContext().getContentResolver();
+            Uri musicUri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
+            Cursor musicCursor = contentResolver.query(musicUri, null, null, null, null);
+            if(musicCursor!=null && musicCursor.moveToFirst()){
+                int titleColumn = musicCursor.getColumnIndex
+                        (MediaStore.Audio.Media.TITLE);
+                int idColumn = musicCursor.getColumnIndex
+                        (MediaStore.Audio.Media._ID);
+                int artistColumn = musicCursor.getColumnIndex
+                        (MediaStore.Audio.Media.ARTIST);
+                int albumid = musicCursor.getColumnIndex(MediaStore.Audio.Media.ALBUM_ID);
 
-                    ArrayList<MusicResolver> chunk = new ArrayList<>();
+                ArrayList<MusicResolver> chunk = new ArrayList<>();
 
-                    //add songs to list
-                    do {
-                        long thisalbumid = musicCursor.getLong(albumid);
-                        long thisId = musicCursor.getLong(idColumn);
-                        String thisTitle = musicCursor.getString(titleColumn);
-                        String thisArtist = musicCursor.getString(artistColumn);
-                        chunk.add(new MusicResolver(thisId, thisalbumid, thisArtist, thisTitle));
+                do {
+                    long thisalbumid = musicCursor.getLong(albumid);
+                    long thisId = musicCursor.getLong(idColumn);
+                    String thisTitle = musicCursor.getString(titleColumn);
+                    String thisArtist = musicCursor.getString(artistColumn);
+                    chunk.add(new MusicResolver(thisId, thisalbumid, thisArtist, thisTitle));
 
-                        if (chunk.size() == 20){
+                    if (chunk.size() == 20){
 
-                            if (trackList.size() > 0){
-                                int pos = trackList.size() - 1;
-                                trackList.addAll(chunk);
-                                adapter.notifyItemRangeInserted(pos,20);
-                            } else {
-                                trackList.addAll(chunk);
-                                adapter.notifyItemRangeInserted(0,20);
-                            }
-
-                            chunk.clear();
+                        if (trackList.size() > 0){
+                            int pos = trackList.size() - 1;
+                            trackList.addAll(chunk);
+                            adapter.notifyItemRangeInserted(pos,20);
+                        } else {
+                            trackList.addAll(chunk);
+                            adapter.notifyItemRangeInserted(0,20);
                         }
 
-                    } while (musicCursor.moveToNext());
-
-                    if (chunk.size() > 0){
-                        int pos = trackList.size() - 1;
-                        trackList.addAll(chunk);
-                        adapter.notifyItemRangeInserted(pos,chunk.size());
                         chunk.clear();
                     }
+
+                } while (musicCursor.moveToNext());
+
+                if (chunk.size() > 0){
+                    int pos = trackList.size() - 1;
+                    trackList.addAll(chunk);
+                    adapter.notifyItemRangeInserted(pos,chunk.size());
+                    chunk.clear();
                 }
-                if(musicCursor != null){
-                    musicCursor.close();
-                }
-                trackListLoaded();
             }
+            if(musicCursor != null){
+                musicCursor.close();
+            }
+            trackListLoaded();
         };
         fetched = executorService.submit(task);
     }

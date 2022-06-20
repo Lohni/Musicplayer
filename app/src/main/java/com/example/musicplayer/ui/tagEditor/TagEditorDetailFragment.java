@@ -1,27 +1,16 @@
 package com.example.musicplayer.ui.tagEditor;
 
-import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.ContentUris;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
-import androidx.core.content.res.ResourcesCompat;
-import androidx.fragment.app.Fragment;
-
 import android.provider.MediaStore;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -31,37 +20,36 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 
 import com.example.musicplayer.R;
-import com.example.musicplayer.adapter.EqualizerViewPagerAdapter;
 import com.example.musicplayer.entities.MusicResolver;
 import com.example.musicplayer.utils.NavigationControlInterface;
 import com.example.musicplayer.utils.Permissions;
+import com.example.musicplayer.utils.enums.ID3FrameId;
 import com.example.musicplayer.utils.tageditor.ID3Editor;
-import com.example.musicplayer.utils.tageditor.ID3EditorInterface;
 import com.example.musicplayer.utils.tageditor.ID3V4APICFrame;
 import com.example.musicplayer.utils.tageditor.ID3V4Frame;
-import com.example.musicplayer.utils.tageditor.TagResolver;
-import com.example.musicplayer.utils.tageditor.TagWriter;
+import com.example.musicplayer.utils.tageditor.ID3V4Track;
 import com.google.android.material.textfield.TextInputEditText;
 
 import java.io.ByteArrayOutputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 
-public class TagEditorDetailFragment extends Fragment{
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.core.content.res.ResourcesCompat;
+import androidx.fragment.app.Fragment;
+
+public class TagEditorDetailFragment extends Fragment {
     private static final int PERMISSION_REQUEST_CODE = 0x03;
     private long trackID;
     private ID3Editor id3Editor;
     private TextInputEditText title, artist, album, genre, date, trackNr, composer;
-    private ID3V4Frame titleFrame, artistFrame, albumFrame, genreFrame, yearFrame, tracknrFrame, composerFrame;
-    private ID3V4APICFrame apicFrame;
     private ImageView tagImageView;
 
     private NavigationControlInterface navigationControlInterface;
 
-    public TagEditorDetailFragment() {
-        // Required empty public constructor
-    }
+    public TagEditorDetailFragment() {}
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -77,8 +65,10 @@ public class TagEditorDetailFragment extends Fragment{
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        if (item.getItemId() == R.id.action_tagEditor_confirm){
+        if (item.getItemId() == R.id.action_tagEditor_confirm) {
             writeTag();
+            Uri trackUri = ContentUris.withAppendedId(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, id3Editor.getTrackId());
+            requireContext().sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, trackUri));
             requireActivity().onBackPressed();
         }
         return super.onOptionsItemSelected(item);
@@ -89,7 +79,7 @@ public class TagEditorDetailFragment extends Fragment{
         super.onAttach(context);
         try {
             navigationControlInterface = (NavigationControlInterface) context;
-        } catch (ClassCastException e){
+        } catch (ClassCastException e) {
             throw new ClassCastException(context.toString() + "must implement NavigationControlInterface");
         }
     }
@@ -97,7 +87,6 @@ public class TagEditorDetailFragment extends Fragment{
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_tag_editor_detail, container, false);
 
         title = view.findViewById(R.id.tagEditorDetail_title);
@@ -109,19 +98,14 @@ public class TagEditorDetailFragment extends Fragment{
         composer = view.findViewById(R.id.tagEditorDetail_composer);
         tagImageView = view.findViewById(R.id.tagEditorDetail_cover);
 
-        tagImageView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                selectImageFromGallery(requireContext());
-            }
-        });
+        tagImageView.setOnClickListener(view1 -> selectImageFromGallery(requireContext()));
 
         navigationControlInterface.isDrawerEnabledListener(false);
         navigationControlInterface.setHomeAsUpEnabled(true);
         navigationControlInterface.setHomeAsUpIndicator(R.drawable.ic_clear_black_24dp);
 
-        if (Permissions.permission(requireActivity(), this, android.Manifest.permission.WRITE_EXTERNAL_STORAGE)){
-            getValues();
+        if (Permissions.permission(requireActivity(), this, android.Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+            readID3Tag();
         }
 
         return view;
@@ -130,8 +114,8 @@ public class TagEditorDetailFragment extends Fragment{
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED && permissions[0].equals(android.Manifest.permission.WRITE_EXTERNAL_STORAGE)){
-            getValues();
+        if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED && permissions[0].equals(android.Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+            readID3Tag();
         }
     }
 
@@ -139,100 +123,73 @@ public class TagEditorDetailFragment extends Fragment{
         trackID = track.getId();
     }
 
-    private TagResolver getTagResolver(){
-        TagResolver track = id3Editor.getTrackData();
-        titleFrame.setFrameContent(title.getText().toString());
-        track.setFrame(TagResolver.FRAME_TITLE, titleFrame);
-        artistFrame.setFrameContent(artist.getText().toString());
-        track.setFrame(TagResolver.FRAME_ARTIST, artistFrame);
+    private void setValues(ID3V4Track track) {
+        title.setText(getTextValueFromTrack(ID3FrameId.TIT2, track));
+        artist.setText(getTextValueFromTrack(ID3FrameId.TPE2, track));
+        album.setText(getTextValueFromTrack(ID3FrameId.TALB, track));
+        genre.setText(getTextValueFromTrack(ID3FrameId.TCON, track));
+        date.setText(getTextValueFromTrack(ID3FrameId.TDRC, track));
+        trackNr.setText(getTextValueFromTrack(ID3FrameId.TRCK, track));
+        composer.setText(getTextValueFromTrack(ID3FrameId.TCOM, track));
 
-        albumFrame.setFrameContent(album.getText().toString());
-        track.setFrame(TagResolver.FRAME_ALBUM, albumFrame);
-
-        genreFrame.setFrameContent(genre.getText().toString());
-        track.setFrame(TagResolver.FRAME_GENRE, genreFrame);
-
-        yearFrame.setFrameContent(date.getText().toString());
-        track.setFrame(TagResolver.FRAME_YEAR, yearFrame);
-
-        tracknrFrame.setFrameContent(trackNr.getText().toString());
-        track.setFrame(TagResolver.FRAME_TRACKID, tracknrFrame);
-
-        composerFrame.setFrameContent(composer.getText().toString());
-        track.setFrame(TagResolver.FRAME_COMPOSER, composerFrame);
-
-        if (apicFrame != null){
-            track.setFrame(apicFrame);
-        }
-
-        return track;
-    }
-
-    private void setValues(TagResolver track) {
-        titleFrame = track.getFrame(TagResolver.FRAME_TITLE);
-        title.setText(titleFrame.getFrameContent());
-        artistFrame = track.getFrame(TagResolver.FRAME_ARTIST);
-        artist.setText(artistFrame.getFrameContent());
-        albumFrame = track.getFrame(TagResolver.FRAME_ALBUM);
-        album.setText(albumFrame.getFrameContent());
-        genreFrame = track.getFrame(TagResolver.FRAME_GENRE);
-        genre.setText(genreFrame.getFrameContent());
-        yearFrame = track.getFrame(TagResolver.FRAME_YEAR);
-        date.setText(yearFrame.getFrameContent());
-        tracknrFrame = track.getFrame(TagResolver.FRAME_TRACKID);
-        trackNr.setText(tracknrFrame.getFrameContent());
-        composerFrame = track.getFrame(TagResolver.FRAME_COMPOSER);
-        composer.setText(composerFrame.getFrameContent());
-
-        if (track.getFrame() != null){
-            apicFrame = track.getFrame();
-            tagImageView.setImageBitmap(apicFrame.getPictureAsBitmap());
+        if (track.getRelevantFrame(ID3FrameId.APIC) != null) {
+            tagImageView.setImageBitmap(((ID3V4APICFrame) track.getRelevantFrame(ID3FrameId.APIC)).getPictureAsBitmap());
         } else {
-            tagImageView.setImageDrawable(ResourcesCompat.getDrawable(requireContext().getResources(),R.drawable.ic_baseline_music_note_24,null));
+            tagImageView.setImageDrawable(ResourcesCompat.getDrawable(requireContext().getResources(), R.drawable.ic_baseline_music_note_24, null));
         }
-
     }
 
-    private void getValues() {
+    private String getTextValueFromTrack(ID3FrameId frameId, ID3V4Track track) {
+        return (track.getRelevantFrame(frameId) != null)
+                ? (String) track.getRelevantFrame(frameId).getFrameData() : "";
+    }
+
+    private void readID3Tag() {
         Uri trackUri = ContentUris.withAppendedId(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, trackID);
-        readBytes(trackUri);
+        id3Editor = new ID3Editor(trackUri, requireContext(), trackID, this::setValues);
     }
 
-    private void readBytes(Uri uri) {
-        id3Editor = new ID3Editor(uri, requireContext(), trackID, new ID3EditorInterface() {
-            @Override
-            public void onDataLoadedListener(TagResolver tagResolver) {
-                setValues(tagResolver);
-            }
-        });
-    }
-
-    private void writeTag(){
+    private void writeTag() {
         try {
-            TagWriter tagWriter = new TagWriter(requireContext(),getTagResolver(), id3Editor.getTagHeader());
-            tagWriter.writeToFile();
+            ID3V4Track track = id3Editor.getTrackData();
+            updateEditorWithTextValues(track, ID3FrameId.TIT2, title.getText().toString());
+            updateEditorWithTextValues(track, ID3FrameId.TPE2, artist.getText().toString());
+            updateEditorWithTextValues(track, ID3FrameId.TALB, album.getText().toString());
+            updateEditorWithTextValues(track, ID3FrameId.TCON, genre.getText().toString());
+            updateEditorWithTextValues(track, ID3FrameId.TDRC, date.getText().toString());
+            updateEditorWithTextValues(track, ID3FrameId.TRCK, trackNr.getText().toString());
+            updateEditorWithTextValues(track, ID3FrameId.TCOM, composer.getText().toString());
+
+            id3Editor.saveTrack();
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    private void selectImageFromGallery(Context context){
+    private void updateEditorWithTextValues(ID3V4Track track, ID3FrameId frameId, String newVal) {
+        ID3V4Frame frame = track.getRelevantFrame(frameId);
+        if (frame != null) {
+            frame.setFrameData(newVal);
+        } else if (!newVal.equals("")){
+            frame = track.createNewTextFrame(frameId, newVal);
+            track.setFrame(frame);
+        }
+    }
+
+    private void selectImageFromGallery(Context context) {
         final CharSequence[] options = {"Take Photo", "Choose from Gallery", "Cancel"};
 
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
         builder.setTitle("Choose cover image");
 
-        builder.setItems(options, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                if (options[i].equals("Take Photo")){
+        builder.setItems(options, (dialogInterface, i) -> {
+            if (options[i].equals("Take Photo")) {
 
-                } else if (options[i].equals("Choose from Gallery")){
-                    Intent pickFromGallery = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-                    startActivityForResult(pickFromGallery, 1);
-                } else if (options[i].equals("Cancel")){
-                    dialogInterface.dismiss();
-                }
+            } else if (options[i].equals("Choose from Gallery")) {
+                Intent pickFromGallery = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                startActivityForResult(pickFromGallery, 1);
+            } else if (options[i].equals("Cancel")) {
+                dialogInterface.dismiss();
             }
         });
         builder.show();
@@ -240,47 +197,48 @@ public class TagEditorDetailFragment extends Fragment{
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        if (resultCode != Activity.RESULT_CANCELED){
-            switch (requestCode){
-                case 0:{
-                    if (resultCode == Activity.RESULT_OK && data != null){
+        if (resultCode != Activity.RESULT_CANCELED) {
+            switch (requestCode) {
+                case 0: {
+                    if (resultCode == Activity.RESULT_OK && data != null) {
                         Bitmap photo = (Bitmap) data.getExtras().get("data");
                         tagImageView.setImageBitmap(photo);
                     }
                     break;
                 }
-                case 1:{
+                case 1: {
                     if (resultCode == Activity.RESULT_OK && data != null) {
                         Uri selectedImage = data.getData();
-                        if (selectedImage!=null){
+                        if (selectedImage != null) {
                             try {
                                 InputStream is = requireContext().getContentResolver().openInputStream(selectedImage);
                                 ByteArrayOutputStream byteBuffer = new ByteArrayOutputStream();
                                 int bufferSize = 1024;
                                 byte[] buffer = new byte[bufferSize];
 
-                                int len = 0;
-                                while ((len = is.read(buffer)) != -1){
+                                int len;
+                                while ((len = is.read(buffer)) != -1) {
                                     byteBuffer.write(buffer, 0, len);
                                 }
 
                                 byte[] rawPictureData = byteBuffer.toByteArray();
                                 byteBuffer.close();
 
-                                tagImageView.setImageBitmap(BitmapFactory.decodeByteArray(rawPictureData, 0 , rawPictureData.length));
+                                tagImageView.setImageBitmap(BitmapFactory.decodeByteArray(rawPictureData, 0, rawPictureData.length));
 
                                 String mimeType = requireContext().getContentResolver().getType(selectedImage);
-
+                                ID3V4Track track = id3Editor.getTrackData();
                                 //Init ApicFrame
-                                if (apicFrame != null){
-                                    apicFrame.setPicture(rawPictureData, mimeType);
+                                if (track.getRelevantFrame(ID3FrameId.APIC) != null) {
+                                    ID3V4APICFrame apicFrame = (ID3V4APICFrame) track.getRelevantFrame(ID3FrameId.APIC);
+                                    apicFrame.setFrameData(rawPictureData);
+                                    apicFrame.setMimeType(mimeType);
                                 } else {
-                                    apicFrame = new ID3V4APICFrame();
-                                    apicFrame.setPicture(rawPictureData, mimeType);
+                                    ID3V4APICFrame apicFrame = track.createNewApicframe(ID3FrameId.APIC, rawPictureData);
+                                    apicFrame.setMimeType(mimeType);
+                                    track.setFrame(apicFrame);
                                 }
 
-                            } catch (FileNotFoundException e) {
-                                e.printStackTrace();
                             } catch (IOException e) {
                                 e.printStackTrace();
                             }

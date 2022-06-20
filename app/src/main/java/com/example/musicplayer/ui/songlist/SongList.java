@@ -45,6 +45,7 @@ import com.example.musicplayer.adapter.SongListAdapter;
 import com.example.musicplayer.entities.MusicResolver;
 import com.example.musicplayer.utils.NavigationControlInterface;
 import com.example.musicplayer.utils.Permissions;
+import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textview.MaterialTextView;
 
 import java.util.ArrayList;
@@ -63,17 +64,15 @@ public class SongList extends Fragment{
     private View view;
     private Map<String,Integer> mapIndex;
     private SongListAdapter songListAdapter;
-    private ConstraintLayout shuffle;
+    private MaterialButton shuffle;
 
-    private ArrayList<MusicResolver> songList = new ArrayList<>();
+    private final ArrayList<MusicResolver> songList = new ArrayList<>();
     private SongListInterface songListInterface;
     private NavigationControlInterface navigationControlInterface;
     private TextView shuffle_size, indexZoom;
     private FrameLayout indexZoomHolder;
 
-    public SongList() {
-        // Required empty public constructor
-    }
+    public SongList() {}
 
     @Override
     public void onAttach(@NonNull Context context) {
@@ -89,7 +88,6 @@ public class SongList extends Fragment{
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
         view = inflater.inflate(R.layout.fragment_song_list, container, false);
         navigationControlInterface.isDrawerEnabledListener(true);
         navigationControlInterface.setHomeAsUpEnabled(false);
@@ -112,14 +110,9 @@ public class SongList extends Fragment{
         listViewManager = new LinearLayoutManager(requireContext());
         listView.setLayoutManager(listViewManager);
 
-        DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(requireContext(), R.drawable.recyclerview_divider);
-        listView.addItemDecoration(dividerItemDecoration);
-
-        shuffle.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                songListInterface.OnSonglistShuffleClickListener();
-            }
+        shuffle.setOnClickListener(view -> {
+            songListInterface.OnSongListCreatedListener(songList);
+            songListInterface.OnSonglistShuffleClickListener();
         });
 
         getIndexList();
@@ -143,7 +136,6 @@ public class SongList extends Fragment{
         Uri musicUri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
         Cursor musicCursor = contentResolver.query(musicUri, null, null, null, null);
         if(musicCursor!=null && musicCursor.moveToFirst()){
-            //get columns
             int titleColumn = musicCursor.getColumnIndex
                     (android.provider.MediaStore.Audio.Media.TITLE);
             int idColumn = musicCursor.getColumnIndex
@@ -152,7 +144,6 @@ public class SongList extends Fragment{
                     (android.provider.MediaStore.Audio.Media.ARTIST);
             int albumid = musicCursor.getColumnIndex(MediaStore.Audio.Media.ALBUM_ID);
 
-            //add songs to list
             do {
                 long thisalbumid = musicCursor.getLong(albumid);
                 long thisId = musicCursor.getLong(idColumn);
@@ -164,13 +155,8 @@ public class SongList extends Fragment{
         }
 
         if(musicCursor != null)musicCursor.close();
-        Collections.sort(songList, new Comparator<MusicResolver>(){
-            public int compare(MusicResolver a, MusicResolver b){
-                return a.getTitle().compareToIgnoreCase(b.getTitle());
-            }
-        });
+        Collections.sort(songList, (a, b) -> a.getTitle().compareToIgnoreCase(b.getTitle()));
 
-        songListInterface.OnSongListCreatedListener(songList);
         shuffle_size.setText(songList.size() + " Songs");
     }
 
@@ -185,14 +171,13 @@ public class SongList extends Fragment{
                     TextView child = (TextView) getChildAt(i);
                     if(x > child.getLeft() && x < child.getRight() && y > child.getTop() && y < child.getBottom()){
                         child.callOnClick();
-                        //touch is within this child
+
                         if(ev.getAction() == MotionEvent.ACTION_UP){
                             indexZoomHolder.setVisibility(View.GONE);
                         }
                     }
                 }
                 if(!(x > getLeft() && x < getRight() && y > getTop() && y < getBottom())){
-                    //Touch is out if Layout
                     indexZoomHolder.setVisibility(View.GONE);
                 }
                 return true;
@@ -216,18 +201,15 @@ public class SongList extends Fragment{
         for (String index : indexList) {
             textView = new MaterialTextView(requireActivity());
             textView.setTextSize(textsize);
-            textView.setTextColor(ContextCompat.getColor(requireContext(), R.color.colorTextLight));
+            textView.setTextColor(ContextCompat.getColor(requireContext(), R.color.colorDarkOnBackground));
             textView.setText(index);
             textView.setFocusable(false);
             textView.setGravity(Gravity.CENTER);
-            textView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    indexZoomHolder.setVisibility(View.VISIBLE);
-                    TextView selectedIndex = (TextView) view;
-                    indexZoom.setText(selectedIndex.getText().subSequence(0,1));
-                    listViewManager.scrollToPositionWithOffset(mapIndex.get(selectedIndex.getText()), 0);
-                }
+            textView.setOnClickListener(view -> {
+                indexZoomHolder.setVisibility(View.VISIBLE);
+                TextView selectedIndex = (TextView) view;
+                indexZoom.setText(selectedIndex.getText().subSequence(0,1));
+                listViewManager.scrollToPositionWithOffset(mapIndex.get(selectedIndex.getText()), 0);
             });
             indexLayout.addView(textView);
         }
@@ -235,7 +217,7 @@ public class SongList extends Fragment{
     }
 
     private void getIndexList() {
-        mapIndex = new LinkedHashMap<String, Integer>();
+        mapIndex = new LinkedHashMap<>();
         for (int i = 0; i < songList.size(); i++) {
             MusicResolver item = songList.get(i);
             String index = item.getTitle().substring(0,1);
@@ -256,8 +238,8 @@ public class SongList extends Fragment{
 
     private class DividerItemDecoration extends RecyclerView.ItemDecoration{
 
-        private Drawable divider;
-        private int paddingLeft, paddingRight;
+        private final Drawable divider;
+        private final int paddingLeft, paddingRight;
 
         public DividerItemDecoration(Context context, int resId) {
             divider = ContextCompat.getDrawable(context, resId);

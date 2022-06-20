@@ -10,6 +10,7 @@ import android.widget.Filterable;
 import android.widget.TextView;
 
 import com.example.musicplayer.R;
+import com.example.musicplayer.database.entity.Track;
 import com.example.musicplayer.entities.MusicResolver;
 import com.example.musicplayer.ui.playlistdetail.OnTrackSelectedListener;
 
@@ -21,25 +22,17 @@ import androidx.recyclerview.widget.RecyclerView;
 
 public class TrackSelectionAdapter extends RecyclerView.Adapter<TrackSelectionAdapter.ViewHolder> implements Filterable {
 
-    private ArrayList<MusicResolver> trackList, mDisplayedvalues;
+    private ArrayList<Track> trackList, mDisplayedvalues, selected;
     private ArrayList<Integer> originalIndex;
     private Context context;
     private OnTrackSelectedListener onTrackSelectedListener;
 
-    public TrackSelectionAdapter(Context c, ArrayList<MusicResolver> trackList, OnTrackSelectedListener onTrackSelectedListener){
-        //this.songList=songList;
+    public TrackSelectionAdapter(Context c, ArrayList<Track> trackList, OnTrackSelectedListener onTrackSelectedListener){
         this.trackList =trackList;
         this.mDisplayedvalues = trackList;
         context=c;
         this.onTrackSelectedListener = onTrackSelectedListener;
-    }
-
-    public int getFilterCount() {
-        return trackList.size();
-    }
-
-    public MusicResolver getItem(int i) {
-        return trackList.get(i);
+        this.selected = new ArrayList<>();
     }
 
     @NonNull
@@ -51,27 +44,43 @@ public class TrackSelectionAdapter extends RecyclerView.Adapter<TrackSelectionAd
 
     @Override
     public void onBindViewHolder(@NonNull TrackSelectionAdapter.ViewHolder viewHolder, int position) {
-        viewHolder.title.setText(mDisplayedvalues.get(position).getTitle());
-        viewHolder.artist.setText(mDisplayedvalues.get(position).getArtist());
-        viewHolder.checkBox.setChecked(mDisplayedvalues.get(position).isSelected());
-        viewHolder.itemView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                onTrackSelectedListener.onSongSelected(position);
+        Track sel = mDisplayedvalues.get(position);
+
+        viewHolder.title.setText(sel.getTTitle());
+        viewHolder.artist.setText(sel.getTArtist());
+        viewHolder.checkBox.setChecked(selected.contains(sel));
+        viewHolder.itemView.setOnClickListener(view -> {
+            if (selected.contains(sel)) {
+                selected.remove(sel);
+                updateViewHolderSelected(viewHolder);
+            } else {
+                selected.add(sel);
+                updateViewHolderNotSelected(viewHolder);
             }
+
+            viewHolder.checkBox.setChecked(!viewHolder.checkBox.isChecked());
+            onTrackSelectedListener.onSongSelected(position);
         });
 
-        if(mDisplayedvalues.get(position).isSelected()){
-            viewHolder.itemView.setBackgroundResource(R.color.colorSecondaryLightTrans);
-            viewHolder.title.setTextColor(ContextCompat.getColor(context,R.color.colorPrimaryNight));
-            viewHolder.artist.setTextColor(ContextCompat.getColor(context,R.color.colorPrimaryNight));
-            viewHolder.checkBox.setButtonTintList(ContextCompat.getColorStateList(context,R.color.colorPrimaryNight));
+        if(viewHolder.checkBox.isChecked()){
+            updateViewHolderSelected(viewHolder);
         } else{
-            viewHolder.itemView.setBackgroundResource(R.color.colorTransparent);
-            viewHolder.title.setTextColor(ContextCompat.getColor(context,R.color.colorTextLight));
-            viewHolder.artist.setTextColor(ContextCompat.getColor(context,R.color.colorTextLight));
-            viewHolder.checkBox.setButtonTintList(ContextCompat.getColorStateList(context,R.color.colorPrimary));
+            updateViewHolderNotSelected(viewHolder);
         }
+    }
+
+    private void updateViewHolderSelected(TrackSelectionAdapter.ViewHolder viewHolder) {
+        viewHolder.itemView.setBackgroundResource(R.color.colorSecondaryLightTrans);
+        viewHolder.title.setTextColor(ContextCompat.getColor(context,R.color.colorPrimaryNight));
+        viewHolder.artist.setTextColor(ContextCompat.getColor(context,R.color.colorPrimaryNight));
+        viewHolder.checkBox.setButtonTintList(ContextCompat.getColorStateList(context,R.color.colorPrimaryNight));
+    }
+
+    private void updateViewHolderNotSelected(TrackSelectionAdapter.ViewHolder viewHolder) {
+        viewHolder.itemView.setBackgroundResource(R.color.colorTransparent);
+        viewHolder.title.setTextColor(ContextCompat.getColor(context,R.color.colorTextLight));
+        viewHolder.artist.setTextColor(ContextCompat.getColor(context,R.color.colorTextLight));
+        viewHolder.checkBox.setButtonTintList(ContextCompat.getColorStateList(context,R.color.colorPrimary));
     }
 
     @Override
@@ -79,6 +88,9 @@ public class TrackSelectionAdapter extends RecyclerView.Adapter<TrackSelectionAd
         return mDisplayedvalues.size();
     }
 
+    public int getSelectedCount() {
+        return selected.size();
+    }
 
     @Override
     public Filter getFilter() {
@@ -86,11 +98,11 @@ public class TrackSelectionAdapter extends RecyclerView.Adapter<TrackSelectionAd
             @Override
             protected FilterResults performFiltering(CharSequence constraint) {
                 FilterResults filterResults = new FilterResults();
-                ArrayList<MusicResolver> filteredList = new ArrayList<>();
+                ArrayList<Track> filteredList = new ArrayList<>();
                 originalIndex = new ArrayList<>();
 
                 if(trackList==null){
-                    trackList = new ArrayList<MusicResolver>(mDisplayedvalues);
+                    trackList = new ArrayList<Track>(mDisplayedvalues);
                 }
                 if (constraint == null || constraint.length() == 0) {
 
@@ -100,7 +112,7 @@ public class TrackSelectionAdapter extends RecyclerView.Adapter<TrackSelectionAd
                 } else {
                     constraint = constraint.toString().toLowerCase();
                     for (int i = 0; i < trackList.size(); i++) {
-                        String data = trackList.get(i).getTitle();
+                        String data = trackList.get(i).getTTitle();
                         if (data.toLowerCase().startsWith(constraint.toString())) {
                             filteredList.add(trackList.get(i));
                             originalIndex.add(i);
@@ -115,7 +127,7 @@ public class TrackSelectionAdapter extends RecyclerView.Adapter<TrackSelectionAd
 
             @Override
             protected void publishResults(CharSequence charSequence, FilterResults filterResults) {
-                mDisplayedvalues = (ArrayList<MusicResolver>) filterResults.values; // has the filtered values
+                mDisplayedvalues = (ArrayList<Track>) filterResults.values; // has the filtered values
                 notifyDataSetChanged();  // notifies the data with new filtered values
             }
         };

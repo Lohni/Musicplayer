@@ -2,51 +2,53 @@ package com.example.musicplayer.ui.audioeffects.database;
 
 import android.media.audiofx.EnvironmentalReverb;
 
+import com.example.musicplayer.database.entity.AdvancedReverbPreset;
+
 public class AudioEffectSettingsHelper {
 
-    public static ReverbSettings updateReverbSettingsValues(ReverbSettings reverbSettings, EnvironmentalReverb.Settings settings){
+    public static AdvancedReverbPreset updateReverbSettingsValues(AdvancedReverbPreset reverbSettings, EnvironmentalReverb.Settings settings) {
         return setReverbValues(reverbSettings, settings);
     }
 
     //Todo: Check if Preset name exists
-    public static ReverbSettings createReverbSettings(EnvironmentalReverb.Settings settings){
-        ReverbSettings reverbSettings = new ReverbSettings();
-        reverbSettings.setReverb_preset_name("Custom");
+    public static AdvancedReverbPreset createReverbSettings(EnvironmentalReverb.Settings settings) {
+        AdvancedReverbPreset reverbSettings = new AdvancedReverbPreset();
+        reverbSettings.setArName("Custom");
         return setReverbValues(reverbSettings, settings);
     }
 
-    public static ReverbSettings createReverbSettings(EnvironmentalReverb.Settings settings, String presetName){
-        ReverbSettings reverbSettings = new ReverbSettings();
-        reverbSettings.setReverb_preset_name(presetName);
+    public static AdvancedReverbPreset createReverbSettings(EnvironmentalReverb.Settings settings, String presetName) {
+        AdvancedReverbPreset reverbSettings = new AdvancedReverbPreset();
+        reverbSettings.setArName(presetName);
         return setReverbValues(reverbSettings, settings);
     }
 
-    public static EnvironmentalReverb.Settings extractReverbValues(ReverbSettings reverbSettings){
+    public static EnvironmentalReverb.Settings extractReverbValues(AdvancedReverbPreset reverbSettings) {
         EnvironmentalReverb.Settings settings = new EnvironmentalReverb.Settings();
-        settings.roomLevel = reverbSettings.getMasterLevel();
-        settings.roomHFLevel = reverbSettings.getRoomHFLevel();
-        settings.reverbLevel = reverbSettings.getReverbLevel();
-        settings.reverbDelay = reverbSettings.getReverbDelay();
-        settings.reflectionsLevel = reverbSettings.getReflectionLevel();
-        settings.reflectionsDelay = reverbSettings.getReflectionDelay();
-        settings.diffusion = reverbSettings.getDiffusion();
-        settings.density = reverbSettings.getDensity();
-        settings.decayHFRatio = reverbSettings.getDecayHFRatio();
-        settings.decayTime = reverbSettings.getDecayTime();
+        settings.roomLevel = reverbSettings.getArMasterLevel().shortValue();
+        settings.roomHFLevel = reverbSettings.getArRoomHfLevel().shortValue();
+        settings.reverbLevel = reverbSettings.getArReverbLevel().shortValue();
+        settings.reverbDelay = reverbSettings.getArReverbDelay();
+        settings.reflectionsLevel = reverbSettings.getArReflectionLevel().shortValue();
+        settings.reflectionsDelay = reverbSettings.getArReflectionDelay();
+        settings.diffusion = reverbSettings.getArDiffusion().shortValue();
+        settings.density = reverbSettings.getArDensity().shortValue();
+        settings.decayHFRatio = reverbSettings.getArDecayHfRatio().shortValue();
+        settings.decayTime = reverbSettings.getArDecayTime();
         return settings;
     }
 
-    private static ReverbSettings setReverbValues(ReverbSettings reverbSettings, EnvironmentalReverb.Settings settings){
-        reverbSettings.setMasterLevel(settings.roomLevel);
-        reverbSettings.setRoomHFLevel(settings.roomHFLevel);
-        reverbSettings.setReverbLevel(settings.reverbLevel);
-        reverbSettings.setReverbDelay(settings.reverbDelay);
-        reverbSettings.setReflectionLevel(settings.reflectionsLevel);
-        reverbSettings.setReflectionDelay(settings.reflectionsDelay);
-        reverbSettings.setDiffusion(settings.diffusion);
-        reverbSettings.setDensity(settings.density);
-        reverbSettings.setDecayHFRatio(settings.decayHFRatio);
-        reverbSettings.setDecayTime(settings.decayTime);
+    private static AdvancedReverbPreset setReverbValues(AdvancedReverbPreset reverbSettings, EnvironmentalReverb.Settings settings) {
+        reverbSettings.setArMasterLevel((int) settings.roomLevel);
+        reverbSettings.setArRoomHfLevel((int) settings.roomHFLevel);
+        reverbSettings.setArReverbLevel((int) settings.reverbLevel);
+        reverbSettings.setArReverbDelay(settings.reverbDelay);
+        reverbSettings.setArReflectionLevel((int) settings.reflectionsLevel);
+        reverbSettings.setArReflectionDelay(settings.reflectionsDelay);
+        reverbSettings.setArDiffusion((int) settings.diffusion);
+        reverbSettings.setArDensity((int) settings.density);
+        reverbSettings.setArDecayHfRatio((int) settings.decayHFRatio);
+        reverbSettings.setArDecayTime(settings.decayTime);
         return reverbSettings;
     }
 

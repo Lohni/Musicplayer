@@ -1,9 +1,11 @@
 package com.example.musicplayer.utils.tageditor;
+
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
 public class ID3V4FrameHeader {
-
+    public int TAG_VERISON;
+    public static final int FRAME_HEADER_LENGTH = 10;
     public int FRAME_SIZE, TAG_ALTER_PRESERVATION, FILE_ALTER_PRESERVATION,
             READONLY, GROUPING, COMPRESSION, ENCRYPTION, UNSYNCHRONISATION, DATA_LENGTH_INDICATOR;
 
@@ -11,23 +13,42 @@ public class ID3V4FrameHeader {
 
     private byte statusFlag, formatFlag;
 
-    public ID3V4FrameHeader(byte[] header){
+    public ID3V4FrameHeader(byte[] header, int tagVersion) {
+        TAG_VERISON = tagVersion;
         decodeHeader(header);
     }
 
-    public ID3V4FrameHeader(){
+    public ID3V4FrameHeader() {
         FRAME_SIZE = 0;
         byte def = 0b0;
         getFlags(def, def);
     }
 
-    private void decodeHeader(byte[] header){
-        FRAME_ID = new String(Arrays.copyOfRange(header,0,4), StandardCharsets.ISO_8859_1);
-        getSize(header[4], header[5],header[6],header[7]);
+    private void decodeHeader(byte[] header) {
+        FRAME_ID = new String(Arrays.copyOfRange(header, 0, 4), StandardCharsets.ISO_8859_1);
+        getSize(header[4], header[5], header[6], header[7]);
         getFlags(header[8], header[9]);
     }
 
-    private void getSize(byte size4, byte size3, byte size2, byte size1){
+    private void getSize(byte size4, byte size3, byte size2, byte size1) {
+        if (TAG_VERISON == 3) {
+            getSizeV3(size4, size3, size2, size1);
+        } else if (TAG_VERISON == 4) {
+            getSizeV4(size4, size3, size2, size1);
+        }
+    }
+
+    private void getSizeV3(byte size4, byte size3, byte size2, byte size1) {
+        int b1 = (size4 & 0xFF) << 24;
+        int b2 = (size3 & 0xFF) << 16;
+        int b3 = (size2 & 0xFF) << 8;
+        int b4 = (size1 & 0xFF);
+
+
+        FRAME_SIZE = b1 + b2 + b3 + b4;
+    }
+
+    private void getSizeV4(byte size4, byte size3, byte size2, byte size1) {
         int b1 = size4 << 21;
         int b2 = size3 << 14;
         int b3 = size2 << 7;
@@ -36,7 +57,7 @@ public class ID3V4FrameHeader {
         FRAME_SIZE = b1 + b2 + b3 + b4;
     }
 
-    private void getFlags(byte statusFlag, byte formatFlag){
+    private void getFlags(byte statusFlag, byte formatFlag) {
         this.statusFlag = statusFlag;
         this.formatFlag = formatFlag;
         TAG_ALTER_PRESERVATION = (statusFlag >> 6) & 1;
@@ -50,7 +71,7 @@ public class ID3V4FrameHeader {
     }
 
     //Todo: return real values
-    public byte[] toBytes(){
+    public byte[] toBytes() {
         byte[] header = new byte[10];
         byte[] id = FRAME_ID.getBytes(StandardCharsets.UTF_8);
         byte[] size = getEncodedSize();
@@ -68,7 +89,7 @@ public class ID3V4FrameHeader {
         return header;
     }
 
-    private byte[] getEncodedSize(){
+    private byte[] getEncodedSize() {
         //Split to Byte-Chunks
         byte[] size = new byte[4];
         size[0] = (byte) (FRAME_SIZE >> 24);
@@ -86,13 +107,15 @@ public class ID3V4FrameHeader {
         byte syncByte1 = (byte) (((size[1] << 2) + overFlow2) & 0x7F);
 
         byte syncByte0 = (byte) (((size[0] << 3) + overFlow1) & 0x7F);
-        return new byte[] {syncByte0, syncByte1, syncByte2, syncByte3};
+        return new byte[]{syncByte0, syncByte1, syncByte2, syncByte3};
     }
 
-    public void setNewFrameSize(int size){FRAME_SIZE = size;}
+    public void setNewFrameSize(int size) {
+        FRAME_SIZE = size;
+    }
 
-    public boolean setFrameID(String id){
-        if (id.length() != 4)return false;
+    public boolean setFrameID(String id) {
+        if (id.length() != 4) return false;
         this.FRAME_ID = id;
         return true;
     }

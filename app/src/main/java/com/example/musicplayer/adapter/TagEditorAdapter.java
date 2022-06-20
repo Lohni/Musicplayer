@@ -11,6 +11,9 @@ import android.provider.MediaStore;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.AlphaAnimation;
+import android.view.animation.Animation;
+import android.view.animation.DecelerateInterpolator;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -31,6 +34,8 @@ public class TagEditorAdapter extends RecyclerView.Adapter<TagEditorAdapter.View
     private Drawable customDrawable, coverDrawable;
     private TagEditorInterface tagEditorInterface;
 
+    private int imagesLoading = 0;
+
     public TagEditorAdapter(ArrayList<MusicResolver> trackList, Context context, TagEditorInterface tagEditorInterface) {
         this.trackList = trackList;
         this.context = context;
@@ -48,29 +53,31 @@ public class TagEditorAdapter extends RecyclerView.Adapter<TagEditorAdapter.View
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         MusicResolver track = trackList.get(position);
+        holder.position = holder.getAbsoluteAdapterPosition();
         holder.artist.setText(track.getArtist());
         holder.title.setText(track.getTitle());
-        holder.itemView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                tagEditorInterface.onTrackSelectedListener(track);
-            }
-        });
+        holder.itemView.setOnClickListener(view -> tagEditorInterface.onTrackSelectedListener(track));
         holder.cover.setImageDrawable(customDrawable);
 
-        holder.cover.post(new Runnable() {
-            @Override
-            public void run() {
+        int pos = holder.getAbsoluteAdapterPosition();
+        imagesLoading++;
+        holder.cover.postDelayed(() -> {
+            if (holder.position == pos) {
                 Uri trackUri = ContentUris.withAppendedId(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,track.getId());
                 MediaMetadataRetriever mmr = new MediaMetadataRetriever();
                 mmr.setDataSource(context,trackUri);
                 byte [] thumbnail = mmr.getEmbeddedPicture();
                 mmr.release();
                 if (thumbnail != null){
-                    holder.cover.setImageDrawable(new BitmapDrawable(context.getResources(), BitmapFactory.decodeByteArray(thumbnail, 0, thumbnail.length)));
+                    holder.cover.setImageBitmap(BitmapFactory.decodeByteArray(thumbnail, 0, thumbnail.length));
+                    Animation fadeIn = new AlphaAnimation(0, 1);
+                    fadeIn.setInterpolator(new DecelerateInterpolator());
+                    fadeIn.setDuration(350);
+                    holder.cover.setAnimation(fadeIn);
                 }
             }
-        });
+            imagesLoading--;
+        },300 + (30L *imagesLoading));
     }
 
     @Override
@@ -81,7 +88,7 @@ public class TagEditorAdapter extends RecyclerView.Adapter<TagEditorAdapter.View
     public static class ViewHolder extends RecyclerView.ViewHolder{
         TextView title, artist;
         ImageView cover;
-
+        int position;
         public ViewHolder(View itemView) {
             super(itemView);
             title =itemView.findViewById(R.id.tagEditorList_title);

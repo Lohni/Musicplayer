@@ -19,7 +19,7 @@
 
     <com.google.android.material.textview.MaterialTextView
         android:id="@+id/song_artist"
-        android:layout_width="fill_parent"
+        android:layout_width="match_parent"
         android:layout_height="20dp"
         android:gravity="bottom"
         android:textColor="@color/colorTextLight"

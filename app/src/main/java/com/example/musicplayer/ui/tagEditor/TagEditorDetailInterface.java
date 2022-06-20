@@ -1,7 +1,7 @@
 package com.example.musicplayer.ui.tagEditor;
 
-import com.example.musicplayer.utils.tageditor.TagResolver;
+import com.example.musicplayer.utils.tageditor.ID3V4Track;
 
 public interface TagEditorDetailInterface {
-    void onTagChangesConfirmListener(TagResolver tagResolver);
+    void onTagChangesConfirmListener(ID3V4Track track);
 }

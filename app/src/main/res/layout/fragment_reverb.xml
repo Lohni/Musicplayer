@@ -23,7 +23,7 @@
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:orientation="vertical"
-        app:layout_constraintGuide_percent="0.66" />
+        app:layout_constraintGuide_percent="0.666" />
 
     <View
         android:id="@+id/reverb_background"
@@ -33,12 +33,7 @@
         app:layout_constraintBottom_toTopOf="@+id/reverb_guideline"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <com.google.android.material.switchmaterial.SwitchMaterial
-        android:id="@+id/reverb_enabled"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintRight_toRightOf="parent" />
+
 
     <TextView
         android:id="@+id/reverb_title"
@@ -46,8 +41,7 @@
         android:layout_height="wrap_content"
         android:text="Reverb"
         android:layout_marginStart="16dp"
-        android:layout_marginTop="4dp"
-        android:textSize="20sp"
+        android:textSize="18sp"
         android:textColor="@color/colorTextLight"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintTop_toTopOf="parent"/>
@@ -61,7 +55,6 @@
         android:textColor="@color/colorTextLight"
         android:textSize="16sp"
         android:singleLine="true"
-        android:layout_marginBottom="4dp"
         app:layout_constraintTop_toBottomOf="@+id/reverb_title"
         app:layout_constraintBottom_toTopOf="@id/reverb_delay"
         app:layout_constraintLeft_toLeftOf="@id/reverb_delay"
@@ -99,10 +92,10 @@
         android:id="@+id/reverb_level"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_marginStart="16dp"
-        android:layout_marginEnd="16dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
         app:layout_constraintDimensionRatio="1"
-        app:layout_constraintLeft_toRightOf="@id/reverb_hfLevel"
+        app:layout_constraintLeft_toRightOf="@id/reverb_guideline3"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toBottomOf="@id/reverb_level_text"
         app:layout_constraintBottom_toBottomOf="@id/reverb_background"/>
@@ -111,8 +104,8 @@
         android:id="@+id/reverb_delay"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_marginStart="16dp"
-        android:layout_marginEnd="16dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
         app:layout_constraintDimensionRatio="1"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toLeftOf="@id/reverb_hfLevel"
@@ -123,11 +116,11 @@
         android:id="@+id/reverb_hfLevel"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_marginStart="16dp"
-        android:layout_marginEnd="16dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
         app:layout_constraintDimensionRatio="1"
         app:layout_constraintLeft_toRightOf="@id/reverb_delay"
-        app:layout_constraintRight_toLeftOf="@id/reverb_level"
+        app:layout_constraintRight_toLeftOf="@id/reverb_guideline3"
         app:layout_constraintTop_toBottomOf="@id/reverb_hfLevel_text"
         app:layout_constraintBottom_toBottomOf="@id/reverb_background"/>
 
@@ -156,9 +149,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Reflections"
-        android:layout_marginTop="4dp"
         android:layout_marginStart="16dp"
-        android:textSize="20sp"
+        android:textSize="18sp"
         android:textColor="@color/colorTextLight"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintTop_toBottomOf="@id/reverb_background"/>
@@ -169,8 +161,7 @@
         android:layout_height="wrap_content"
         android:text="Decay"
         android:layout_marginStart="16dp"
-        android:layout_marginTop="4dp"
-        android:textSize="20sp"
+        android:textSize="18sp"
         android:textColor="@color/colorTextLight"
         app:layout_constraintLeft_toLeftOf="@id/reverb_decay_background"
         app:layout_constraintTop_toBottomOf="@id/reverb_background"/>
@@ -209,7 +200,6 @@
         android:textAlignment="center"
         android:textColor="@color/colorTextLight"
         android:textSize="16sp"
-        android:layout_marginTop="4dp"
         app:layout_constraintTop_toBottomOf="@id/reverb_reflection_level"
         app:layout_constraintBottom_toTopOf="@id/reverb_reflection_density"
         app:layout_constraintLeft_toLeftOf="@id/reverb_reflection_density"
@@ -223,7 +213,6 @@
         android:textAlignment="center"
         android:textColor="@color/colorTextLight"
         android:textSize="16sp"
-        android:layout_marginTop="4dp"
         android:singleLine="true"
         app:layout_constraintTop_toBottomOf="@id/reverb_reflection_delay"
         app:layout_constraintBottom_toTopOf="@id/reverb_reflection_diffusion"
@@ -251,7 +240,6 @@
         android:textAlignment="center"
         android:textColor="@color/colorTextLight"
         android:textSize="16sp"
-        android:layout_marginTop="4dp"
         android:singleLine="true"
         app:layout_constraintTop_toBottomOf="@id/reverb_delay_time"
         app:layout_constraintBottom_toTopOf="@id/reverb_delay_hfratio"
@@ -262,8 +250,8 @@
         android:id="@+id/reverb_reflection_level"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_marginStart="16dp"
-        android:layout_marginEnd="16dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
         app:layout_constraintDimensionRatio="1"
         app:layout_constraintBottom_toTopOf="@id/reverb_reflection_density_text"
         app:layout_constraintLeft_toLeftOf="parent"
@@ -274,8 +262,8 @@
         android:id="@+id/reverb_reflection_delay"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_marginStart="16dp"
-        android:layout_marginEnd="16dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
         app:layout_constraintDimensionRatio="1"
         app:layout_constraintLeft_toRightOf="@id/reverb_reflection_level"
         app:layout_constraintRight_toLeftOf="@id/reverb_guideline3"
@@ -286,8 +274,8 @@
         android:id="@+id/reverb_delay_time"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_marginStart="16dp"
-        android:layout_marginEnd="16dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
         app:layout_constraintDimensionRatio="1"
         app:layout_constraintBottom_toTopOf="@id/reverb_delay_hfratio_text"
         app:layout_constraintLeft_toLeftOf="@id/reverb_decay_background"
@@ -299,8 +287,8 @@
         android:id="@+id/reverb_reflection_density"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_marginStart="16dp"
-        android:layout_marginEnd="16dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
         app:layout_constraintDimensionRatio="1"
         app:layout_constraintBottom_toBottomOf="@id/reverb_reflection_background"
         app:layout_constraintLeft_toLeftOf="parent"
@@ -311,8 +299,8 @@
         android:id="@+id/reverb_reflection_diffusion"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_marginStart="16dp"
-        android:layout_marginEnd="16dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
         app:layout_constraintDimensionRatio="1"
         app:layout_constraintBottom_toBottomOf="@id/reverb_reflection_background"
         app:layout_constraintLeft_toRightOf="@id/reverb_reflection_density"
@@ -323,8 +311,8 @@
         android:id="@+id/reverb_delay_hfratio"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_marginStart="16dp"
-        android:layout_marginEnd="16dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
         app:layout_constraintDimensionRatio="1"
         app:layout_constraintBottom_toBottomOf="@id/reverb_decay_background"
         app:layout_constraintLeft_toLeftOf="@id/reverb_decay_background"
@@ -346,27 +334,27 @@
         android:id="@+id/reverb_master_text"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="Master"
-        android:textSize="16sp"
-        android:textAlignment="center"
-        android:textColor="@color/colorTextLight"
         android:layout_marginTop="4dp"
         android:singleLine="true"
-        app:layout_constraintTop_toTopOf="@id/reverb_master_background"
+        android:text="Master"
+        android:textAlignment="center"
+        android:textColor="@color/colorTextLight"
+        android:textSize="16sp"
+        app:layout_constraintBottom_toTopOf="@id/reverb_master"
         app:layout_constraintLeft_toLeftOf="@id/reverb_master"
         app:layout_constraintRight_toRightOf="@id/reverb_master"
-        app:layout_constraintBottom_toTopOf="@id/reverb_master"/>
+        app:layout_constraintTop_toTopOf="@id/reverb_master_background" />
 
     <com.example.musicplayer.ui.views.ControlKnob
         android:id="@+id/reverb_master"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_marginTop="4dp"
-        android:layout_marginEnd="16dp"
-        android:layout_marginBottom="4dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginStart="8dp"
         app:layout_constraintDimensionRatio="1"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintLeft_toRightOf="@id/reverb_guideline3"
         app:layout_constraintTop_toBottomOf="@id/reverb_master_text"/>
 
     <ImageButton
@@ -386,13 +374,13 @@
         android:layout_height="30dp"
         app:layout_constraintDimensionRatio="1"
         android:layout_marginStart="8dp"
-        android:layout_marginEnd="24dp"
+        android:layout_marginEnd="12dp"
         android:background="@drawable/ic_delete_black_24dp"
         android:backgroundTint="@color/colorTextLight"
         app:layout_constraintTop_toTopOf="@id/reverb_add"
         app:layout_constraintBottom_toBottomOf="@id/reverb_add"
         app:layout_constraintLeft_toRightOf="@id/reverb_add"
-        app:layout_constraintRight_toLeftOf="@id/reverb_master"/>
+        app:layout_constraintRight_toLeftOf="@id/reverb_guideline3"/>
 
 
     <com.google.android.material.textfield.TextInputLayout
@@ -400,8 +388,8 @@
         style="@style/Widget.MaterialComponents.TextInputLayout.FilledBox.Dense.ExposedDropdownMenu"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
         android:layout_marginStart="16dp"
+        android:layout_marginBottom="16dp"
         android:hint="Preset"
         android:textColorHint="@color/equalizer_background"
         app:boxBackgroundColor="@color/background_primarydark"
@@ -410,7 +398,8 @@
         app:hintTextColor="@color/equalizer_background"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toLeftOf="@id/reverb_add"
-        app:layout_constraintTop_toTopOf="@id/reverb_master_background">
+        app:layout_constraintTop_toBottomOf="@id/reverb_enabled"
+        app:layout_constraintBottom_toBottomOf="parent">
 
         <com.google.android.material.textfield.MaterialAutoCompleteTextView
             android:id="@+id/reverb_autocompletetextView"
@@ -423,5 +412,13 @@
 
     </com.google.android.material.textfield.TextInputLayout>
 
+    <com.google.android.material.switchmaterial.SwitchMaterial
+        android:id="@+id/reverb_enabled"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        app:layout_constraintTop_toBottomOf="@id/reverb_guideline2"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/reverb_textField"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -118,23 +118,30 @@ public class AudioVisualizerView extends View {
     }
 
     public void initVisualizer(int audioSessionId){
-        visualizer = new Visualizer(audioSessionId);
-        visualizer.setCaptureSize(Visualizer.getCaptureSizeRange()[1]);
-        visualizer.setDataCaptureListener(new Visualizer.OnDataCaptureListener() {
-            @Override
-            public void onWaveFormDataCapture(Visualizer visualizer, byte[] bytes, int i) {
-            }
+        if (visualizer == null){
+            visualizer = new Visualizer(audioSessionId);
+            visualizer.setEnabled(false);
+            visualizer.setCaptureSize(Visualizer.getCaptureSizeRange()[1]);
+            visualizer.setDataCaptureListener(new Visualizer.OnDataCaptureListener() {
+                @Override
+                public void onWaveFormDataCapture(Visualizer visualizer, byte[] bytes, int i) {
+                }
 
-            @Override
-            public void onFftDataCapture(Visualizer visualizer, byte[] bytes, int i) {
-                rawAudioData = bytes;
-                invalidate();
-            }
-        }, Visualizer.getMaxCaptureRate() / 2, false, true);
-        visualizer.setEnabled(true);
+                @Override
+                public void onFftDataCapture(Visualizer visualizer, byte[] bytes, int i) {
+                    rawAudioData = bytes;
+                    invalidate();
+                }
+            }, Visualizer.getMaxCaptureRate() / 2, false, true);
+            visualizer.setEnabled(true);
+        }
     }
 
-    public void setenableVisualizer(boolean state){visualizer.setEnabled(state);}
+    public void setenableVisualizer(boolean state) {
+        if (visualizer != null){
+            visualizer.setEnabled(state);
+        }
+    }
 
     private void init(){
         clipBounds = new Rect();

@@ -64,6 +64,7 @@ public class DashboardFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View root = inflater.inflate(R.layout.dashboard,container,false);
+
         RecyclerView recyclerView = root.findViewById(R.id.dashboar_recycler_view);
 
         MainActivity mainActivity =(MainActivity) requireActivity();

@@ -3,6 +3,7 @@
     <color name="colorPrimary">#78909c</color>
     <color name="colorPrimaryDark">#4b636e</color>
     <color name="colorPrimaryNight">#2E4753</color>
+    <color name="colorPrimaryInfinite">#1C313A</color>
     <color name="colorPrimaryLight">#a7c0cd</color>
     <color name="colorSecondary">#ff7043</color>
     <color name="colorSecondaryDark">#c63f17</color>
@@ -16,6 +17,34 @@
     <color name="colorTransparent">#004B636E</color>
     <color name="colorSecondaryLightTrans">#ADFFA270</color>
 
+    <!-- new Theme -->
+
+    <color name="colorDarkPrimary">#4DD8E5</color>
+    <color name="colorDarkOnPrimary">#00363B</color>
+    <color name="colorDarkPrimaryContainer">#004F56</color>
+    <color name="colorDarkOnPrimaryContainer">#78F4FF</color>
+
+    <color name="colorDarkSecondary">#B1CBCE</color>
+    <color name="colorDarkOnSecondary">#1C3437</color>
+    <color name="colorDarkSecondaryContainer">#334B4E</color>
+    <color name="colorDarkOnSecondaryContainer">#CCE7EA</color>
+
+    <color name="colorDarkTertiary">#B8C7EB</color>
+    <color name="colorDarkOnTertiary">#21304C</color>
+    <color name="colorDarkTertiaryContainer">#394765</color>
+    <color name="colorDarkOnTertiaryContainer">#D6E2FF</color>
+
+    <!-- Error colors -->
+
+    <color name="colorDarkBackground">#191C1C</color>
+    <color name="colorDarkOnBackground">#E0E3E3</color>
+    <color name="colorDarkSurface">#191C1C</color>
+    <color name="colorDarkOnSurface">#E0E3E3</color>
+    <color name="colorDarkSurfaceVariant">#3F4849</color>
+    <color name="colorDarkOnSurfaceVariant">#BFC8C9</color>
+    <color name="colorDarkOutline">#899394</color>
+
+    <color name="colorDarkSurface8Percent">#1D2B2C</color>
 </resources>
 
 
