@@ -13,7 +13,7 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface MusicplayerDataAccess {
 
-    @Query("SELECT * FROM Track")
+    @Query("SELECT * FROM Track ORDER BY t_title ASC")
     fun getAllTracks(): Flow<List<Track>>
 
     @Query("SELECT * FROM Track where t_id in (:trackList)")

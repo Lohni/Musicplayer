@@ -28,6 +28,7 @@ import com.example.musicplayer.database.viewmodel.AudioEffectViewModel;
 import com.example.musicplayer.database.viewmodel.MusicplayerViewModel;
 import com.example.musicplayer.entities.MusicResolver;
 import com.example.musicplayer.inter.PlaybackControlInterface;
+import com.example.musicplayer.inter.ServiceConnectionListener;
 import com.example.musicplayer.inter.ServiceTriggerInterface;
 import com.example.musicplayer.inter.SongInterface;
 import com.example.musicplayer.ui.album.AlbumFragment;
@@ -38,7 +39,6 @@ import com.example.musicplayer.ui.dashboard.DashboardFragment;
 import com.example.musicplayer.ui.playbackcontrol.PlaybackControl;
 import com.example.musicplayer.ui.playlist.PlaylistFragment;
 import com.example.musicplayer.ui.songlist.SongList;
-import com.example.musicplayer.ui.songlist.SongListInterface;
 import com.example.musicplayer.ui.tagEditor.TagEditorDetailFragment;
 import com.example.musicplayer.ui.tagEditor.TagEditorFragment;
 import com.example.musicplayer.ui.tagEditor.TagEditorInterface;
@@ -64,8 +64,8 @@ import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.ViewModelProvider;
 
-public class MainActivity extends AppCompatActivity implements SongListInterface, PlaybackControlInterface, NavigationView.OnNavigationItemSelectedListener,
-        AudioEffectInterface, TagEditorInterface, NavigationControlInterface, AlbumFragment.AlbumListener, SongInterface,
+public class MainActivity extends AppCompatActivity implements PlaybackControlInterface, NavigationView.OnNavigationItemSelectedListener,
+        AudioEffectInterface, TagEditorInterface, NavigationControlInterface, AlbumFragment.AlbumListener, SongInterface, ServiceConnectionListener,
         ServiceTriggerInterface {
 
     DrawerLayout drawer;
@@ -95,8 +95,10 @@ public class MainActivity extends AppCompatActivity implements SongListInterface
         Toolbar toolbar = findViewById(R.id.toolbar);
         NavigationView navigationView = findViewById(R.id.nav_view);
 
+        setSupportActionBar(toolbar);
+
         sharedPreferences = this.getPreferences(Context.MODE_PRIVATE);
-        serviceConnection = new MusicplayerServiceConnection(this, sharedPreferences);
+        serviceConnection = new MusicplayerServiceConnection(this, sharedPreferences, this);
 
         toggle = new ActionBarDrawerToggle(this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         toggle.syncState();
@@ -112,7 +114,6 @@ public class MainActivity extends AppCompatActivity implements SongListInterface
 
         Intent service = new Intent(this, MusicService.class);
 
-        setSupportActionBar(toolbar);
         loadPlayControl();
         loadDashboard(new DashboardFragment());
 
@@ -146,7 +147,9 @@ public class MainActivity extends AppCompatActivity implements SongListInterface
         runnable.run();
         navigationView.setNavigationItemSelectedListener(this);
 
-        updateTracks();
+        if (Permissions.permission(this, Manifest.permission.READ_EXTERNAL_STORAGE)) {
+            updateTracks();
+        }
     }
 
     private void updateTracks() {
@@ -214,15 +217,20 @@ public class MainActivity extends AppCompatActivity implements SongListInterface
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED && permissions[0].equals(Manifest.permission.RECORD_AUDIO)) {
-            Intent service = new Intent(this, MusicService.class);
-            bindService(service, serviceConnection, Context.BIND_AUTO_CREATE);
-            musicService.sendCurrentStateToPlaybackControl();
-            initialiseAudioEffects();
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                startForegroundService(service);
-            } else {
-                startService(service);
+
+        if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            if (permissions[0].equals(Manifest.permission.RECORD_AUDIO)) {
+                Intent service = new Intent(this, MusicService.class);
+                bindService(service, serviceConnection, Context.BIND_AUTO_CREATE);
+                musicService.sendCurrentStateToPlaybackControl();
+                initialiseAudioEffects();
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    startForegroundService(service);
+                } else {
+                    startService(service);
+                }
+            } else if (permissions[0].equals(android.Manifest.permission.READ_EXTERNAL_STORAGE)) {
+                updateTracks();
             }
         }
     }
@@ -260,27 +268,6 @@ public class MainActivity extends AppCompatActivity implements SongListInterface
         isOnPause = state;
         //if (!isExpanded) playcontrol.setControlButton(state);
         //else expandedPlaybackControl.setControlButton(state);
-    }
-
-    /*
-    Interfaces
-     */
-    @Override
-    public void OnSongListCreatedListener(ArrayList<MusicResolver> songList) {
-        //musicService.setSonglist(songList);
-    }
-
-    @Override
-    public void OnSongSelectedListener(int index) {
-        //musicService.setSong(index);
-        updatePlaybackControlState(false);
-    }
-
-    @Override
-    public void OnSonglistShuffleClickListener() {
-        musicService.setPlaybackBehaviour(PlaybackBehaviour.PlaybackBehaviourState.SHUFFLE);
-        musicService.shuffle();
-        updatePlaybackControlState(false);
     }
 
     /*
@@ -514,5 +501,10 @@ public class MainActivity extends AppCompatActivity implements SongListInterface
     @Override
     public void onAddSongsToSonglistListener(@NonNull List<? extends Track> trackList) {
         musicService.addToSonglist((ArrayList<Track>) trackList);
+    }
+
+    @Override
+    public void onServiceConnected(@NonNull MusicService musicService) {
+        this.musicService = musicService;
     }
 }

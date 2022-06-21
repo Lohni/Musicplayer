@@ -20,6 +20,7 @@ import android.widget.TextView;
 import com.bumptech.glide.load.DecodeFormat;
 import com.bumptech.glide.request.RequestOptions;
 import com.example.musicplayer.R;
+import com.example.musicplayer.database.entity.Track;
 import com.example.musicplayer.entities.MusicResolver;
 import com.example.musicplayer.ui.songlist.SongListInterface;
 
@@ -31,14 +32,14 @@ import androidx.recyclerview.widget.RecyclerView;
 
 public class SongListAdapter extends RecyclerView.Adapter<SongListAdapter.ViewHolder> {
 
-    private ArrayList<MusicResolver> songList;
+    private ArrayList<Track> songList;
     private SongListInterface songListInterface;
     private Drawable customCoverImage;
     private Context context;
     private RequestOptions requestOptions;
     private int imagesLoading = 0;
 
-    public SongListAdapter(Context c, ArrayList<MusicResolver> songList, SongListInterface songListInterface) {
+    public SongListAdapter(Context c, ArrayList<Track> songList, SongListInterface songListInterface) {
         this.songList = songList;
         this.songListInterface = songListInterface;
         this.context = c;
@@ -56,21 +57,18 @@ public class SongListAdapter extends RecyclerView.Adapter<SongListAdapter.ViewHo
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        MusicResolver track = songList.get(position);
+        Track track = songList.get(position);
         holder.position = holder.getAbsoluteAdapterPosition();
-        holder.artist.setText(track.getArtist());
-        holder.title.setText(track.getTitle());
+        holder.artist.setText(track.getTArtist());
+        holder.title.setText(track.getTTitle());
         holder.coverImage.setImageDrawable(customCoverImage);
-        holder.itemView.setOnClickListener(view -> {
-            songListInterface.OnSongListCreatedListener(songList);
-            songListInterface.OnSongSelectedListener(position);
-        });
+        holder.itemView.setOnClickListener(view -> songListInterface.OnSongSelectedListener(position));
 
         int pos = holder.getAbsoluteAdapterPosition();
         imagesLoading++;
         holder.coverImage.postDelayed(() -> {
             if (holder.position == pos) {
-                Uri trackUri = ContentUris.withAppendedId(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, track.getId());
+                Uri trackUri = ContentUris.withAppendedId(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, track.getTId());
                 MediaMetadataRetriever mmr = new MediaMetadataRetriever();
                 mmr.setDataSource(context, trackUri);
                 byte[] thumbnail = mmr.getEmbeddedPicture();

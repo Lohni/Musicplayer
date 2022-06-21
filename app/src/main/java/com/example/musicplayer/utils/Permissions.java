@@ -41,8 +41,6 @@ public class Permissions {
         ActivityCompat.requestPermissions(activity, new String[]{permission}, PERMISSION_REQUEST_CODE);
     }
 
-    private static void requestFragmentPermission(Activity activity, String permission){
-    }
 
     public static boolean permission(Activity activity, Fragment fragment, String permission){
         if (checkPermission(activity, permission)) {
