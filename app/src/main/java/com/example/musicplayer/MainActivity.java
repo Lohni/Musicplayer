@@ -192,8 +192,7 @@ public class MainActivity extends AppCompatActivity implements PlaybackControlIn
                 }
 
                 //Todo: Handle delete
-            }
-            while (musicCursor.moveToNext());
+            } while (musicCursor.moveToNext());
         }
 
         if (musicCursor != null) musicCursor.close();
@@ -256,7 +255,14 @@ public class MainActivity extends AppCompatActivity implements PlaybackControlIn
         @Override
         public void run() {
             if (!isOnPause) {
-                musicService.sendCurrentStateToPlaybackControl();
+                //musicService.sendCurrentStateToPlaybackControl();
+
+                PlaybackControl pc = (PlaybackControl) getSupportFragmentManager().findFragmentByTag(getString(R.string.fragment_playbackControl));
+                if (pc != null) {
+                    pc.updateSeekbar(musicService.getCurrentPosition());
+                }
+
+
                 //if (!isExpanded) playcontrol.updateSeekbar(musicService.getCurrentPosition());
                 //else expandedPlaybackControl.updateSeekbar(musicService.getCurrentPosition());
             }
@@ -456,6 +462,11 @@ public class MainActivity extends AppCompatActivity implements PlaybackControlIn
     @Override
     public void setToolbarTitle(String title) {
         getSupportActionBar().setTitle(title);
+    }
+
+    @Override
+    public void onBackPressedListener() {
+        onBackPressed();
     }
 
     /*

@@ -2,7 +2,6 @@ package com.example.musicplayer.database.viewmodel
 
 import androidx.lifecycle.*
 import com.example.musicplayer.database.dao.MusicplayerDataAccess
-import com.example.musicplayer.database.dao.PlaylistDataAccess
 import com.example.musicplayer.database.entity.Track
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -11,8 +10,8 @@ class MusicplayerViewModel(private val dao: MusicplayerDataAccess) : ViewModel()
 
     val allTracks : LiveData<List<Track>> = dao.getAllTracks().asLiveData()
 
-    fun getTracksByIds(trackIds: List<Int>) : LiveData<List<Track>> {
-        return dao.getTracksByIds(trackIds).asLiveData()
+    fun getTracksByIdsOrderByPlaylistItemOrdinal(playlistId: Int) : LiveData<List<Track>> {
+        return dao.getTracksByIdsOrderByPlaylistItemOrdinal(playlistId).asLiveData()
     }
 
     fun insertTracks(trackList: List<Track>) = viewModelScope.launch(Dispatchers.IO) {

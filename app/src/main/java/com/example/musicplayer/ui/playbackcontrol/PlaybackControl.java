@@ -4,6 +4,7 @@ import android.Manifest;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.graphics.drawable.AnimatedVectorDrawable;
 import android.os.Bundle;
@@ -16,9 +17,9 @@ import android.widget.TextView;
 
 import com.example.musicplayer.R;
 import com.example.musicplayer.inter.PlaybackControlInterface;
+import com.example.musicplayer.inter.ServiceTriggerInterface;
 import com.example.musicplayer.ui.views.AudioVisualizerView;
 import com.example.musicplayer.ui.views.PlaybackControlSeekbar;
-import com.example.musicplayer.inter.ServiceTriggerInterface;
 
 import androidx.annotation.NonNull;
 import androidx.constraintlayout.widget.ConstraintLayout;
@@ -50,6 +51,9 @@ public class PlaybackControl extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         serviceTriggerInterface.triggerCurrentDataBroadcast();
+
+        IntentFilter intentFilter = new IntentFilter(getResources().getString(R.string.playback_control_values));
+        requireActivity().registerReceiver(receiver, intentFilter);
     }
 
     @Override
@@ -59,7 +63,7 @@ public class PlaybackControl extends Fragment {
             playbackControlInterface = (PlaybackControlInterface) context;
             serviceTriggerInterface = (ServiceTriggerInterface) context;
         } catch (ClassCastException e) {
-            throw new ClassCastException(context.toString() + "must implement PlaybackControlInterface");
+            throw new ClassCastException(context + "must implement PlaybackControlInterface");
         }
     }
 
@@ -198,12 +202,6 @@ public class PlaybackControl extends Fragment {
         audioVisualizerView.initVisualizer(audioSessionID);
     }
 
-    public int[] getQueueScreenLocation() {
-        int[] loc = new int[2];
-        if (queue != null) queue.getLocationOnScreen(loc);
-        return loc;
-    }
-
     public void setControlButton(boolean isOnPause) {
         if (!isOnPause) {
             play.setBackground(ContextCompat.getDrawable(requireContext(), R.drawable.play_to_pause_anim));
@@ -233,7 +231,7 @@ public class PlaybackControl extends Fragment {
         ActivityCompat.requestPermissions(requireActivity(), new String[]{Manifest.permission.RECORD_AUDIO}, PERMISSION_REQUEST_CODE);
     }
 
-    private BroadcastReceiver receiver = new BroadcastReceiver() {
+    private final BroadcastReceiver receiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             Bundle bundle = intent.getExtras();
@@ -242,8 +240,10 @@ public class PlaybackControl extends Fragment {
                     bundle.getInt("DURATION"));
 
             setAudioSessionID(bundle.getInt("SESSION_ID"));
+
+            //Todo: do nothing whens tate is the same
             setControlButton(bundle.getBoolean("ISONPAUSE"));
-            updateSeekbar(bundle.getInt("CURRENT_POSITION"));
+            //updateSeekbar(bundle.getInt("CURRENT_POSITION"));
         }
     };
 }

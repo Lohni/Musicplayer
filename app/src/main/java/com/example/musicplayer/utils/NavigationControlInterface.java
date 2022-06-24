@@ -5,4 +5,5 @@ public interface NavigationControlInterface {
     void setHomeAsUpEnabled(boolean state);
     void setHomeAsUpIndicator(int resId);
     void setToolbarTitle(String title);
+    void onBackPressedListener();
 }

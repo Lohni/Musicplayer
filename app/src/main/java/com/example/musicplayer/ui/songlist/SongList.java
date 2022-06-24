@@ -1,12 +1,8 @@
 package com.example.musicplayer.ui.songlist;
 
 import android.content.Context;
-import android.content.res.Resources;
 import android.os.Bundle;
-import android.util.TypedValue;
-import android.view.Gravity;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.AnimationUtils;
@@ -26,16 +22,11 @@ import com.example.musicplayer.ui.views.SideIndex;
 import com.example.musicplayer.utils.NavigationControlInterface;
 import com.example.musicplayer.utils.enums.PlaybackBehaviour;
 import com.google.android.material.button.MaterialButton;
-import com.google.android.material.textview.MaterialTextView;
 
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;

@@ -15,7 +15,7 @@ public class MusicplayerServiceConnection implements ServiceConnection {
     private final Context context;
     private MusicService musicService;
     private final SharedPreferences sharedPreferences;
-    private ServiceConnectionListener serviceConnectionListener;
+    private final ServiceConnectionListener serviceConnectionListener;
 
     public MusicplayerServiceConnection(Context context, SharedPreferences preferences, ServiceConnectionListener serviceConnectionListener) {
         this.context = context;
@@ -46,9 +46,5 @@ public class MusicplayerServiceConnection implements ServiceConnection {
     public void onServiceDisconnected(ComponentName componentName) {
         musicService.pause();
         musicService = null;
-    }
-
-    public MusicService getMusicService() {
-        return musicService;
     }
 }

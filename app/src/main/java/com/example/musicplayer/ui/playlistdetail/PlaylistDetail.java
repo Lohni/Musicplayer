@@ -10,7 +10,6 @@ import android.os.Bundle;
 import android.text.InputType;
 import android.transition.Slide;
 import android.util.DisplayMetrics;
-import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -120,6 +119,13 @@ public class PlaylistDetail extends Fragment implements OnStartDragListener {
     }
 
     @Override
+    public void onResume() {
+        super.onResume();
+        recalcOrdinal();
+        this.trackList.clear();
+    }
+
+    @Override
     public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
         inflater.inflate(R.menu.playlist_detail_add, menu);
@@ -129,7 +135,12 @@ public class PlaylistDetail extends Fragment implements OnStartDragListener {
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         if (item.getItemId() == R.id.action_playlist_detail_add) {
             PlaylistDetailAdd playlistDetailAdd = new PlaylistDetailAdd();
-            playlistDetailAdd.setTitle(playlist.getPName());
+
+            Bundle bundle = new Bundle();
+            bundle.putString("PLAYLIST_NAME", playlist.getPName());
+            bundle.putInt("PLAYLIST_ID", playlistId);
+            bundle.putInt("PLAYLIST_SIZE", playlistItems.size());
+            playlistDetailAdd.setArguments(bundle);
 
             Slide anim = new Slide();
             anim.setSlideEdge(Gravity.RIGHT);
@@ -184,14 +195,12 @@ public class PlaylistDetail extends Fragment implements OnStartDragListener {
             this.playlistItems = new ArrayList<>();
             this.playlistItems.addAll(items);
 
-            List<Integer> trackIdList = items.stream()
-                    .map(PlaylistItem::getPiTId).collect(Collectors.toList());
-
-            musicplayerViewModel.getTracksByIds(trackIdList).observe(getViewLifecycleOwner(), tracks -> {
-                this.trackList.clear();
-                this.trackList.addAll(tracks);
-
-                playlistDetailAdapter.notifyItemRangeChanged(0, trackList.size());
+            musicplayerViewModel.getTracksByIdsOrderByPlaylistItemOrdinal(playlistId).observe(getViewLifecycleOwner(), tracks -> {
+                if (playlistDetailAdapter.getItemCount() == 0) {
+                    this.trackList.clear();
+                    this.trackList.addAll(tracks);
+                    playlistDetailAdapter.notifyItemRangeInserted(0, tracks.size());
+                }
 
                 long time = tracks.stream().map(Track::getTDuration).reduce(0, Integer::sum).longValue();
                 String infoText = tracks.size() + " songs - " + convertTime(time);
@@ -201,7 +210,7 @@ public class PlaylistDetail extends Fragment implements OnStartDragListener {
 
         layoutManager = new LinearLayoutManager(requireContext());
         list.setLayoutManager(layoutManager);
-
+        list.setItemAnimator(null);
 
         Paint p = new Paint();
         p.setColor(ContextCompat.getColor(requireContext(), R.color.colorSecondary));
@@ -228,12 +237,7 @@ public class PlaylistDetail extends Fragment implements OnStartDragListener {
 
                 playlistDetailAdapter.notifyItemMoved(fromPosition, toPosition);
 
-                //Todo: recalc custom ordinal
-                for (int i = 0; i < trackList.size(); i++) {
-                    playlistItems.get(i).setPiCustomOrdinal(i);
-                }
-
-                playlistViewModel.updatePlaylistItemList(playlistItems);
+                recalcOrdinal();
                 return false;
             }
 
@@ -288,13 +292,19 @@ public class PlaylistDetail extends Fragment implements OnStartDragListener {
         return view;
     }
 
-    private void createSnackbar() {
-        snackbar = Snackbar.make(snackbar_anchor, "song will be deleted!", Snackbar.LENGTH_LONG).setAction("Undo", new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                undo = true;
+    private void recalcOrdinal() {
+        if (playlistItems != null) {
+            for (int i = 0; i < playlistItems.size(); i++) {
+                playlistItems.get(i).setPiCustomOrdinal(i);
             }
-        }).addCallback(new BaseTransientBottomBar.BaseCallback<>() {
+
+            playlistViewModel.updatePlaylistItemList(playlistItems);
+        }
+    }
+
+    private void createSnackbar() {
+        snackbar = Snackbar.make(snackbar_anchor, "song will be deleted!", Snackbar.LENGTH_LONG)
+                .setAction("Undo", view -> undo = true).addCallback(new BaseTransientBottomBar.BaseCallback<>() {
             @Override
             public void onDismissed(Snackbar transientBottomBar, int event) {
                 super.onDismissed(transientBottomBar, event);
@@ -313,7 +323,7 @@ public class PlaylistDetail extends Fragment implements OnStartDragListener {
                     isSecondDelete = false;
                     removeTrack();
                     createSnackbar();
-                } else isSnackbarActive = false;
+                }
             }
         }).setDuration(5000);
         snackbar.show();

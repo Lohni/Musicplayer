@@ -17,11 +17,8 @@ import android.view.animation.DecelerateInterpolator;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.bumptech.glide.load.DecodeFormat;
-import com.bumptech.glide.request.RequestOptions;
 import com.example.musicplayer.R;
 import com.example.musicplayer.database.entity.Track;
-import com.example.musicplayer.entities.MusicResolver;
 import com.example.musicplayer.ui.songlist.SongListInterface;
 
 import java.util.ArrayList;
@@ -36,7 +33,6 @@ public class SongListAdapter extends RecyclerView.Adapter<SongListAdapter.ViewHo
     private SongListInterface songListInterface;
     private Drawable customCoverImage;
     private Context context;
-    private RequestOptions requestOptions;
     private int imagesLoading = 0;
 
     public SongListAdapter(Context c, ArrayList<Track> songList, SongListInterface songListInterface) {
@@ -44,8 +40,6 @@ public class SongListAdapter extends RecyclerView.Adapter<SongListAdapter.ViewHo
         this.songListInterface = songListInterface;
         this.context = c;
         this.customCoverImage = ResourcesCompat.getDrawable(c.getResources(), R.drawable.ic_baseline_music_note_24, null);
-        requestOptions = new RequestOptions().error(R.drawable.ic_album_black_24dp)
-                .format(DecodeFormat.PREFER_RGB_565);
     }
 
     @NonNull

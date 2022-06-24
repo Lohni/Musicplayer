@@ -43,7 +43,6 @@ import com.example.musicplayer.utils.images.BitmapColorExtractor;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Random;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -361,14 +360,6 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
         else return null;
     }
 
-    public int getCurrentSongIndex() {
-        return currSongIndex;
-    }
-
-    public int getQueueSize() {
-        return songlist.size();
-    }
-
     public int getDuration() {
         if (player.isPlaying() || isOnPause) return player.getDuration();
         else return 0;
@@ -380,10 +371,6 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
 
     public void setPlaybackBehaviour(PlaybackBehaviour.PlaybackBehaviourState newState) {
         playbackBehaviour = newState;
-    }
-
-    public PlaybackBehaviour.PlaybackBehaviourState getPlaybackBehaviour() {
-        return playbackBehaviour;
     }
 
     public int getSessionId() {
@@ -596,7 +583,7 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
 
             bundle.putString("TITLE", currSong.getTTitle());
             bundle.putString("ARTIST", currSong.getTArtist());
-            bundle.putLong("DURATION", currSong.getTDuration());
+            bundle.putInt("DURATION", currSong.getTDuration());
             bundle.putLong("ID", currSong.getTId());
 
             bundle.putInt("QUEUE_SIZE", songlist.size());

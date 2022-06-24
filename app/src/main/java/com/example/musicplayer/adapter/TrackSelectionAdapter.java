@@ -11,7 +11,6 @@ import android.widget.TextView;
 
 import com.example.musicplayer.R;
 import com.example.musicplayer.database.entity.Track;
-import com.example.musicplayer.entities.MusicResolver;
 import com.example.musicplayer.ui.playlistdetail.OnTrackSelectedListener;
 
 import java.util.ArrayList;
@@ -27,10 +26,10 @@ public class TrackSelectionAdapter extends RecyclerView.Adapter<TrackSelectionAd
     private Context context;
     private OnTrackSelectedListener onTrackSelectedListener;
 
-    public TrackSelectionAdapter(Context c, ArrayList<Track> trackList, OnTrackSelectedListener onTrackSelectedListener){
-        this.trackList =trackList;
+    public TrackSelectionAdapter(Context c, ArrayList<Track> trackList, OnTrackSelectedListener onTrackSelectedListener) {
+        this.trackList = trackList;
         this.mDisplayedvalues = trackList;
-        context=c;
+        context = c;
         this.onTrackSelectedListener = onTrackSelectedListener;
         this.selected = new ArrayList<>();
     }
@@ -38,7 +37,7 @@ public class TrackSelectionAdapter extends RecyclerView.Adapter<TrackSelectionAd
     @NonNull
     @Override
     public TrackSelectionAdapter.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.playlist_item_add,parent,false);
+        View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.playlist_item_add, parent, false);
         return new TrackSelectionAdapter.ViewHolder(v);
     }
 
@@ -52,35 +51,35 @@ public class TrackSelectionAdapter extends RecyclerView.Adapter<TrackSelectionAd
         viewHolder.itemView.setOnClickListener(view -> {
             if (selected.contains(sel)) {
                 selected.remove(sel);
-                updateViewHolderSelected(viewHolder);
+                updateViewHolderNotSelected(viewHolder);
             } else {
                 selected.add(sel);
-                updateViewHolderNotSelected(viewHolder);
+                updateViewHolderSelected(viewHolder);
             }
 
             viewHolder.checkBox.setChecked(!viewHolder.checkBox.isChecked());
             onTrackSelectedListener.onSongSelected(position);
         });
 
-        if(viewHolder.checkBox.isChecked()){
+        if (viewHolder.checkBox.isChecked()) {
             updateViewHolderSelected(viewHolder);
-        } else{
+        } else {
             updateViewHolderNotSelected(viewHolder);
         }
     }
 
     private void updateViewHolderSelected(TrackSelectionAdapter.ViewHolder viewHolder) {
         viewHolder.itemView.setBackgroundResource(R.color.colorSecondaryLightTrans);
-        viewHolder.title.setTextColor(ContextCompat.getColor(context,R.color.colorPrimaryNight));
-        viewHolder.artist.setTextColor(ContextCompat.getColor(context,R.color.colorPrimaryNight));
-        viewHolder.checkBox.setButtonTintList(ContextCompat.getColorStateList(context,R.color.colorPrimaryNight));
+        viewHolder.title.setTextColor(ContextCompat.getColor(context, R.color.colorPrimaryNight));
+        viewHolder.artist.setTextColor(ContextCompat.getColor(context, R.color.colorPrimaryNight));
+        viewHolder.checkBox.setButtonTintList(ContextCompat.getColorStateList(context, R.color.colorPrimaryNight));
     }
 
     private void updateViewHolderNotSelected(TrackSelectionAdapter.ViewHolder viewHolder) {
         viewHolder.itemView.setBackgroundResource(R.color.colorTransparent);
-        viewHolder.title.setTextColor(ContextCompat.getColor(context,R.color.colorTextLight));
-        viewHolder.artist.setTextColor(ContextCompat.getColor(context,R.color.colorTextLight));
-        viewHolder.checkBox.setButtonTintList(ContextCompat.getColorStateList(context,R.color.colorPrimary));
+        viewHolder.title.setTextColor(ContextCompat.getColor(context, R.color.colorTextLight));
+        viewHolder.artist.setTextColor(ContextCompat.getColor(context, R.color.colorTextLight));
+        viewHolder.checkBox.setButtonTintList(ContextCompat.getColorStateList(context, R.color.colorPrimary));
     }
 
     @Override
@@ -92,6 +91,10 @@ public class TrackSelectionAdapter extends RecyclerView.Adapter<TrackSelectionAd
         return selected.size();
     }
 
+    public ArrayList<Track> getSelected() {
+        return selected;
+    }
+
     @Override
     public Filter getFilter() {
         return new Filter() {
@@ -101,7 +104,7 @@ public class TrackSelectionAdapter extends RecyclerView.Adapter<TrackSelectionAd
                 ArrayList<Track> filteredList = new ArrayList<>();
                 originalIndex = new ArrayList<>();
 
-                if(trackList==null){
+                if (trackList == null) {
                     trackList = new ArrayList<Track>(mDisplayedvalues);
                 }
                 if (constraint == null || constraint.length() == 0) {
@@ -134,11 +137,11 @@ public class TrackSelectionAdapter extends RecyclerView.Adapter<TrackSelectionAd
     }
 
 
-    public Integer getOriginalPosition(int i){
+    public Integer getOriginalPosition(int i) {
         return originalIndex.get(i);
     }
 
-    public class ViewHolder extends RecyclerView.ViewHolder{
+    public class ViewHolder extends RecyclerView.ViewHolder {
         TextView title, artist;
         CheckBox checkBox;
 
