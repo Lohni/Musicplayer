@@ -100,10 +100,6 @@ public class AlbumFragment extends Fragment implements AlbumAdapter.AlbumAdapter
         //startPostponedEnterTransition();
     }
 
-    public void setQueueDestination(int[] dest){
-        queueDest = dest;
-    }
-
     @Override
     public void onLayoutClickListener(AlbumAdapter.ViewHolder holder, AlbumResolver albumResolver, int position) {
         sharedElementsViewPosition = position;

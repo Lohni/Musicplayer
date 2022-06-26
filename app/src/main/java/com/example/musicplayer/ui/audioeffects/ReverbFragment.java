@@ -13,6 +13,8 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 
 import com.example.musicplayer.R;
+import com.example.musicplayer.database.MusicplayerApplication;
+import com.example.musicplayer.database.dao.AudioEffectDataAccess;
 import com.example.musicplayer.database.entity.AdvancedReverbPreset;
 import com.example.musicplayer.database.viewmodel.AudioEffectViewModel;
 import com.example.musicplayer.ui.audioeffects.database.AudioEffectSettingsHelper;
@@ -65,7 +67,8 @@ public class ReverbFragment extends Fragment {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        audioEffectViewModel = new ViewModelProvider(requireActivity()).get(AudioEffectViewModel.class);
+        AudioEffectDataAccess mda = ((MusicplayerApplication) requireActivity().getApplication()).getDatabase().audioEffectDao();
+        audioEffectViewModel = new ViewModelProvider(this, new AudioEffectViewModel.AudioEffectViewModelFactory(mda)).get(AudioEffectViewModel.class);
     }
 
     @Override

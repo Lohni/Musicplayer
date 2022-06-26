@@ -150,4 +150,9 @@ public class AdvancedReverbPreset {
     public void setArReflectionDelay(Integer arReflectionDelay) {
         this.arReflectionDelay = arReflectionDelay;
     }
+
+    @Override
+    public String toString() {
+        return this.arName;
+    }
 }

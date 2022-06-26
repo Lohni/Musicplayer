@@ -50,10 +50,10 @@ public class PlaybackControl extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        serviceTriggerInterface.triggerCurrentDataBroadcast();
 
         IntentFilter intentFilter = new IntentFilter(getResources().getString(R.string.playback_control_values));
         requireActivity().registerReceiver(receiver, intentFilter);
+        serviceTriggerInterface.triggerCurrentDataBroadcast();
     }
 
     @Override
@@ -70,7 +70,6 @@ public class PlaybackControl extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
         view = inflater.inflate(R.layout.fragment_playback_control, container, false);
 
         control_title = view.findViewById(R.id.control_title);
@@ -126,6 +125,7 @@ public class PlaybackControl extends Fragment {
     @Override
     public void onDetach() {
         audioVisualizerView.release();
+        requireActivity().unregisterReceiver(receiver);
         super.onDetach();
     }
 

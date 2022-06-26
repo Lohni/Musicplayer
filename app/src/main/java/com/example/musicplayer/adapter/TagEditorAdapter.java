@@ -18,6 +18,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.example.musicplayer.R;
+import com.example.musicplayer.database.entity.Track;
 import com.example.musicplayer.entities.MusicResolver;
 import com.example.musicplayer.ui.tagEditor.TagEditorInterface;
 
@@ -29,14 +30,14 @@ import androidx.recyclerview.widget.RecyclerView;
 
 public class TagEditorAdapter extends RecyclerView.Adapter<TagEditorAdapter.ViewHolder> {
 
-    private ArrayList<MusicResolver> trackList;
+    private ArrayList<Track> trackList;
     private Context context;
     private Drawable customDrawable, coverDrawable;
     private TagEditorInterface tagEditorInterface;
 
     private int imagesLoading = 0;
 
-    public TagEditorAdapter(ArrayList<MusicResolver> trackList, Context context, TagEditorInterface tagEditorInterface) {
+    public TagEditorAdapter(ArrayList<Track> trackList, Context context, TagEditorInterface tagEditorInterface) {
         this.trackList = trackList;
         this.context = context;
         customDrawable = ResourcesCompat.getDrawable(context.getResources(),R.drawable.ic_baseline_music_note_24,null);
@@ -52,10 +53,10 @@ public class TagEditorAdapter extends RecyclerView.Adapter<TagEditorAdapter.View
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        MusicResolver track = trackList.get(position);
+        Track track = trackList.get(position);
         holder.position = holder.getAbsoluteAdapterPosition();
-        holder.artist.setText(track.getArtist());
-        holder.title.setText(track.getTitle());
+        holder.artist.setText(track.getTArtist());
+        holder.title.setText(track.getTTitle());
         holder.itemView.setOnClickListener(view -> tagEditorInterface.onTrackSelectedListener(track));
         holder.cover.setImageDrawable(customDrawable);
 
@@ -63,7 +64,7 @@ public class TagEditorAdapter extends RecyclerView.Adapter<TagEditorAdapter.View
         imagesLoading++;
         holder.cover.postDelayed(() -> {
             if (holder.position == pos) {
-                Uri trackUri = ContentUris.withAppendedId(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,track.getId());
+                Uri trackUri = ContentUris.withAppendedId(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,track.getTId());
                 MediaMetadataRetriever mmr = new MediaMetadataRetriever();
                 mmr.setDataSource(context,trackUri);
                 byte [] thumbnail = mmr.getEmbeddedPicture();

@@ -1,7 +1,7 @@
 package com.example.musicplayer.ui.tagEditor;
 
-import com.example.musicplayer.entities.MusicResolver;
+import com.example.musicplayer.database.entity.Track;
 
 public interface TagEditorInterface {
-    public void onTrackSelectedListener(MusicResolver musicResolver);
+    void onTrackSelectedListener(Track musicResolver);
 }

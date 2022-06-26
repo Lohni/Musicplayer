@@ -35,6 +35,7 @@ public class SideIndex {
         this.sideIndex = sideIndex;
         this.context = context;
         this.indexZoomHolder = indexZoomHolder;
+        this.indexZoomHolder.bringToFront();
         this.indexZoomHolder.setVisibility(View.GONE);
         this.indexZoom = indexZoom;
         this.listViewManager = listViewManager;

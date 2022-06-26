@@ -7,7 +7,6 @@ import com.example.musicplayer.database.entity.EqualizerPreset;
 public interface AudioEffectInterface {
     void onEnvironmentalReverbChanged(EnvironmentalReverb.Settings settings);
     void onEnvironmentalReverbStatusChanged(boolean state);
-    void onEqualizerChanged(EqualizerPreset equalizerPreset);
     void onEqualizerStatusChanged(boolean state);
     void onBassBoostChanged(int strength);
     void onBassBoostStatusChanged(boolean state);

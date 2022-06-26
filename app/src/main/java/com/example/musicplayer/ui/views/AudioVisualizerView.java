@@ -18,7 +18,6 @@ import androidx.annotation.Nullable;
 
 public class AudioVisualizerView extends View {
 
-    private Context context;
     private Visualizer visualizer = null;
     private Rect clipBounds;
     private Paint waveFormColor;
@@ -27,13 +26,12 @@ public class AudioVisualizerView extends View {
     private int height;
     private int density = 20;
     private float scaleRatio;
-    private int colorResource;
+    private final int colorResource;
 
     private byte[] rawAudioData;
 
     public AudioVisualizerView(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
-        this.context=context;
         TypedArray attrib = context.getTheme().obtainStyledAttributes(attrs, R.styleable.AudioVisualizerView,0,0);
         try {
             colorResource = attrib.getColor(R.styleable.AudioVisualizerView_visualizerColor,context.getResources().getColor(R.color.colorPrimaryDark));
@@ -45,7 +43,6 @@ public class AudioVisualizerView extends View {
 
     @Override
     protected void onDraw(Canvas canvas) {
-
         if (visualizer != null){
             canvas.getClipBounds(clipBounds);
 
@@ -82,13 +79,7 @@ public class AudioVisualizerView extends View {
 
                 wavePath.reset();
                 wavePath.moveTo(left,bottom-scaleRatio*reducedMagnitudes[0]);
-                /*
-                for (int i = 1;i<reducedMagnitudes.length-1;i++){
-                    wavePath.cubicTo(xStep * (i-1), clipBounds.bottom - scaleRatio * reducedMagnitudes[i-1],
-                            xStep * i, clipBounds.bottom - scaleRatio * reducedMagnitudes[i],
-                            xStep * (i+1), clipBounds.bottom - scaleRatio * reducedMagnitudes[i+1]);
-                }
-                 */
+
                 for (int i = 1;i<reducedMagnitudes.length;i++){
                     float mag0 = scaleRatio*reducedMagnitudes[i-1];
                     float mag1 = scaleRatio*reducedMagnitudes[i];

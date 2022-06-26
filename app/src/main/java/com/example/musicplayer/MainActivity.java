@@ -22,7 +22,7 @@ import com.example.musicplayer.core.MusicplayerServiceConnection;
 import com.example.musicplayer.database.MusicplayerApplication;
 import com.example.musicplayer.database.dao.AudioEffectDataAccess;
 import com.example.musicplayer.database.dao.MusicplayerDataAccess;
-import com.example.musicplayer.database.entity.EqualizerPreset;
+import com.example.musicplayer.database.entity.Album;
 import com.example.musicplayer.database.entity.Track;
 import com.example.musicplayer.database.viewmodel.AudioEffectViewModel;
 import com.example.musicplayer.database.viewmodel.MusicplayerViewModel;
@@ -36,12 +36,11 @@ import com.example.musicplayer.ui.audioeffects.AudioEffectInterface;
 import com.example.musicplayer.ui.audioeffects.EqualizerViewPager;
 import com.example.musicplayer.ui.audioeffects.database.AudioEffectSettingsHelper;
 import com.example.musicplayer.ui.dashboard.DashboardFragment;
+import com.example.musicplayer.ui.expandedplaybackcontrol.ExpandedPlaybackControl;
 import com.example.musicplayer.ui.playbackcontrol.PlaybackControl;
 import com.example.musicplayer.ui.playlist.PlaylistFragment;
 import com.example.musicplayer.ui.songlist.SongList;
-import com.example.musicplayer.ui.tagEditor.TagEditorDetailFragment;
 import com.example.musicplayer.ui.tagEditor.TagEditorFragment;
-import com.example.musicplayer.ui.tagEditor.TagEditorInterface;
 import com.example.musicplayer.utils.NavigationControlInterface;
 import com.example.musicplayer.utils.Permissions;
 import com.example.musicplayer.utils.enums.PlaybackBehaviour;
@@ -65,7 +64,7 @@ import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.ViewModelProvider;
 
 public class MainActivity extends AppCompatActivity implements PlaybackControlInterface, NavigationView.OnNavigationItemSelectedListener,
-        AudioEffectInterface, TagEditorInterface, NavigationControlInterface, AlbumFragment.AlbumListener, SongInterface, ServiceConnectionListener,
+        AudioEffectInterface, NavigationControlInterface, AlbumFragment.AlbumListener, SongInterface, ServiceConnectionListener,
         ServiceTriggerInterface {
 
     DrawerLayout drawer;
@@ -83,7 +82,6 @@ public class MainActivity extends AppCompatActivity implements PlaybackControlIn
     private final Handler mHandler = new Handler();
 
     private Fragment selectedDrawerFragment;
-
 
     @SuppressLint("ClickableViewAccessibility")
     @Override
@@ -120,6 +118,11 @@ public class MainActivity extends AppCompatActivity implements PlaybackControlIn
         if (Permissions.permission(this, Manifest.permission.RECORD_AUDIO)) {
             bindService(service, serviceConnection, Context.BIND_AUTO_CREATE);
             startService(service);
+
+            if (Permissions.permission(this, Manifest.permission.READ_EXTERNAL_STORAGE)) {
+                updateTracks();
+                updateAlbums();
+            }
         }
 
         //Todo: Own class
@@ -147,18 +150,23 @@ public class MainActivity extends AppCompatActivity implements PlaybackControlIn
         runnable.run();
         navigationView.setNavigationItemSelectedListener(this);
 
-        if (Permissions.permission(this, Manifest.permission.READ_EXTERNAL_STORAGE)) {
-            updateTracks();
-        }
     }
 
     private void updateTracks() {
         musicplayerViewModel.getAllTracks().observe(this, tracks -> {
-            compareToDatabase((ArrayList<Track>) tracks);
+            compareTracksToDatabase((ArrayList<Track>) tracks);
+            musicplayerViewModel.getAllTracks().removeObservers(this);
         });
     }
 
-    private void compareToDatabase(ArrayList<Track> tracks) {
+    private void updateAlbums() {
+        musicplayerViewModel.getAllAlbums().observe(this, albums -> {
+
+            musicplayerViewModel.getAllAlbums().removeObservers(this);
+        });
+    }
+
+    private void compareTracksToDatabase(ArrayList<Track> tracks) {
         ArrayList<Integer> idsFromDatabase = tracks.stream().map(Track::getTId).collect(Collectors.toCollection(ArrayList::new));
         ArrayList<Track> toInsert = new ArrayList<>();
         ArrayList<Integer> toDelete = new ArrayList<>();
@@ -180,16 +188,14 @@ public class MainActivity extends AppCompatActivity implements PlaybackControlIn
                 String thisTitle = musicCursor.getString(titleColumn);
                 String thisArtist = musicCursor.getString(artistColumn);
 
-                if (!idsFromDatabase.contains((int) thisId)) {
-                    Track track = new Track();
-                    track.setTId((int) thisId);
-                    track.setTAlbumId((int) thisalbumid);
-                    track.setTTitle(thisTitle);
-                    track.setTArtist(thisArtist);
-                    track.setTDuration((int) duration);
+                Track track = new Track();
+                track.setTId((int) thisId);
+                track.setTAlbumId((int) thisalbumid);
+                track.setTTitle(thisTitle);
+                track.setTArtist(thisArtist);
+                track.setTDuration((int) duration);
 
-                    toInsert.add(track);
-                }
+                toInsert.add(track);
 
                 //Todo: Handle delete
             } while (musicCursor.moveToNext());
@@ -198,6 +204,7 @@ public class MainActivity extends AppCompatActivity implements PlaybackControlIn
         if (musicCursor != null) musicCursor.close();
         musicplayerViewModel.insertTracks(toInsert);
     }
+
 
     private void loadDashboard(Fragment fragment) {
         FragmentManager fm = getSupportFragmentManager();
@@ -221,12 +228,14 @@ public class MainActivity extends AppCompatActivity implements PlaybackControlIn
             if (permissions[0].equals(Manifest.permission.RECORD_AUDIO)) {
                 Intent service = new Intent(this, MusicService.class);
                 bindService(service, serviceConnection, Context.BIND_AUTO_CREATE);
-                musicService.sendCurrentStateToPlaybackControl();
-                initialiseAudioEffects();
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                     startForegroundService(service);
                 } else {
                     startService(service);
+                }
+
+                if (Permissions.permission(this, android.Manifest.permission.READ_EXTERNAL_STORAGE)) {
+                    updateTracks();
                 }
             } else if (permissions[0].equals(android.Manifest.permission.READ_EXTERNAL_STORAGE)) {
                 updateTracks();
@@ -255,16 +264,15 @@ public class MainActivity extends AppCompatActivity implements PlaybackControlIn
         @Override
         public void run() {
             if (!isOnPause) {
-                //musicService.sendCurrentStateToPlaybackControl();
-
                 PlaybackControl pc = (PlaybackControl) getSupportFragmentManager().findFragmentByTag(getString(R.string.fragment_playbackControl));
                 if (pc != null) {
                     pc.updateSeekbar(musicService.getCurrentPosition());
+                } else {
+                    ExpandedPlaybackControl epc = (ExpandedPlaybackControl) getSupportFragmentManager().findFragmentByTag(getString(R.string.fragment_expandedPlaybackControl));
+                    if (epc != null) {
+                        epc.updateSeekbar(musicService.getCurrentPosition());
+                    }
                 }
-
-
-                //if (!isExpanded) playcontrol.updateSeekbar(musicService.getCurrentPosition());
-                //else expandedPlaybackControl.updateSeekbar(musicService.getCurrentPosition());
             }
             mHandler.postDelayed(runnable, 200);
         }
@@ -272,8 +280,6 @@ public class MainActivity extends AppCompatActivity implements PlaybackControlIn
 
     private void updatePlaybackControlState(boolean state) {
         isOnPause = state;
-        //if (!isExpanded) playcontrol.setControlButton(state);
-        //else expandedPlaybackControl.setControlButton(state);
     }
 
     /*
@@ -368,11 +374,6 @@ public class MainActivity extends AppCompatActivity implements PlaybackControlIn
     }
 
     @Override
-    public void onEqualizerChanged(EqualizerPreset equalizerPreset) {
-        musicService.setEqualizerBandLevels(equalizerPreset);
-    }
-
-    @Override
     public void onEqualizerStatusChanged(boolean state) {
         musicService.setEqualizerEnabled(state);
         SharedPreferences.Editor editor = sharedPreferences.edit();
@@ -426,13 +427,6 @@ public class MainActivity extends AppCompatActivity implements PlaybackControlIn
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putBoolean(getResources().getString(R.string.preference_loudnessenhancer_isenabled), state);
         editor.apply();
-    }
-
-    @Override
-    public void onTrackSelectedListener(MusicResolver musicResolver) {
-        TagEditorDetailFragment tagEditorDetailFragment = new TagEditorDetailFragment();
-        tagEditorDetailFragment.setTrack(musicResolver);
-        getSupportFragmentManager().beginTransaction().replace(R.id.nav_host_fragment, tagEditorDetailFragment).addToBackStack(null).commit();
     }
 
     /*
@@ -517,5 +511,7 @@ public class MainActivity extends AppCompatActivity implements PlaybackControlIn
     @Override
     public void onServiceConnected(@NonNull MusicService musicService) {
         this.musicService = musicService;
+        initialiseAudioEffects();
+        musicService.sendCurrentStateToPlaybackControl();
     }
 }

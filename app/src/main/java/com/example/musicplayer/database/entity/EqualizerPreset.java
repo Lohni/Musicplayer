@@ -1,5 +1,6 @@
 package com.example.musicplayer.database.entity;
 
+import androidx.annotation.NonNull;
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
@@ -94,5 +95,11 @@ public class EqualizerPreset {
 
     public void setEqLevel5(Integer eqLevel5) {
         this.eqLevel5 = eqLevel5;
+    }
+
+    @NonNull
+    @Override
+    public String toString() {
+        return this.eqName;
     }
 }

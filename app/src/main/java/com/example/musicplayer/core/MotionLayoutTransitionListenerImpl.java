@@ -57,13 +57,13 @@ public class MotionLayoutTransitionListenerImpl implements MotionLayout.Transiti
                         .replace(R.id.playbackcontrol_holder, playcontrol, context.getString(R.string.fragment_playbackControl))
                         .commit();
                 isTransitionFragmentChanged = true;
-                //motionLayout.transitionToStart();
             }
         }
     }
 
     @Override
     public void onTransitionCompleted(MotionLayout motionLayout, int reachedState) {
+        isTransitionFragmentChanged = false;
     }
 
     @Override
