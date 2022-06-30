@@ -28,18 +28,15 @@
     <loaded-nodes />
   </component>
   <component name="DBNavigator.Project.DatabaseConsoleManager">
-    <connection id="80ed57d0-40a5-47d7-86ec-c231674fc462">
-      <console name="Connection 1" type="STANDARD" schema="main" session="Main"><![CDATA[select * from "Track"]]></console>
+    <connection id="b2130599-9e7a-4e4b-a5b1-b539c70ae9d0">
+      <console name="Connection" type="STANDARD" schema="main" session="Main" />
     </connection>
   </component>
   <component name="DBNavigator.Project.DatabaseFileManager">
     <open-files />
   </component>
   <component name="DBNavigator.Project.DatabaseSessionManager">
-    <connection id="80ed57d0-40a5-47d7-86ec-c231674fc462" />
-  </component>
-  <component name="DBNavigator.Project.DatasetFilterManager">
-    <filter-actions connection-id="80ed57d0-40a5-47d7-86ec-c231674fc462" dataset="main.EqualizerPreset" active-filter-id="" />
+    <connection id="b2130599-9e7a-4e4b-a5b1-b539c70ae9d0" />
   </component>
   <component name="DBNavigator.Project.EditorStateManager">
     <last-used-providers />
@@ -70,9 +67,9 @@
   </component>
   <component name="DBNavigator.Project.Settings">
     <connections>
-      <connection id="80ed57d0-40a5-47d7-86ec-c231674fc462" active="true" signed="true">
+      <connection id="b2130599-9e7a-4e4b-a5b1-b539c70ae9d0" active="true" signed="true">
         <database>
-          <name value="Connection 1" />
+          <name value="Connection" />
           <description value="" />
           <database-type value="SQLITE" />
           <config-type value="BASIC" />
@@ -85,7 +82,7 @@
           <port value="" />
           <database value="" />
           <files>
-            <file path="F:\MusicPlayer\app\src\main\assets\database\musicplayer1.db" schema="main" />
+            <file path="F:\MusicPlayer\app\src\main\assets\database\musicplayer.db" schema="main" />
           </files>
           <type value="NONE" />
           <user value="" />

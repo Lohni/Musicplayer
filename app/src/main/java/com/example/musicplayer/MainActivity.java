@@ -64,7 +64,7 @@ import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.ViewModelProvider;
 
 public class MainActivity extends AppCompatActivity implements PlaybackControlInterface, NavigationView.OnNavigationItemSelectedListener,
-        AudioEffectInterface, NavigationControlInterface, AlbumFragment.AlbumListener, SongInterface, ServiceConnectionListener,
+        AudioEffectInterface, NavigationControlInterface, SongInterface, ServiceConnectionListener,
         ServiceTriggerInterface {
 
     DrawerLayout drawer;
@@ -161,7 +161,7 @@ public class MainActivity extends AppCompatActivity implements PlaybackControlIn
 
     private void updateAlbums() {
         musicplayerViewModel.getAllAlbums().observe(this, albums -> {
-
+            compareAlbumsToDatabase((ArrayList<Album>) albums);
             musicplayerViewModel.getAllAlbums().removeObservers(this);
         });
     }
@@ -169,7 +169,6 @@ public class MainActivity extends AppCompatActivity implements PlaybackControlIn
     private void compareTracksToDatabase(ArrayList<Track> tracks) {
         ArrayList<Integer> idsFromDatabase = tracks.stream().map(Track::getTId).collect(Collectors.toCollection(ArrayList::new));
         ArrayList<Track> toInsert = new ArrayList<>();
-        ArrayList<Integer> toDelete = new ArrayList<>();
 
         ContentResolver contentResolver = getContentResolver();
         Uri musicUri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
@@ -180,6 +179,7 @@ public class MainActivity extends AppCompatActivity implements PlaybackControlIn
             int artistColumn = musicCursor.getColumnIndex(android.provider.MediaStore.Audio.Media.ARTIST);
             int albumid = musicCursor.getColumnIndex(MediaStore.Audio.Media.ALBUM_ID);
             int durationColumn = musicCursor.getColumnIndex(MediaStore.Audio.Media.DURATION);
+            int trackIdColumn = musicCursor.getColumnIndex(MediaStore.Audio.Media.TRACK);
 
             do {
                 long thisalbumid = musicCursor.getLong(albumid);
@@ -187,6 +187,7 @@ public class MainActivity extends AppCompatActivity implements PlaybackControlIn
                 long duration = musicCursor.getLong(durationColumn);
                 String thisTitle = musicCursor.getString(titleColumn);
                 String thisArtist = musicCursor.getString(artistColumn);
+                int trackId = musicCursor.getInt(trackIdColumn);
 
                 Track track = new Track();
                 track.setTId((int) thisId);
@@ -194,15 +195,72 @@ public class MainActivity extends AppCompatActivity implements PlaybackControlIn
                 track.setTTitle(thisTitle);
                 track.setTArtist(thisArtist);
                 track.setTDuration((int) duration);
+                track.setTTrackNr(trackId);
 
                 toInsert.add(track);
 
-                //Todo: Handle delete
             } while (musicCursor.moveToNext());
         }
 
         if (musicCursor != null) musicCursor.close();
+
+        ArrayList<Integer> insertIds = toInsert.stream().map(Track::getTId).collect(Collectors.toCollection(ArrayList::new));
+        ArrayList<Track> toDelete = tracks.stream().filter(track -> !insertIds.contains(track.getTId())).collect(Collectors.toCollection(ArrayList::new));
+
+        if (!toDelete.isEmpty()) {
+            musicplayerViewModel.deleteTracks(toDelete);
+        }
+
         musicplayerViewModel.insertTracks(toInsert);
+    }
+
+    private void compareAlbumsToDatabase(ArrayList<Album> albums) {
+        ArrayList<Integer> idsFromDatabase = albums.stream().map(Album::getAId).collect(Collectors.toCollection(ArrayList::new));
+        ArrayList<Album> toInsert = new ArrayList<>();
+        ArrayList<Integer> toDelete = new ArrayList<>();
+
+        ContentResolver contentResolver = getApplication().getContentResolver();
+        Uri musicUri = MediaStore.Audio.Albums.EXTERNAL_CONTENT_URI;
+
+        final String _id = MediaStore.Audio.Albums._ID;
+        final String album_name = MediaStore.Audio.Albums.ALBUM;
+        final String totSongs = MediaStore.Audio.Albums.NUMBER_OF_SONGS;
+        final String artist_Name = MediaStore.Audio.Albums.ARTIST;
+        //final String artist_Id = MediaStore.Audio.Albums.ARTIST_ID;
+        final String albumArt = MediaStore.Audio.Albums.ALBUM_ART;
+
+        final String[] columns = {_id, album_name, artist_Name, totSongs, albumArt};
+        Cursor cursor = contentResolver.query(musicUri, null, null, null, null);
+        if (cursor != null && cursor.moveToFirst()) {
+            int albumIdColum = cursor.getColumnIndex(_id);
+            int albumArtistColumn = cursor.getColumnIndex(artist_Name);
+            int albumNameColumn = cursor.getColumnIndex(album_name);
+            int albumTotSongsColumn = cursor.getColumnIndex(totSongs);
+            //int artistIdColumn = cursor.getColumnIndex(artist_Id);
+            int artUriColumn = cursor.getColumnIndex(albumArt);
+
+            do {
+                long albumId = cursor.getLong(albumIdColum);
+                String albumName = cursor.getString(albumNameColumn);
+                String albumArtist = cursor.getString(albumArtistColumn);
+                int totalSongs = cursor.getInt(albumTotSongsColumn);
+                //long artistId = cursor.getLong(artistIdColumn);
+                String artUri = cursor.getString(artUriColumn);
+
+                Album album = new Album();
+                album.setAId((int) albumId);
+                album.setAArtUri(artUri);
+                album.setANumSongs(totalSongs);
+                //album.setAArtistId((int) artistId);
+                album.setAArtistName(albumArtist);
+                album.setAName(albumName);
+
+                toInsert.add(album);
+
+            } while (cursor.moveToNext());
+        }
+        if (cursor != null) cursor.close();
+        musicplayerViewModel.insertAlbums(toInsert);
     }
 
 
@@ -228,17 +286,15 @@ public class MainActivity extends AppCompatActivity implements PlaybackControlIn
             if (permissions[0].equals(Manifest.permission.RECORD_AUDIO)) {
                 Intent service = new Intent(this, MusicService.class);
                 bindService(service, serviceConnection, Context.BIND_AUTO_CREATE);
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    startForegroundService(service);
-                } else {
-                    startService(service);
-                }
+                startService(service);
 
                 if (Permissions.permission(this, android.Manifest.permission.READ_EXTERNAL_STORAGE)) {
                     updateTracks();
+                    updateAlbums();
                 }
             } else if (permissions[0].equals(android.Manifest.permission.READ_EXTERNAL_STORAGE)) {
                 updateTracks();
+                updateAlbums();
             }
         }
     }
@@ -461,28 +517,6 @@ public class MainActivity extends AppCompatActivity implements PlaybackControlIn
     @Override
     public void onBackPressedListener() {
         onBackPressed();
-    }
-
-    /*
-    Album Interfaces
-     */
-
-    @Override
-    public void onPlayAlbumListener(int position, ArrayList<MusicResolver> albumTrackList, boolean shuffle) {
-        //musicService.setSonglist(albumTrackList);
-        if (shuffle) {
-            musicService.setPlaybackBehaviour(PlaybackBehaviour.PlaybackBehaviourState.SHUFFLE);
-            musicService.shuffle();
-        } else {
-            musicService.setPlaybackBehaviour(PlaybackBehaviour.PlaybackBehaviourState.PLAY_ORDER);
-            //musicService.setSong(albumTrackList.get(position));
-        }
-        updatePlaybackControlState(false);
-    }
-
-    @Override
-    public void onQueueAlbumListener(ArrayList<MusicResolver> albumTrackList) {
-        //Todo: Implement Queue
     }
 
     @Override

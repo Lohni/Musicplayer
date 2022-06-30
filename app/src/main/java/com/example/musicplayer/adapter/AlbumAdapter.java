@@ -27,6 +27,7 @@ import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.RequestOptions;
 import com.bumptech.glide.request.target.Target;
 import com.example.musicplayer.R;
+import com.example.musicplayer.database.entity.Album;
 import com.example.musicplayer.entities.AlbumResolver;
 import com.google.android.material.textview.MaterialTextView;
 
@@ -42,7 +43,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 public class AlbumAdapter extends RecyclerView.Adapter<AlbumAdapter.ViewHolder> {
     private final Context context;
-    private final ArrayList<AlbumResolver> albumList;
+    private final ArrayList<Album> albumList;
     private final Drawable customCoverImage;
     AlbumAdapterCallback albumAdapterCallback;
     private MediaOptionsAdapter.MediaOptionsAdapterListener mediaOptionsAdapterListener;
@@ -52,22 +53,22 @@ public class AlbumAdapter extends RecyclerView.Adapter<AlbumAdapter.ViewHolder> 
 
     private int sharedElementsPosition = 0;
 
-    public interface AlbumAdapterCallback{
-        void onLayoutClickListener(ViewHolder viewHolder, AlbumResolver album, int position);
+    public interface AlbumAdapterCallback {
+        void onLayoutClickListener(ViewHolder viewHolder, Album album, int position);
+
         void onSharedElementsViewCreated();
     }
 
     @SuppressLint("ServiceCast")
-    public AlbumAdapter(Context c, ArrayList<AlbumResolver> albumList, AlbumAdapterCallback albumAdapterCallback, MediaOptionsAdapter.MediaOptionsAdapterListener mediaOptionsAdapterListener, int sharedElementsPosition){
+    public AlbumAdapter(Context c, ArrayList<Album> albumList, AlbumAdapterCallback albumAdapterCallback, MediaOptionsAdapter.MediaOptionsAdapterListener mediaOptionsAdapterListener, int sharedElementsPosition) {
         this.context = c;
         this.albumList = albumList;
         this.albumAdapterCallback = albumAdapterCallback;
-        customCoverImage = ResourcesCompat.getDrawable(c.getResources(),R.drawable.ic_album_black_24dp, null);
+        customCoverImage = ResourcesCompat.getDrawable(c.getResources(), R.drawable.ic_album_black_24dp, null);
         popupWindow = new PopupWindow();
         this.sharedElementsPosition = sharedElementsPosition;
         layoutInflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        requestOptions = new RequestOptions().error(R.drawable.ic_album_black_24dp)
-                .format(DecodeFormat.PREFER_RGB_565);
+        requestOptions = new RequestOptions().error(R.drawable.ic_album_black_24dp).format(DecodeFormat.PREFER_RGB_565);
         this.mediaOptionsAdapterListener = mediaOptionsAdapterListener;
     }
 
@@ -75,7 +76,7 @@ public class AlbumAdapter extends RecyclerView.Adapter<AlbumAdapter.ViewHolder> 
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.albumitem, parent, false);
-        ViewHolder holder =  new AlbumAdapter.ViewHolder(v);
+        ViewHolder holder = new AlbumAdapter.ViewHolder(v);
         holder.albumCover.setImageDrawable(customCoverImage);
 
         return holder;
@@ -83,56 +84,52 @@ public class AlbumAdapter extends RecyclerView.Adapter<AlbumAdapter.ViewHolder> 
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        AlbumResolver albumResolver = albumList.get(position);
-        holder.albumName.setText(albumResolver.getAlbumName());
-        holder.albumSize.setText(albumResolver.getNumSongs() + " songs");
+        Album albumResolver = albumList.get(position);
+        holder.albumName.setText(albumResolver.getAName());
+        holder.albumSize.setText(albumResolver.getANumSongs() + " songs");
 
         Glide.with(context)
-                .load(albumResolver.getAlbumArtUri())
+                .load(albumResolver.getAArtUri())
                 .diskCacheStrategy(DiskCacheStrategy.ALL)
                 .apply(requestOptions)
                 .override(holder.albumCover.getWidth(), holder.albumCover.getHeight())
                 .into(holder.albumCover);
 
-        holder.albumOptions.setOnClickListener(new View.OnClickListener() {
-            @SuppressLint("ResourceType")
-            @Override
-            public void onClick(View view) {
-                if (!holder.isTransitionInEndState()){
-                    holder.albumOptions.setImageDrawable(ContextCompat.getDrawable(context,R.drawable.anim_more_vert_to_up));
-                    AnimatedVectorDrawable animatedVectorDrawable = (AnimatedVectorDrawable) holder.albumOptions.getDrawable();
-                    animatedVectorDrawable.start();
+        holder.albumOptions.setOnClickListener(view -> {
+            if (!holder.isTransitionInEndState()) {
+                holder.albumOptions.setImageDrawable(ContextCompat.getDrawable(context, R.drawable.anim_more_vert_to_up));
+                AnimatedVectorDrawable animatedVectorDrawable = (AnimatedVectorDrawable) holder.albumOptions.getDrawable();
+                animatedVectorDrawable.start();
 
-                    View linearLayout = layoutInflater.inflate(R.layout.popup_layout, null);
-                    RecyclerView menu = linearLayout.findViewById(R.id.album_menu);
-                    menu.setLayoutManager(new LinearLayoutManager(context));
-                    menu.setHasFixedSize(true);
-                    menu.setAdapter(new MediaOptionsAdapter(context, mediaOptionsAdapterListener, position));
+                View linearLayout = layoutInflater.inflate(R.layout.popup_layout, null);
+                RecyclerView menu = linearLayout.findViewById(R.id.album_menu);
+                menu.setLayoutManager(new LinearLayoutManager(context));
+                menu.setHasFixedSize(true);
+                menu.setAdapter(new MediaOptionsAdapter(context, mediaOptionsAdapterListener, position));
 
-                    linearLayout.setAnimation(AnimationUtils.loadAnimation(context, R.anim.popupwindow_show));
-                    popupWindow.setContentView(linearLayout);
-                    popupWindow.setOutsideTouchable(true);
-                    popupWindow.setFocusable(true);
-                    popupWindow.setTouchInterceptor(new View.OnTouchListener() {
-                        @Override
-                        public boolean onTouch(View view, MotionEvent motionEvent) {
-                            if (motionEvent.getX() < 0 || motionEvent.getX() > popupWindow.getWidth()){
-                                closePopupWindow(holder);
-                                return true;
-                            }
-                            if (motionEvent.getY() < 0 || motionEvent.getY() > popupWindow.getHeight()){
-                                closePopupWindow(holder);
-                                return true;
-                            }
-                            return false;
+                linearLayout.setAnimation(AnimationUtils.loadAnimation(context, R.anim.popupwindow_show));
+                popupWindow.setContentView(linearLayout);
+                popupWindow.setOutsideTouchable(true);
+                popupWindow.setFocusable(true);
+                popupWindow.setTouchInterceptor(new View.OnTouchListener() {
+                    @Override
+                    public boolean onTouch(View view, MotionEvent motionEvent) {
+                        if (motionEvent.getX() < 0 || motionEvent.getX() > popupWindow.getWidth()) {
+                            closePopupWindow(holder);
+                            return true;
                         }
-                    });
-                    popupWindow.showAtLocation(holder.albumCover, Gravity.LEFT | Gravity.TOP, 0 ,0);
-                    popupWindow.update(holder.albumCover,0,holder.albumCover.getHeight(),holder.albumCover.getWidth(), holder.albumCover.getHeight());
+                        if (motionEvent.getY() < 0 || motionEvent.getY() > popupWindow.getHeight()) {
+                            closePopupWindow(holder);
+                            return true;
+                        }
+                        return false;
+                    }
+                });
+                popupWindow.showAtLocation(holder.albumCover, Gravity.LEFT | Gravity.TOP, 0, 0);
+                popupWindow.update(holder.albumCover, 0, holder.albumCover.getHeight(), holder.albumCover.getWidth(), holder.albumCover.getHeight());
 
-                }
-                holder.setTransitionInEndState(!holder.isTransitionInEndState());
             }
+            holder.setTransitionInEndState(!holder.isTransitionInEndState());
         });
 
         holder.constraintLayout.setOnClickListener((view -> {
@@ -146,7 +143,7 @@ public class AlbumAdapter extends RecyclerView.Adapter<AlbumAdapter.ViewHolder> 
     @Override
     public void onViewAttachedToWindow(@NonNull ViewHolder holder) {
         super.onViewAttachedToWindow(holder);
-        if (holder.getBindingAdapterPosition() == sharedElementsPosition){
+        if (holder.getBindingAdapterPosition() == sharedElementsPosition) {
             holder.albumCover.setTransitionName(context.getResources().getString(R.string.transition_album_cover));
             holder.albumName.setTransitionName(context.getResources().getString(R.string.transition_album_name));
             holder.albumSize.setTransitionName(context.getResources().getString(R.string.transition_album_size));
@@ -169,11 +166,11 @@ public class AlbumAdapter extends RecyclerView.Adapter<AlbumAdapter.ViewHolder> 
         return position;
     }
 
-    public AlbumResolver getItem(int position){
+    public Album getItem(int position) {
         return albumList.get(position);
     }
 
-    public void closePopupWindow(ViewHolder holder){
+    public void closePopupWindow(ViewHolder holder) {
         Animation animation = AnimationUtils.loadAnimation(context, R.anim.popupwindow_dismiss);
         animation.setAnimationListener(new Animation.AnimationListener() {
             @Override
@@ -193,12 +190,12 @@ public class AlbumAdapter extends RecyclerView.Adapter<AlbumAdapter.ViewHolder> 
             }
         });
         popupWindow.getContentView().startAnimation(animation);
-        holder.albumOptions.setImageDrawable(ContextCompat.getDrawable(context,R.drawable.anim_up_to_more_vert));
+        holder.albumOptions.setImageDrawable(ContextCompat.getDrawable(context, R.drawable.anim_up_to_more_vert));
         AnimatedVectorDrawable animatedVectorDrawable = (AnimatedVectorDrawable) holder.albumOptions.getDrawable();
         animatedVectorDrawable.start();
     }
 
-    public class ViewHolder extends RecyclerView.ViewHolder{
+    public class ViewHolder extends RecyclerView.ViewHolder {
         public TextView albumSize;
         public MaterialTextView albumName;
         private ImageButton albumOptions;

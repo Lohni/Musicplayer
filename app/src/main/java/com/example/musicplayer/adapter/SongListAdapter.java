@@ -63,19 +63,25 @@ public class SongListAdapter extends RecyclerView.Adapter<SongListAdapter.ViewHo
         holder.coverImage.postDelayed(() -> {
             if (holder.position == pos) {
                 Uri trackUri = ContentUris.withAppendedId(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, track.getTId());
+                byte[] thumbnail = null;
                 MediaMetadataRetriever mmr = new MediaMetadataRetriever();
-                mmr.setDataSource(context, trackUri);
-                byte[] thumbnail = mmr.getEmbeddedPicture();
-                mmr.release();
-                if (thumbnail != null) {
-                    Bitmap cover = BitmapFactory.decodeByteArray(thumbnail, 0, thumbnail.length);
-                    //ImageTransformUtil.getRoundedCornerBitmap(cover, context.getResources())
-                    holder.coverImage.setClipToOutline(true);
-                    holder.coverImage.setImageBitmap(cover);
-                    Animation fadeIn = new AlphaAnimation(0, 1);
-                    fadeIn.setInterpolator(new DecelerateInterpolator());
-                    fadeIn.setDuration(350);
-                    holder.coverImage.setAnimation(fadeIn);
+                try {
+                    mmr.setDataSource(context, trackUri);
+                    thumbnail = mmr.getEmbeddedPicture();
+                } catch (IllegalArgumentException e) {
+                    System.out.println("MediaMetadataRetriever IllegalArgument");
+                } finally {
+                    mmr.release();
+                    if (thumbnail != null) {
+                        Bitmap cover = BitmapFactory.decodeByteArray(thumbnail, 0, thumbnail.length);
+                        //ImageTransformUtil.getRoundedCornerBitmap(cover, context.getResources())
+                        holder.coverImage.setClipToOutline(true);
+                        holder.coverImage.setImageBitmap(cover);
+                        Animation fadeIn = new AlphaAnimation(0, 1);
+                        fadeIn.setInterpolator(new DecelerateInterpolator());
+                        fadeIn.setDuration(350);
+                        holder.coverImage.setAnimation(fadeIn);
+                    }
                 }
             }
             imagesLoading--;

@@ -95,4 +95,10 @@ public class TagEditorFragment extends Fragment implements TagEditorInterface {
         tagEditorDetailFragment.setArguments(bundle);
         getParentFragmentManager().beginTransaction().replace(R.id.nav_host_fragment, tagEditorDetailFragment).addToBackStack(null).commit();
     }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        this.trackList.clear();
+    }
 }

@@ -1,10 +1,7 @@
 package com.example.musicplayer.database.dao
 
-import androidx.room.Dao
-import androidx.room.Insert
+import androidx.room.*
 import androidx.room.OnConflictStrategy.REPLACE
-import androidx.room.Query
-import androidx.room.Transaction
 import com.example.musicplayer.database.entity.Album
 import com.example.musicplayer.database.entity.Track
 import kotlinx.coroutines.flow.Flow
@@ -39,4 +36,16 @@ interface MusicplayerDataAccess {
     @Transaction
     @Query("SELECT * FROM Track where t_album_id = :albumId")
     fun getTracksByAlbumId(albumId: Int): Flow<List<Track>>
+
+    @Delete
+    fun deleteTracks(trackList: List<Track>)
+
+    @Query("DELETE FROM PlaylistItem where pi_t_id in (:trackIdList)")
+    fun deletePlaylistItemsByTrackIds(trackIdList: List<Int>)
+
+    @Query("DELETE FROM TrackTagMtc where ttm_t_id in (:trackIdList)")
+    fun deleteTrackTagMtcByTrackIds(trackIdList: List<Int>)
+
+    @Query("SELECT * FROM Album WHERE a_id = :albumId")
+    fun getAlbumByAlbumId(albumId: Int): Flow<Album>
 }

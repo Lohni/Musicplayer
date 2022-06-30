@@ -23,7 +23,7 @@ public class Track {
     @ColumnInfo(name = "t_last_played")
     private String tLastPlayed;
 
-    @ColumnInfo(name = "t_isFavourite")
+    @ColumnInfo(name = "t_isFavourite", defaultValue = "0")
     private Integer tIsFavourite;
 
     @ColumnInfo(name = "t_album_id")
@@ -32,8 +32,11 @@ public class Track {
     @ColumnInfo(name = "t_duration")
     private Integer tDuration;
 
-    @ColumnInfo(name = "t_times_played")
+    @ColumnInfo(name = "t_times_played", defaultValue = "0")
     private Integer tTimesPlayed;
+
+    @ColumnInfo(name = "t_track_nr")
+    private Integer tTrackNr;
 
     public Integer getTId() {
         return tId;
@@ -105,5 +108,13 @@ public class Track {
 
     public void setTTimesPlayed(Integer tTimesPlayed) {
         this.tTimesPlayed = tTimesPlayed;
+    }
+
+    public Integer getTTrackNr() {
+        return tTrackNr;
+    }
+
+    public void setTTrackNr(Integer tTrackNr) {
+        this.tTrackNr = tTrackNr;
     }
 }

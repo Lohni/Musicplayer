@@ -15,7 +15,7 @@ import kotlinx.coroutines.CoroutineScope
  * @author Andreas Lohninger
  */
 @Database(entities = [AdvancedReverbPreset::class, EqualizerPreset::class, Playlist::class,
-    PlaylistItem::class, PlaylistTagMtc::class, Tag::class, Track::class, TrackTagMtc::class], version = 1)
+    PlaylistItem::class, PlaylistTagMtc::class, Tag::class, Track::class, TrackTagMtc::class, Album::class], version = 1)
 abstract class MusicplayerDatabase : RoomDatabase() {
     abstract fun playlistDao(): PlaylistDataAccess
     abstract fun musicplayerDao(): MusicplayerDataAccess
@@ -38,8 +38,8 @@ abstract class MusicplayerDatabase : RoomDatabase() {
                 val instance = Room.databaseBuilder(
                     context.applicationContext,
                     MusicplayerDatabase::class.java,
-                    "musicplayer1.db")
-                    .createFromAsset("database/musicplayer1.db")
+                    "musicplayer.db")
+                    .createFromAsset("database/musicplayer.db")
                     .addCallback(MusicplayerDatabaseCallback(scope))
                     .build()
 

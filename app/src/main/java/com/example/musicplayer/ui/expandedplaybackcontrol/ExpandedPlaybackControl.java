@@ -210,6 +210,7 @@ public class ExpandedPlaybackControl extends Fragment {
 
     private void setCoverImage(Drawable coverImage, boolean custom) {
         if (custom) cover.setImageTintList(AppCompatResources.getColorStateList(requireContext(), R.color.colorPrimaryNight));
+        else cover.setImageTintList(null);
         this.cover.setImageDrawable(coverImage);
     }
 
