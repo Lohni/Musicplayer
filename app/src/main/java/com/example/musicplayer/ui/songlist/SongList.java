@@ -19,6 +19,7 @@ import com.example.musicplayer.database.viewmodel.MusicplayerViewModel;
 import com.example.musicplayer.inter.PlaybackControlInterface;
 import com.example.musicplayer.inter.SongInterface;
 import com.example.musicplayer.ui.views.SideIndex;
+import com.example.musicplayer.utils.GeneralUtils;
 import com.example.musicplayer.utils.NavigationControlInterface;
 import com.example.musicplayer.utils.enums.PlaybackBehaviour;
 import com.google.android.material.button.MaterialButton;
@@ -104,8 +105,8 @@ public class SongList extends Fragment implements SongListInterface {
             songListAdapter = new SongListAdapter(requireContext(), songList, songListInterface);
             listView.setAdapter(songListAdapter);
 
-            long time = tracks.stream().map(Track::getTDuration).reduce(0, Integer::sum).longValue();
-            shuffle_size.setText(tracks.size() + " songs - " + convertTime(time));
+            int time = tracks.stream().map(Track::getTDuration).reduce(0, Integer::sum);
+            shuffle_size.setText(tracks.size() + " songs - " + GeneralUtils.convertTime(time));
         });
 
         shuffle.setOnClickListener(view -> {
@@ -115,6 +116,7 @@ public class SongList extends Fragment implements SongListInterface {
             }
 
             playbackControlInterface.onPlaybackBehaviourChangeListener(PlaybackBehaviour.PlaybackBehaviourState.SHUFFLE);
+            playbackControlInterface.onNextClickListener();
         });
 
         return view;
@@ -128,16 +130,5 @@ public class SongList extends Fragment implements SongListInterface {
         }
 
         songInterface.onSongSelectedListener(songList.get(index));
-    }
-
-    private String convertTime(long duration) {
-        float d = (float) duration / (1000 * 60);
-        int min = (int) d;
-        float seconds = (d - min) * 60;
-        int sec = (int) seconds;
-        String minute = min + "", second = sec + "";
-        if (min < 10) minute = "0" + minute;
-        if (sec < 10) second = "0" + second;
-        return minute + ":" + second;
     }
 }

@@ -45,6 +45,10 @@ class MusicplayerViewModel(private val dao: MusicplayerDataAccess) : ViewModel()
         return dao.getAlbumByAlbumId(albumId).asLiveData()
     }
 
+    fun updateTrack(track: Track) = viewModelScope.launch(Dispatchers.IO) {
+        dao.updateTrack(track)
+    }
+
     class MusicplayerViewModelFactory(private val dataAccess: MusicplayerDataAccess) :
         ViewModelProvider.Factory {
         override fun <T : ViewModel> create(modelClass: Class<T>): T {

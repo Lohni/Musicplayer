@@ -10,9 +10,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.example.musicplayer.R;
-import com.example.musicplayer.database.entity.Album;
 import com.example.musicplayer.database.entity.Track;
-import com.example.musicplayer.entities.MusicResolver;
 
 import java.util.ArrayList;
 
@@ -26,15 +24,16 @@ public class AlbumDetailAdapter extends RecyclerView.Adapter<AlbumDetailAdapter.
     private final Bitmap albumCover;
     private final Drawable customCoverDrawable;
     private final AlbumDetailAdapterListener albumDetailAdapterListener;
-    public interface AlbumDetailAdapterListener{
+
+    public interface AlbumDetailAdapterListener {
         void onItemClickListener(int position);
     }
 
-    public AlbumDetailAdapter(Context context, ArrayList<Track> albumSongList, Bitmap albumCover, AlbumDetailAdapterListener albumDetailAdapterListener){
+    public AlbumDetailAdapter(Context context, ArrayList<Track> albumSongList, Bitmap albumCover, AlbumDetailAdapterListener albumDetailAdapterListener) {
         this.albumSongList = albumSongList;
         this.albumCover = albumCover;
         this.albumDetailAdapterListener = albumDetailAdapterListener;
-        customCoverDrawable = ResourcesCompat.getDrawable(context.getResources(),R.drawable.ic_album_black_24dp, null);
+        customCoverDrawable = ResourcesCompat.getDrawable(context.getResources(), R.drawable.ic_album_black_24dp, null);
     }
 
     @NonNull
@@ -52,7 +51,7 @@ public class AlbumDetailAdapter extends RecyclerView.Adapter<AlbumDetailAdapter.
         holder.trackNr.setText(String.valueOf(track.getTTrackNr()));
 
 
-        if (albumCover != null){
+        if (albumCover != null) {
             holder.albumCover.setImageBitmap(albumCover);
         } else {
             holder.albumCover.setImageDrawable(customCoverDrawable);
@@ -66,12 +65,12 @@ public class AlbumDetailAdapter extends RecyclerView.Adapter<AlbumDetailAdapter.
         return albumSongList.size();
     }
 
-    public class ViewHolder extends RecyclerView.ViewHolder{
+    public class ViewHolder extends RecyclerView.ViewHolder {
         private TextView trackNr, trackName, trackArtist;
         public ImageView albumCover;
         private ConstraintLayout constraintLayout;
 
-        public ViewHolder(@NonNull View itemView){
+        public ViewHolder(@NonNull View itemView) {
             super(itemView);
             this.trackNr = itemView.findViewById(R.id.album_detail_item_tracknr);
             this.trackName = itemView.findViewById(R.id.album_detail_item_title);

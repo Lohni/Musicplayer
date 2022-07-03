@@ -42,7 +42,7 @@ public class EqualizerViewPager extends Fragment {
     public void onAttach(@NonNull Context context) {
         try {
             navigationControlInterface = (NavigationControlInterface) context;
-        } catch (ClassCastException e){
+        } catch (ClassCastException e) {
             Log.e("EQUALIZER_CASTERROR", e.toString());
         }
         super.onAttach(context);
@@ -62,7 +62,7 @@ public class EqualizerViewPager extends Fragment {
 
         TabLayout tabLayout = view.findViewById(R.id.equalizer_tablayout);
 
-        if (Permissions.permission(requireActivity(), this, Manifest.permission.MODIFY_AUDIO_SETTINGS)){
+        if (Permissions.permission(requireActivity(), this, Manifest.permission.MODIFY_AUDIO_SETTINGS)) {
             mAdapter = new EqualizerViewPagerAdapter(this, settings, reverbEnabled, equalizerBandLevels,
                     equalizerEnabled, equalizerProperties, bassBoostEnabled, bassBoostStrength, virtuaizerEnabled, virtualizerStrength, loudnessEnhancerEnabled, loudnessEnhancerStrength);
             viewPager2.setAdapter(mAdapter);
@@ -71,10 +71,10 @@ public class EqualizerViewPager extends Fragment {
         new TabLayoutMediator(tabLayout, viewPager2, ((tab, position) -> {
             if (position == 0) {
                 tab.setText("Frequenzy");
-                tab.setIcon(ContextCompat.getDrawable(requireContext(),R.drawable.ic_equalizer_black_24dp));
-            } else if (position == 1){
+                tab.setIcon(ContextCompat.getDrawable(requireContext(), R.drawable.ic_equalizer_black_24dp));
+            } else if (position == 1) {
                 tab.setText("Effects");
-                tab.setIcon(ContextCompat.getDrawable(requireContext(),R.drawable.ic_baseline_hearing_24));
+                tab.setIcon(ContextCompat.getDrawable(requireContext(), R.drawable.ic_baseline_hearing_24));
             } else {
                 tab.setText("Reverb");
                 tab.setIcon(ContextCompat.getDrawable(requireContext(), R.drawable.ic_baseline_surround_sound_24));
@@ -87,7 +87,7 @@ public class EqualizerViewPager extends Fragment {
                             boolean equalizerEnabled, EqualizerProperties equalizerProperties,
                             boolean bassBoostEnabled, int bassBoostStrength,
                             boolean virtuaizerEnabled, int virtualizerStrength,
-                            boolean loudnessEnhancerEnabled, int loudnessEnhancerStrength){
+                            boolean loudnessEnhancerEnabled, int loudnessEnhancerStrength) {
         this.settings = settings;
         this.reverbEnabled = reverbEnabled;
         this.equalizerBandLevels = equalizerBandLevels;
@@ -104,7 +104,7 @@ public class EqualizerViewPager extends Fragment {
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED && permissions[0].equals(Manifest.permission.MODIFY_AUDIO_SETTINGS)){
+        if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED && permissions[0].equals(Manifest.permission.MODIFY_AUDIO_SETTINGS)) {
             mAdapter = new EqualizerViewPagerAdapter(this, settings, reverbEnabled, equalizerBandLevels,
                     equalizerEnabled, equalizerProperties, bassBoostEnabled, bassBoostStrength, virtuaizerEnabled, virtualizerStrength, loudnessEnhancerEnabled, loudnessEnhancerStrength);
             viewPager2.setAdapter(mAdapter);

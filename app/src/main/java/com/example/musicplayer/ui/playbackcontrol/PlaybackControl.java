@@ -44,7 +44,6 @@ public class PlaybackControl extends Fragment {
     private ServiceTriggerInterface serviceTriggerInterface;
 
     public PlaybackControl() {
-        // Required empty public constructor
     }
 
     @Override
@@ -143,21 +142,20 @@ public class PlaybackControl extends Fragment {
     }
 
     public void updateQueueCount(int newCount) {
-        if (newCount > 0) queue_count.setVisibility(View.VISIBLE);
-        else queue_count.setVisibility(View.GONE);
-        animateCount(queueCount, newCount);
-        queueCount = newCount;
+        if (queueCount != newCount) {
+            if (newCount > 0) queue_count.setVisibility(View.VISIBLE);
+            else queue_count.setVisibility(View.GONE);
+            animateCount(queueCount, newCount);
+            queueCount = newCount;
+        }
     }
 
     private void animateCount(int old, int newCount) {
-        if (old == newCount) {
-            return;
-        }
         int dur = 500 / Math.abs(old - newCount);
         if (old < newCount) {
             new Thread(() -> {
                 int i = old;
-                while (i < newCount) {
+                while (i <= newCount) {
                     try {
                         Thread.sleep(dur);
                     } catch (InterruptedException e) {
@@ -174,7 +172,7 @@ public class PlaybackControl extends Fragment {
         } else {
             new Thread(() -> {
                 int i = old;
-                while (i > newCount) {
+                while (i >= newCount) {
                     try {
                         Thread.sleep(dur);
                     } catch (InterruptedException e) {
@@ -240,10 +238,9 @@ public class PlaybackControl extends Fragment {
                     bundle.getInt("DURATION"));
 
             setAudioSessionID(bundle.getInt("SESSION_ID"));
-
-            //Todo: do nothing whens tate is the same
             setControlButton(bundle.getBoolean("ISONPAUSE"));
-            //updateSeekbar(bundle.getInt("CURRENT_POSITION"));
+
+            updateQueueCount(bundle.getInt("QUEUE_SIZE"));
         }
     };
 }

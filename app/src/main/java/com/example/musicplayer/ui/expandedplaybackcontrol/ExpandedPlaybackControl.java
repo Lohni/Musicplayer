@@ -23,6 +23,10 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 
 import com.example.musicplayer.R;
+import com.example.musicplayer.database.MusicplayerApplication;
+import com.example.musicplayer.database.dao.MusicplayerDataAccess;
+import com.example.musicplayer.database.entity.Track;
+import com.example.musicplayer.database.viewmodel.MusicplayerViewModel;
 import com.example.musicplayer.inter.PlaybackControlInterface;
 import com.example.musicplayer.inter.ServiceTriggerInterface;
 import com.example.musicplayer.ui.views.AudioVisualizerView;
@@ -38,10 +42,21 @@ import androidx.constraintlayout.motion.widget.MotionLayout;
 import androidx.core.content.ContextCompat;
 import androidx.core.content.res.ResourcesCompat;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
+
+import static com.example.musicplayer.utils.enums.PlaybackBehaviour.PlaybackBehaviourState.REPEAT_LIST;
+import static com.example.musicplayer.utils.enums.PlaybackBehaviour.PlaybackBehaviourState.REPEAT_SONG;
+import static com.example.musicplayer.utils.enums.PlaybackBehaviour.PlaybackBehaviourState.SHUFFLE;
 
 public class ExpandedPlaybackControl extends Fragment {
     private TextView expanded_title, expanded_artist, expanded_currtime, expanded_absolute_time, expanded_queue_count;
-    private ImageButton expanded_play, expanded_skipforward, expanded_skipback, collapse, expanded_fav, expanded_behaviourControl, expanded_more, expanded_add;
+    private ImageButton expanded_play;
+    private ImageButton expanded_skipforward;
+    private ImageButton expanded_skipback;
+    private ImageButton expanded_fav;
+    private ImageButton expanded_behaviourControl;
+    private ImageButton expanded_more;
+    private ImageButton expanded_add;
     private AudioVisualizerView audioVisualizerView;
     private ImageView cover;
     private SeekBar expanded_seekbar;
@@ -50,6 +65,9 @@ public class ExpandedPlaybackControl extends Fragment {
 
     private PlaybackControlInterface epcInterface;
     private ServiceTriggerInterface serviceTriggerInterface;
+
+    private MusicplayerViewModel musicplayerViewModel;
+    private Track currTrack;
 
     private boolean seekbarUserAction = false, isAudiSessionIdSet = false;
 
@@ -66,6 +84,10 @@ public class ExpandedPlaybackControl extends Fragment {
                 parentContainer.transitionToStart();
             }
         };
+
+        MusicplayerDataAccess mda = ((MusicplayerApplication) requireActivity().getApplication()).getDatabase().musicplayerDao();
+        musicplayerViewModel = new ViewModelProvider(this, new MusicplayerViewModel.MusicplayerViewModelFactory(mda)).get(MusicplayerViewModel.class);
+
         requireActivity().getOnBackPressedDispatcher().addCallback(this, callback);
         postponeEnterTransition();
 
@@ -109,7 +131,7 @@ public class ExpandedPlaybackControl extends Fragment {
         expanded_seekbar = view1.findViewById(R.id.expanded_seekbar);
         expanded_more = view1.findViewById(R.id.expanded_more);
         audioVisualizerView = view1.findViewById(R.id.audioView);
-        collapse = view1.findViewById(R.id.expanded_control_collapse);
+        ImageButton collapse = view1.findViewById(R.id.expanded_control_collapse);
         cover = view1.findViewById(R.id.expanded_cover);
         expanded_add = view1.findViewById(R.id.expanded_add);
         expanded_queue_count = view1.findViewById(R.id.expanded_queue_count);
@@ -154,6 +176,15 @@ public class ExpandedPlaybackControl extends Fragment {
             updateBehaviourImage();
         }));
 
+        expanded_fav.setOnClickListener((imageView -> {
+            if (currTrack != null) {
+                int newIsFavourite = (currTrack.getTIsFavourite().equals(0)) ? 1 : 0;
+                currTrack.setTIsFavourite(newIsFavourite);
+                setIsFavouriteBackground();
+                musicplayerViewModel.updateTrack(currTrack);
+            }
+        }));
+
         return view1;
     }
 
@@ -173,26 +204,43 @@ public class ExpandedPlaybackControl extends Fragment {
         switch (playbackBehaviour) {
             case SHUFFLE:
                 expanded_behaviourControl.setBackground(ResourcesCompat.getDrawable(getResources(), R.drawable.ic_shuffle_black_24dp, null));
+                epcInterface.onPlaybackBehaviourChangeListener(SHUFFLE);
                 break;
             case REPEAT_LIST:
                 expanded_behaviourControl.setBackground(ResourcesCompat.getDrawable(getResources(), R.drawable.ic_repeat_black_24dp, null));
+                epcInterface.onPlaybackBehaviourChangeListener(REPEAT_LIST);
                 break;
             case REPEAT_SONG:
                 expanded_behaviourControl.setBackground(ResourcesCompat.getDrawable(getResources(), R.drawable.ic_baseline_repeat_one_24, null));
-                break;
-            case PLAY_ORDER:
-                //Todo: Create Play Order
-                expanded_behaviourControl.setBackground(ResourcesCompat.getDrawable(getResources(), R.drawable.ic_shuffle_black_24dp, null));
+                epcInterface.onPlaybackBehaviourChangeListener(REPEAT_SONG);
                 break;
         }
     }
 
     public void setSongInfo(String title, String artist, int length, long id) {
         expanded_absolute_time.setText(GeneralUtils.convertTime(length));
+        loadCover(id);
+
+        if (currTrack == null || !currTrack.getTId().equals((int) id)) {
+            musicplayerViewModel.getTrackById((int) id).observe(getViewLifecycleOwner(), track -> {
+                this.currTrack = track;
+                setIsFavouriteBackground();
+            });
+        }
+
         expanded_title.setText(title);
         expanded_artist.setText(artist);
         expanded_seekbar.setMax(length);
-        loadCover(id);
+    }
+
+    private void setIsFavouriteBackground() {
+        if (currTrack != null) {
+            int favResId = (currTrack.getTIsFavourite().equals(0))
+                    ? R.drawable.ic_outline_favorite_border_24
+                    : R.drawable.ic_baseline_favorite_24;
+
+            expanded_fav.setBackground(ResourcesCompat.getDrawable(getResources(), favResId, null));
+        }
     }
 
     private void loadCover(long song) {
@@ -228,11 +276,13 @@ public class ExpandedPlaybackControl extends Fragment {
                     bundle.getInt("DURATION"),
                     bundle.getLong("ID"));
 
+
+            playbackBehaviour = PlaybackBehaviour.getStateFromInteger(bundle.getInt("BEHAVIOUR_STATE"));
             setAudioSessionID(bundle.getInt("SESSION_ID"));
             setControlButton(bundle.getBoolean("ISONPAUSE"));
 
             int queue_size = bundle.getInt("QUEUE_SIZE");
-            int queue_index = bundle.getInt("QUEUE_INDEX");
+            int queue_index = bundle.getInt("QUEUE_INDEX") + 1;
             expanded_queue_count.setText(String.format("%d/%d", queue_index, queue_size));
         }
     };

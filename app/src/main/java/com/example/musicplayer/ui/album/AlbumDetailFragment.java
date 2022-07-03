@@ -19,7 +19,6 @@ import com.example.musicplayer.database.MusicplayerApplication;
 import com.example.musicplayer.database.dao.MusicplayerDataAccess;
 import com.example.musicplayer.database.entity.Track;
 import com.example.musicplayer.database.viewmodel.MusicplayerViewModel;
-import com.example.musicplayer.entities.MusicResolver;
 import com.example.musicplayer.inter.PlaybackControlInterface;
 import com.example.musicplayer.inter.SongInterface;
 import com.example.musicplayer.utils.NavigationControlInterface;
@@ -118,7 +117,7 @@ public class AlbumDetailFragment extends Fragment implements AlbumDetailAdapter.
 
         albumDetailPlay.setOnClickListener((button -> {
             songInterface.onSongListCreatedListener(albumSongs);
-            playbackControlInterface.onPlaybackBehaviourChangeListener(PlaybackBehaviour.PlaybackBehaviourState.PLAY_ORDER);
+            playbackControlInterface.onPlaybackBehaviourChangeListener(PlaybackBehaviour.PlaybackBehaviourState.REPEAT_LIST);
         }));
 
         albumDetailShuffle.setOnClickListener((button) -> {

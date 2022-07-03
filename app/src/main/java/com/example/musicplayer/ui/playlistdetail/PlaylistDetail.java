@@ -42,9 +42,7 @@ import com.google.android.material.snackbar.Snackbar;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import androidx.annotation.NonNull;
 import androidx.constraintlayout.widget.ConstraintLayout;
@@ -93,12 +91,6 @@ public class PlaylistDetail extends Fragment implements OnStartDragListener {
 
         playlistId = getArguments().getInt("PLAYLIST_ID");
 
-        setHasOptionsMenu(true);
-
-        navigationControlInterface.isDrawerEnabledListener(false);
-        navigationControlInterface.setHomeAsUpEnabled(true);
-        navigationControlInterface.setHomeAsUpIndicator(R.drawable.ic_baseline_arrow_back_24);
-
         PlaylistDataAccess aod = ((MusicplayerApplication) requireActivity().getApplication()).getDatabase().playlistDao();
         playlistViewModel = new ViewModelProvider(requireActivity(), new PlaylistViewModel.PlaylistViewModelFactory(aod)).get(PlaylistViewModel.class);
 
@@ -116,6 +108,16 @@ public class PlaylistDetail extends Fragment implements OnStartDragListener {
         } catch (ClassCastException e) {
             throw new ClassCastException(context + "must implement SongListInterface");
         }
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+
+        setHasOptionsMenu(true);
+        navigationControlInterface.isDrawerEnabledListener(false);
+        navigationControlInterface.setHomeAsUpEnabled(true);
+        navigationControlInterface.setHomeAsUpIndicator(R.drawable.ic_baseline_arrow_back_24);
     }
 
     @Override
@@ -288,7 +290,10 @@ public class PlaylistDetail extends Fragment implements OnStartDragListener {
         itemTouchhelper = new ItemTouchHelper(simpleCallback);
         itemTouchhelper.attachToRecyclerView(list);
 
-        shuffle.setOnClickListener(shuffleView -> playbackControlInterface.onPlaybackBehaviourChangeListener(PlaybackBehaviour.PlaybackBehaviourState.SHUFFLE));
+        shuffle.setOnClickListener(shuffleView -> {
+            playbackControlInterface.onPlaybackBehaviourChangeListener(PlaybackBehaviour.PlaybackBehaviourState.SHUFFLE);
+            playbackControlInterface.onNextClickListener();
+        });
         return view;
     }
 
@@ -305,27 +310,27 @@ public class PlaylistDetail extends Fragment implements OnStartDragListener {
     private void createSnackbar() {
         snackbar = Snackbar.make(snackbar_anchor, "song will be deleted!", Snackbar.LENGTH_LONG)
                 .setAction("Undo", view -> undo = true).addCallback(new BaseTransientBottomBar.BaseCallback<>() {
-            @Override
-            public void onDismissed(Snackbar transientBottomBar, int event) {
-                super.onDismissed(transientBottomBar, event);
-                if (undo) {
-                    trackList.add(oldDeleteID, deletedSong);
-                    playlistDetailAdapter.notifyItemInserted(oldDeleteID);
-                } else {
-                    Optional<PlaylistItem> itemToDelete = playlistItems.stream()
-                            .filter(item -> item.getPiTId().equals(deletedSong.getTId()))
-                            .findFirst();
+                    @Override
+                    public void onDismissed(Snackbar transientBottomBar, int event) {
+                        super.onDismissed(transientBottomBar, event);
+                        if (undo) {
+                            trackList.add(oldDeleteID, deletedSong);
+                            playlistDetailAdapter.notifyItemInserted(oldDeleteID);
+                        } else {
+                            Optional<PlaylistItem> itemToDelete = playlistItems.stream()
+                                    .filter(item -> item.getPiTId().equals(deletedSong.getTId()))
+                                    .findFirst();
 
-                    itemToDelete.ifPresent(playlistItem -> playlistViewModel.deletePlaylistItem(playlistItem));
-                }
-                undo = false;
-                if (isSecondDelete) {
-                    isSecondDelete = false;
-                    removeTrack();
-                    createSnackbar();
-                }
-            }
-        }).setDuration(5000);
+                            itemToDelete.ifPresent(playlistItem -> playlistViewModel.deletePlaylistItem(playlistItem));
+                        }
+                        undo = false;
+                        if (isSecondDelete) {
+                            isSecondDelete = false;
+                            removeTrack();
+                            createSnackbar();
+                        }
+                    }
+                }).setDuration(5000);
         snackbar.show();
     }
 

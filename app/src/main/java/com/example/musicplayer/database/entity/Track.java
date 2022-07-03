@@ -1,5 +1,6 @@
 package com.example.musicplayer.database.entity;
 
+import androidx.annotation.NonNull;
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
@@ -24,6 +25,7 @@ public class Track {
     private String tLastPlayed;
 
     @ColumnInfo(name = "t_isFavourite", defaultValue = "0")
+    @NonNull
     private Integer tIsFavourite;
 
     @ColumnInfo(name = "t_album_id")
@@ -33,6 +35,7 @@ public class Track {
     private Integer tDuration;
 
     @ColumnInfo(name = "t_times_played", defaultValue = "0")
+    @NonNull
     private Integer tTimesPlayed;
 
     @ColumnInfo(name = "t_track_nr")

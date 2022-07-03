@@ -42,6 +42,8 @@ public class SideIndex {
     }
 
     public void displayIndex() {
+        sideIndex.removeAllViews();
+
         LinearLayout indexLayout = new LinearLayout(context) {
             @Override
             public boolean dispatchTouchEvent(MotionEvent ev) {
@@ -65,16 +67,8 @@ public class SideIndex {
         };
         indexLayout.setOrientation(LinearLayout.VERTICAL);
 
-        float dip = 61f;
-        Resources r = context.getResources();
-        int px = (int) TypedValue.applyDimension(
-                TypedValue.COMPLEX_UNIT_DIP,
-                dip,
-                r.getDisplayMetrics()
-        );
         int div = (int) (27 * 1.8);
-        int abs_height = context.getResources().getDisplayMetrics().heightPixels;
-        int textsize = ((abs_height - px) / (div)) / ((int) context.getResources().getDisplayMetrics().scaledDensity);
+        int textsize = (sideIndex.getHeight() / (div)) / ((int) context.getResources().getDisplayMetrics().scaledDensity);
 
         MaterialTextView textView;
         List<String> indexList = new ArrayList<>(mapIndex.keySet());

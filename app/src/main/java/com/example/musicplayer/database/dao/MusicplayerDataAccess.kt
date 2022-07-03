@@ -48,4 +48,7 @@ interface MusicplayerDataAccess {
 
     @Query("SELECT * FROM Album WHERE a_id = :albumId")
     fun getAlbumByAlbumId(albumId: Int): Flow<Album>
+
+    @Update
+    fun updateTrack(track: Track)
 }
