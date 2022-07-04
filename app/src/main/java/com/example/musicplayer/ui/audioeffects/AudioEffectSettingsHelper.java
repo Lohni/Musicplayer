@@ -1,4 +1,4 @@
-package com.example.musicplayer.ui.audioeffects.database;
+package com.example.musicplayer.ui.audioeffects;
 
 import android.media.audiofx.EnvironmentalReverb;
 

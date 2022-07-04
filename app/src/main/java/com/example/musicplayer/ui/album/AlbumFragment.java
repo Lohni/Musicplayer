@@ -1,18 +1,7 @@
 package com.example.musicplayer.ui.album;
 
-import android.Manifest;
 import android.content.Context;
-import android.graphics.Bitmap;
-import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.fragment.app.Fragment;
-import androidx.lifecycle.ViewModelProvider;
-import androidx.recyclerview.widget.GridLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-
 import android.transition.Fade;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -21,46 +10,50 @@ import android.view.ViewGroup;
 import com.example.musicplayer.R;
 import com.example.musicplayer.adapter.AlbumAdapter;
 import com.example.musicplayer.adapter.MediaOptionsAdapter;
-import com.example.musicplayer.entities.AlbumResolver;
-import com.example.musicplayer.entities.MusicResolver;
+import com.example.musicplayer.database.MusicplayerApplication;
+import com.example.musicplayer.database.dao.MusicplayerDataAccess;
+import com.example.musicplayer.database.entity.Album;
+import com.example.musicplayer.database.viewmodel.MusicplayerViewModel;
 import com.example.musicplayer.transition.AlbumDetailTransition;
-import com.example.musicplayer.utils.AlbumOptions;
-import com.example.musicplayer.utils.Permissions;
+import com.example.musicplayer.utils.NavigationControlInterface;
 
 import java.util.ArrayList;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
+import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 public class AlbumFragment extends Fragment implements AlbumAdapter.AlbumAdapterCallback, MediaOptionsAdapter.MediaOptionsAdapterListener {
 
     private RecyclerView albumList;
-    private ArrayList<AlbumResolver> albumItems = new ArrayList<>();
+    private ArrayList<Album> albumItems = new ArrayList<>();
     private RecyclerView.LayoutManager layoutManager;
-    private AlbumViewModel albumViewModel;
-    private AlbumListener albumListener;
+    private MusicplayerViewModel musicplayerViewModel;
+    private NavigationControlInterface navigationControlInterface;
 
     private int sharedElementsViewPosition = -1;
 
-    private int[] queueDest;
     public AlbumFragment() {
-        // Required empty public constructor
-    }
-
-    public interface AlbumListener {
-        void onPlayAlbumListener(int position ,ArrayList<MusicResolver> albumTrackList, boolean shuffle);
-        void onQueueAlbumListener(ArrayList<MusicResolver> albumTrackList);
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         postponeEnterTransition();
+
+        MusicplayerDataAccess mda = ((MusicplayerApplication) requireActivity().getApplication()).getDatabase().musicplayerDao();
+        musicplayerViewModel = new ViewModelProvider(this, new MusicplayerViewModel.MusicplayerViewModelFactory(mda)).get(MusicplayerViewModel.class);
     }
 
     @Override
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
-        try{
-            albumListener = (AlbumListener) context;
-        } catch (ClassCastException ignored){
+        try {
+            navigationControlInterface = (NavigationControlInterface) context;
+        } catch (ClassCastException ignored) {
 
         }
     }
@@ -73,55 +66,46 @@ public class AlbumFragment extends Fragment implements AlbumAdapter.AlbumAdapter
 
         albumList = view.findViewById(R.id.album_albumList);
 
-        layoutManager  = new GridLayoutManager(requireContext(), 2);
+        navigationControlInterface.setHomeAsUpEnabled(false);
+        navigationControlInterface.isDrawerEnabledListener(true);
+        navigationControlInterface.setToolbarTitle("Album");
+
+        layoutManager = new GridLayoutManager(requireContext(), 2);
         layoutManager.setAutoMeasureEnabled(false);
         albumList.setHasFixedSize(true);
         albumList.setNestedScrollingEnabled(false);
-        albumViewModel = new ViewModelProvider(requireActivity()).get(AlbumViewModel.class);
-        AlbumAdapter adapter = new AlbumAdapter(requireContext(), albumItems, this,this , sharedElementsViewPosition);
+
+        AlbumAdapter adapter = new AlbumAdapter(requireContext(), albumItems, this, this, sharedElementsViewPosition);
         adapter.setHasStableIds(true);
         albumList.setAdapter(adapter);
         albumList.setLayoutManager(layoutManager);
 
-        if (Permissions.permission(requireActivity(), this, Manifest.permission.READ_EXTERNAL_STORAGE)){
-            albumViewModel.getAllAlbums().observe(getViewLifecycleOwner(), albumResolvers -> {
-                albumItems.clear();
-                albumItems.addAll(albumResolvers);
-                adapter.notifyItemRangeInserted(0, albumItems.size());
-            });
-        }
+        musicplayerViewModel.getAllAlbums().observe(getViewLifecycleOwner(), albums -> {
+            albumItems.clear();
+            albumItems.addAll(albums);
+            adapter.notifyItemRangeInserted(0, albumItems.size());
+        });
 
-        return  view;
+        return view;
     }
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        //startPostponedEnterTransition();
-    }
-
-    public void setQueueDestination(int[] dest){
-        queueDest = dest;
+        startPostponedEnterTransition();
     }
 
     @Override
-    public void onLayoutClickListener(AlbumAdapter.ViewHolder holder, AlbumResolver albumResolver, int position) {
+    public void onLayoutClickListener(AlbumAdapter.ViewHolder holder, Album albumResolver, int position) {
         sharedElementsViewPosition = position;
         AlbumDetailFragment albumDetailFragment = new AlbumDetailFragment();
         albumDetailFragment.setSharedElementEnterTransition(new AlbumDetailTransition());
         albumDetailFragment.setSharedElementReturnTransition(new AlbumDetailTransition());
 
-        Bitmap coverImage = null;
+        Bundle bundle = new Bundle();
+        bundle.putInt("ALBUM_ID", albumResolver.getAId());
+        albumDetailFragment.setArguments(bundle);
 
-        try {
-            coverImage = ((BitmapDrawable)holder.albumCover.getDrawable()).getBitmap();
-        } catch (ClassCastException ignored){
-
-        }
-        albumDetailFragment.setViewTransitionValues(coverImage,
-                holder.albumName.getText().toString(), holder.albumSize.getText().toString());
-        albumDetailFragment.setAlbumResolver(albumResolver);
-        albumDetailFragment.setQueueDest(queueDest);
         albumDetailFragment.setEnterTransition(new Fade());
         setExitTransition(new Fade());
         requireActivity().getSupportFragmentManager().beginTransaction()
@@ -129,7 +113,7 @@ public class AlbumFragment extends Fragment implements AlbumAdapter.AlbumAdapter
                 .addSharedElement(holder.albumName, getResources().getString(R.string.transition_album_name))
                 .addSharedElement(holder.albumSize, getResources().getString(R.string.transition_album_size))
                 .replace(R.id.nav_host_fragment, albumDetailFragment)
-                .addToBackStack(null).commit();
+                .addToBackStack("ALBUM_FRAGMENT").commit();
     }
 
     @Override
@@ -144,25 +128,31 @@ public class AlbumFragment extends Fragment implements AlbumAdapter.AlbumAdapter
     }
 
     @Override
+    public void onResume() {
+        super.onResume();
+        postponeEnterTransition();
+    }
+
+    @Override
     public void onItemClickListener(int action, int albumPosition) {
         AlbumAdapter adapter = (AlbumAdapter) albumList.getAdapter();
         adapter.closePopupWindow((AlbumAdapter.ViewHolder) albumList.findViewHolderForAdapterPosition(albumPosition));
-        AlbumResolver resolver = adapter.getItem(albumPosition);
-        albumViewModel.getAllAlbumSongs(resolver.getAlbumId()).observe(getViewLifecycleOwner(), albumTrackList -> {
-            switch (action){
-                case AlbumOptions.OPTION_PLAY:{
-                    albumListener.onPlayAlbumListener(0, albumTrackList, false);
-                    break;
-                }
-                case AlbumOptions.OPTION_SHUFFLE:{
-                    albumListener.onPlayAlbumListener(0, albumTrackList, true);
-                    break;
-                }
-                case AlbumOptions.OPTION_QUEUE:{
-                    albumListener.onQueueAlbumListener(albumTrackList);
-                    break;
-                }
-            }
-        });
+        Album resolver = adapter.getItem(albumPosition);
+        //albumViewModel.getAllAlbumSongs(resolver.getAlbumId()).observe(getViewLifecycleOwner(), albumTrackList -> {
+        //    switch (action){
+        //        case AlbumOptions.OPTION_PLAY:{
+        //            albumListener.onPlayAlbumListener(0, albumTrackList, false);
+        //            break;
+        //        }
+        //        case AlbumOptions.OPTION_SHUFFLE:{
+        //            albumListener.onPlayAlbumListener(0, albumTrackList, true);
+        //            break;
+        //        }
+        //        case AlbumOptions.OPTION_QUEUE:{
+        //            albumListener.onQueueAlbumListener(albumTrackList);
+        //            break;
+        //        }
+        //    }
+        //});
     }
 }

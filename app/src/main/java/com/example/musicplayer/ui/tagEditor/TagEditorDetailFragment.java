@@ -20,7 +20,9 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 
 import com.example.musicplayer.R;
-import com.example.musicplayer.entities.MusicResolver;
+import com.example.musicplayer.database.MusicplayerApplication;
+import com.example.musicplayer.database.dao.MusicplayerDataAccess;
+import com.example.musicplayer.database.viewmodel.MusicplayerViewModel;
 import com.example.musicplayer.utils.NavigationControlInterface;
 import com.example.musicplayer.utils.Permissions;
 import com.example.musicplayer.utils.enums.ID3FrameId;
@@ -33,28 +35,35 @@ import com.google.android.material.textfield.TextInputEditText;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.res.ResourcesCompat;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 
 public class TagEditorDetailFragment extends Fragment {
-    private static final int PERMISSION_REQUEST_CODE = 0x03;
-    private long trackID;
     private ID3Editor id3Editor;
     private TextInputEditText title, artist, album, genre, date, trackNr, composer;
     private ImageView tagImageView;
 
     private NavigationControlInterface navigationControlInterface;
+    private MusicplayerViewModel musicplayerViewModel;
 
-    public TagEditorDetailFragment() {}
+    private Integer trackId;
+
+    public TagEditorDetailFragment() {
+    }
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
+
+        MusicplayerDataAccess mda = ((MusicplayerApplication) requireActivity().getApplication()).getDatabase().musicplayerDao();
+        musicplayerViewModel = new ViewModelProvider(this, new MusicplayerViewModel.MusicplayerViewModelFactory(mda)).get(MusicplayerViewModel.class);
+
+        trackId = getArguments().getInt("TRACK_ID");
     }
 
     @Override
@@ -80,7 +89,7 @@ public class TagEditorDetailFragment extends Fragment {
         try {
             navigationControlInterface = (NavigationControlInterface) context;
         } catch (ClassCastException e) {
-            throw new ClassCastException(context.toString() + "must implement NavigationControlInterface");
+            throw new ClassCastException(context + "must implement NavigationControlInterface");
         }
     }
 
@@ -104,10 +113,11 @@ public class TagEditorDetailFragment extends Fragment {
         navigationControlInterface.setHomeAsUpEnabled(true);
         navigationControlInterface.setHomeAsUpIndicator(R.drawable.ic_clear_black_24dp);
 
-        if (Permissions.permission(requireActivity(), this, android.Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
-            readID3Tag();
-        }
-
+        musicplayerViewModel.getTrackById(trackId).observe(getViewLifecycleOwner(), track -> {
+            if (Permissions.permission(requireActivity(), this, android.Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+                readID3Tag();
+            }
+        });
         return view;
     }
 
@@ -117,10 +127,6 @@ public class TagEditorDetailFragment extends Fragment {
         if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED && permissions[0].equals(android.Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
             readID3Tag();
         }
-    }
-
-    public void setTrack(MusicResolver track) {
-        trackID = track.getId();
     }
 
     private void setValues(ID3V4Track track) {
@@ -145,8 +151,8 @@ public class TagEditorDetailFragment extends Fragment {
     }
 
     private void readID3Tag() {
-        Uri trackUri = ContentUris.withAppendedId(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, trackID);
-        id3Editor = new ID3Editor(trackUri, requireContext(), trackID, this::setValues);
+        Uri trackUri = ContentUris.withAppendedId(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, trackId.longValue());
+        id3Editor = new ID3Editor(trackUri, requireContext(), trackId.longValue(), this::setValues);
     }
 
     private void writeTag() {
@@ -170,7 +176,7 @@ public class TagEditorDetailFragment extends Fragment {
         ID3V4Frame frame = track.getRelevantFrame(frameId);
         if (frame != null) {
             frame.setFrameData(newVal);
-        } else if (!newVal.equals("")){
+        } else if (!newVal.equals("")) {
             frame = track.createNewTextFrame(frameId, newVal);
             track.setFrame(frame);
         }

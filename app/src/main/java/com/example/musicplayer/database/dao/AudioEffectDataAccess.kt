@@ -15,8 +15,7 @@ interface AudioEffectDataAccess {
     @Query("SELECT * FROM EqualizerPreset")
     fun getAllEqualizerPresets(): Flow<List<EqualizerPreset>>
 
-    @Transaction
-    @Query("SELECT * FROM EqualizerPreset WHERE eq_active = 1")
+    @Query("SELECT * FROM EqualizerPreset WHERE eq_active = CASE WHEN (SELECT count(*) FROM EqualizerPreset where eq_active = 1) > 0 then 1 else 2 end")
     fun getActiveEqualizerPreset(): Flow<EqualizerPreset>
 
     @Update

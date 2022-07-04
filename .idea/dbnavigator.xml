@@ -2,7 +2,7 @@
 <project version="4">
   <component name="DBNavigator.Project.DataEditorManager">
     <record-view-column-sorting-type value="BY_INDEX" />
-    <value-preview-text-wrapping value="true" />
+    <value-preview-text-wrapping value="false" />
     <value-preview-pinned value="false" />
   </component>
   <component name="DBNavigator.Project.DataExportManager">
@@ -28,15 +28,15 @@
     <loaded-nodes />
   </component>
   <component name="DBNavigator.Project.DatabaseConsoleManager">
-    <connection id="fb7acd60-3f24-477d-9b49-1dcb192ede8b">
-      <console name="Connection" type="STANDARD" schema="" session="Main" />
+    <connection id="b2130599-9e7a-4e4b-a5b1-b539c70ae9d0">
+      <console name="Connection" type="STANDARD" schema="main" session="Main" />
     </connection>
   </component>
   <component name="DBNavigator.Project.DatabaseFileManager">
     <open-files />
   </component>
   <component name="DBNavigator.Project.DatabaseSessionManager">
-    <connection id="fb7acd60-3f24-477d-9b49-1dcb192ede8b" />
+    <connection id="b2130599-9e7a-4e4b-a5b1-b539c70ae9d0" />
   </component>
   <component name="DBNavigator.Project.EditorStateManager">
     <last-used-providers />
@@ -67,7 +67,7 @@
   </component>
   <component name="DBNavigator.Project.Settings">
     <connections>
-      <connection id="fb7acd60-3f24-477d-9b49-1dcb192ede8b" active="true" signed="true">
+      <connection id="b2130599-9e7a-4e4b-a5b1-b539c70ae9d0" active="true" signed="true">
         <database>
           <name value="Connection" />
           <description value="" />

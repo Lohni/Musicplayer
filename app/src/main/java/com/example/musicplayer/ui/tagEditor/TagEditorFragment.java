@@ -1,62 +1,61 @@
 package com.example.musicplayer.ui.tagEditor;
 
-import android.Manifest;
-import android.content.ContentResolver;
 import android.content.Context;
-import android.content.pm.PackageManager;
-import android.database.Cursor;
-import android.net.Uri;
-import android.nfc.Tag;
 import android.os.Bundle;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.fragment.app.Fragment;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-
-import android.provider.MediaStore;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
 
 import com.example.musicplayer.R;
 import com.example.musicplayer.adapter.TagEditorAdapter;
-import com.example.musicplayer.entities.MusicResolver;
-import com.example.musicplayer.ui.playlist.PlaylistInterface;
+import com.example.musicplayer.database.MusicplayerApplication;
+import com.example.musicplayer.database.dao.MusicplayerDataAccess;
+import com.example.musicplayer.database.entity.Track;
+import com.example.musicplayer.database.viewmodel.MusicplayerViewModel;
 import com.example.musicplayer.utils.NavigationControlInterface;
-import com.example.musicplayer.utils.Permissions;
 
 import java.util.ArrayList;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 
-public class TagEditorFragment extends Fragment {
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
+public class TagEditorFragment extends Fragment implements TagEditorInterface {
 
     private RecyclerView tagList;
     private EditText search;
 
     private TagEditorAdapter adapter;
-    private ArrayList<MusicResolver> trackList;
+    private ArrayList<Track> trackList;
 
-    private Future fetched;
     private TagEditorInterface tagEditorInterface;
     private NavigationControlInterface navigationControlInterface;
 
-    public TagEditorFragment() {}
+    private MusicplayerViewModel musicplayerViewModel;
+
+    public TagEditorFragment() {
+    }
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        MusicplayerDataAccess mda = ((MusicplayerApplication) requireActivity().getApplication()).getDatabase().musicplayerDao();
+        musicplayerViewModel = new ViewModelProvider(this, new MusicplayerViewModel.MusicplayerViewModelFactory(mda)).get(MusicplayerViewModel.class);
+    }
 
     @Override
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
         try {
             navigationControlInterface = (NavigationControlInterface) context;
-            tagEditorInterface = (TagEditorInterface) context;
-        } catch (ClassCastException e){
-            throw new ClassCastException(context.toString() + "must implement TagEditorInterface");
+            tagEditorInterface = this;
+        } catch (ClassCastException e) {
+            throw new ClassCastException(context + "must implement TagEditorInterface");
         }
     }
 
@@ -77,79 +76,29 @@ public class TagEditorFragment extends Fragment {
         tagList.setHasFixedSize(true);
         tagList.setLayoutManager(new LinearLayoutManager(requireContext()));
 
-        if (Permissions.permission(requireActivity(), this, Manifest.permission.READ_EXTERNAL_STORAGE)){
-            loadTrackList();
-        }
+        musicplayerViewModel.getAllTracks().observe(getViewLifecycleOwner(), tracks -> {
+            this.trackList.clear();
+            this.trackList.addAll(tracks);
+
+            adapter.notifyItemRangeInserted(0, tracks.size());
+        });
 
         return view;
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED && permissions[0].equals(android.Manifest.permission.READ_EXTERNAL_STORAGE)) {
-            loadTrackList();
-        }
+    public void onTrackSelectedListener(Track musicResolver) {
+        TagEditorDetailFragment tagEditorDetailFragment = new TagEditorDetailFragment();
+
+        Bundle bundle = new Bundle();
+        bundle.putInt("TRACK_ID", musicResolver.getTId());
+        tagEditorDetailFragment.setArguments(bundle);
+        getParentFragmentManager().beginTransaction().replace(R.id.nav_host_fragment, tagEditorDetailFragment).addToBackStack(null).commit();
     }
 
-    private void loadTrackList(){
-
-        ExecutorService executorService = Executors.newSingleThreadExecutor();
-        Runnable task = () -> {
-            ContentResolver contentResolver = requireContext().getContentResolver();
-            Uri musicUri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
-            Cursor musicCursor = contentResolver.query(musicUri, null, null, null, null);
-            if(musicCursor!=null && musicCursor.moveToFirst()){
-                int titleColumn = musicCursor.getColumnIndex
-                        (MediaStore.Audio.Media.TITLE);
-                int idColumn = musicCursor.getColumnIndex
-                        (MediaStore.Audio.Media._ID);
-                int artistColumn = musicCursor.getColumnIndex
-                        (MediaStore.Audio.Media.ARTIST);
-                int albumid = musicCursor.getColumnIndex(MediaStore.Audio.Media.ALBUM_ID);
-
-                ArrayList<MusicResolver> chunk = new ArrayList<>();
-
-                do {
-                    long thisalbumid = musicCursor.getLong(albumid);
-                    long thisId = musicCursor.getLong(idColumn);
-                    String thisTitle = musicCursor.getString(titleColumn);
-                    String thisArtist = musicCursor.getString(artistColumn);
-                    chunk.add(new MusicResolver(thisId, thisalbumid, thisArtist, thisTitle));
-
-                    if (chunk.size() == 20){
-
-                        if (trackList.size() > 0){
-                            int pos = trackList.size() - 1;
-                            trackList.addAll(chunk);
-                            adapter.notifyItemRangeInserted(pos,20);
-                        } else {
-                            trackList.addAll(chunk);
-                            adapter.notifyItemRangeInserted(0,20);
-                        }
-
-                        chunk.clear();
-                    }
-
-                } while (musicCursor.moveToNext());
-
-                if (chunk.size() > 0){
-                    int pos = trackList.size() - 1;
-                    trackList.addAll(chunk);
-                    adapter.notifyItemRangeInserted(pos,chunk.size());
-                    chunk.clear();
-                }
-            }
-            if(musicCursor != null){
-                musicCursor.close();
-            }
-            trackListLoaded();
-        };
-        fetched = executorService.submit(task);
+    @Override
+    public void onResume() {
+        super.onResume();
+        this.trackList.clear();
     }
-
-    private void trackListLoaded(){
-        fetched.cancel(true);
-    }
-
 }

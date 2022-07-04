@@ -12,7 +12,8 @@ class PlaylistViewModel(private val dao: PlaylistDataAccess) : ViewModel() {
 
     val allPlaylists: LiveData<List<Playlist>> = dao.getAllPlaylists().asLiveData()
 
-    val allPlaylistsWithSize: LiveData<List<PlaylistDTO>> = dao.getAllPlaylistsWithSize().asLiveData()
+    val allPlaylistsWithSize: LiveData<List<PlaylistDTO>> =
+        dao.getAllPlaylistsWithSize().asLiveData()
 
     fun getPlaylistById(playlistId: Int): LiveData<Playlist> {
         return dao.getPlaylistById(playlistId).asLiveData()
@@ -38,9 +39,15 @@ class PlaylistViewModel(private val dao: PlaylistDataAccess) : ViewModel() {
         dao.deletePlaylistItem(playlistItem)
     }
 
-    fun updatePlaylistItemList(playlistItemList: List<PlaylistItem>) = viewModelScope.launch(Dispatchers.IO) {
-        dao.updatePlaylistItemList(playlistItemList)
-    }
+    fun updatePlaylistItemList(playlistItemList: List<PlaylistItem>) =
+        viewModelScope.launch(Dispatchers.IO) {
+            dao.updatePlaylistItemList(playlistItemList)
+        }
+
+    fun insertPlaylistItems(playlistItemList: List<PlaylistItem>) =
+        viewModelScope.launch(Dispatchers.IO) {
+            dao.insertPlaylistItems(playlistItemList)
+        }
 
     class PlaylistViewModelFactory(private val dataAccess: PlaylistDataAccess) :
         ViewModelProvider.Factory {

@@ -52,7 +52,10 @@ public class PlaylistDetailAdapter extends RecyclerView.Adapter<PlaylistDetailAd
         holder.title.setText(itemList.get(position).getTTitle());
         holder.artist.setText(itemList.get(position).getTArtist());
         holder.cover.setImageDrawable(customCover);
-        holder.itemView.setOnClickListener(view -> songInterface.onSongSelectedListener(itemList.get(position)));
+        holder.itemView.setOnClickListener(view -> {
+            songInterface.onSongListCreatedListener(itemList);
+            songInterface.onSongSelectedListener(itemList.get(position));
+        });
 
         holder.itemView.setOnLongClickListener(view -> {
             onStartDragListener.onStartDrag(holder);

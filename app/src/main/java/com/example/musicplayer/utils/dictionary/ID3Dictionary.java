@@ -7,20 +7,18 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 
-import androidx.fragment.app.FragmentTransaction;
-
 public class ID3Dictionary {
     public static final HashMap<String, ID3FrameId> FRAME_ID;
     public static final HashMap<Integer, Charset> ENCODING_CHARSET;
 
     public static ID3FrameId getFrameIdFromHeader(ID3V4FrameHeader header) {
-        if (FRAME_ID.containsKey(header.FRAME_ID)){
+        if (FRAME_ID.containsKey(header.FRAME_ID)) {
             return FRAME_ID.get(header.FRAME_ID);
         }
         return ID3FrameId.DEFAULT;
     }
 
-    public static Charset getEncodingCharset(int encoding){
+    public static Charset getEncodingCharset(int encoding) {
         return ENCODING_CHARSET.containsKey(encoding) ?
                 ENCODING_CHARSET.get(encoding) :
                 ENCODING_CHARSET.get(0);

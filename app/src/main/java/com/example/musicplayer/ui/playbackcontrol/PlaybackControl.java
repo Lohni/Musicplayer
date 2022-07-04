@@ -4,6 +4,7 @@ import android.Manifest;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.graphics.drawable.AnimatedVectorDrawable;
 import android.os.Bundle;
@@ -16,9 +17,9 @@ import android.widget.TextView;
 
 import com.example.musicplayer.R;
 import com.example.musicplayer.inter.PlaybackControlInterface;
+import com.example.musicplayer.inter.ServiceTriggerInterface;
 import com.example.musicplayer.ui.views.AudioVisualizerView;
 import com.example.musicplayer.ui.views.PlaybackControlSeekbar;
-import com.example.musicplayer.inter.ServiceTriggerInterface;
 
 import androidx.annotation.NonNull;
 import androidx.constraintlayout.widget.ConstraintLayout;
@@ -43,12 +44,14 @@ public class PlaybackControl extends Fragment {
     private ServiceTriggerInterface serviceTriggerInterface;
 
     public PlaybackControl() {
-        // Required empty public constructor
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        IntentFilter intentFilter = new IntentFilter(getResources().getString(R.string.playback_control_values));
+        requireActivity().registerReceiver(receiver, intentFilter);
         serviceTriggerInterface.triggerCurrentDataBroadcast();
     }
 
@@ -59,14 +62,13 @@ public class PlaybackControl extends Fragment {
             playbackControlInterface = (PlaybackControlInterface) context;
             serviceTriggerInterface = (ServiceTriggerInterface) context;
         } catch (ClassCastException e) {
-            throw new ClassCastException(context.toString() + "must implement PlaybackControlInterface");
+            throw new ClassCastException(context + "must implement PlaybackControlInterface");
         }
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
         view = inflater.inflate(R.layout.fragment_playback_control, container, false);
 
         control_title = view.findViewById(R.id.control_title);
@@ -122,6 +124,7 @@ public class PlaybackControl extends Fragment {
     @Override
     public void onDetach() {
         audioVisualizerView.release();
+        requireActivity().unregisterReceiver(receiver);
         super.onDetach();
     }
 
@@ -139,21 +142,20 @@ public class PlaybackControl extends Fragment {
     }
 
     public void updateQueueCount(int newCount) {
-        if (newCount > 0) queue_count.setVisibility(View.VISIBLE);
-        else queue_count.setVisibility(View.GONE);
-        animateCount(queueCount, newCount);
-        queueCount = newCount;
+        if (queueCount != newCount) {
+            if (newCount > 0) queue_count.setVisibility(View.VISIBLE);
+            else queue_count.setVisibility(View.GONE);
+            animateCount(queueCount, newCount);
+            queueCount = newCount;
+        }
     }
 
     private void animateCount(int old, int newCount) {
-        if (old == newCount) {
-            return;
-        }
         int dur = 500 / Math.abs(old - newCount);
         if (old < newCount) {
             new Thread(() -> {
                 int i = old;
-                while (i < newCount) {
+                while (i <= newCount) {
                     try {
                         Thread.sleep(dur);
                     } catch (InterruptedException e) {
@@ -170,7 +172,7 @@ public class PlaybackControl extends Fragment {
         } else {
             new Thread(() -> {
                 int i = old;
-                while (i > newCount) {
+                while (i >= newCount) {
                     try {
                         Thread.sleep(dur);
                     } catch (InterruptedException e) {
@@ -196,12 +198,6 @@ public class PlaybackControl extends Fragment {
     public void setAudioSessionID(int audioSessionID) {
         permission();
         audioVisualizerView.initVisualizer(audioSessionID);
-    }
-
-    public int[] getQueueScreenLocation() {
-        int[] loc = new int[2];
-        if (queue != null) queue.getLocationOnScreen(loc);
-        return loc;
     }
 
     public void setControlButton(boolean isOnPause) {
@@ -233,7 +229,7 @@ public class PlaybackControl extends Fragment {
         ActivityCompat.requestPermissions(requireActivity(), new String[]{Manifest.permission.RECORD_AUDIO}, PERMISSION_REQUEST_CODE);
     }
 
-    private BroadcastReceiver receiver = new BroadcastReceiver() {
+    private final BroadcastReceiver receiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             Bundle bundle = intent.getExtras();
@@ -243,7 +239,8 @@ public class PlaybackControl extends Fragment {
 
             setAudioSessionID(bundle.getInt("SESSION_ID"));
             setControlButton(bundle.getBoolean("ISONPAUSE"));
-            updateSeekbar(bundle.getInt("CURRENT_POSITION"));
+
+            updateQueueCount(bundle.getInt("QUEUE_SIZE"));
         }
     };
 }

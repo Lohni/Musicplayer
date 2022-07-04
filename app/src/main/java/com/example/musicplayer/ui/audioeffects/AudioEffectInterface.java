@@ -2,17 +2,14 @@ package com.example.musicplayer.ui.audioeffects;
 
 import android.media.audiofx.EnvironmentalReverb;
 
-import com.example.musicplayer.database.entity.EqualizerPreset;
-
 public interface AudioEffectInterface {
-    void onEnvironmentalReverbChanged(EnvironmentalReverb.Settings settings);
-    void onEnvironmentalReverbStatusChanged(boolean state);
-    void onEqualizerChanged(EqualizerPreset equalizerPreset);
+    void onEnvironmentalReverbChanged(EnvironmentalReverb.Settings settings, boolean status);
+
     void onEqualizerStatusChanged(boolean state);
-    void onBassBoostChanged(int strength);
-    void onBassBoostStatusChanged(boolean state);
-    void onVirtualizerChanged(int strength);
-    void onVirtualizerStatusChanged(boolean state);
-    void onLoudnessEnhancerChanged(int strength);
-    void onLoudnessEnhancerStatusChanged(boolean state);
+
+    void onBassBoostChanged(int strength, boolean state);
+
+    void onVirtualizerChanged(int strength, boolean state);
+
+    void onLoudnessEnhancerChanged(int strength, boolean state);
 }

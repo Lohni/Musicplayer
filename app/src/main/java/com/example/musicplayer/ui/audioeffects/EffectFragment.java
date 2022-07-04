@@ -23,7 +23,6 @@ public class EffectFragment extends Fragment {
     private boolean bassBoostEnabled, virtualizerEnabled, loudnessEnhancerEnabled;
 
     public EffectFragment() {
-        // Required empty public constructor
     }
 
     @Override
@@ -78,28 +77,25 @@ public class EffectFragment extends Fragment {
         });
 
         bassBoost.setOnControlKnobActionUpListener(() -> {
-            audioEffectInterface.onBassBoostChanged(bassBoostStrength);
+            audioEffectInterface.onBassBoostChanged(bassBoostStrength, bassBoost.isEnabled());
         });
         virtualizer.setOnControlKnobActionUpListener(() -> {
-            audioEffectInterface.onVirtualizerChanged(virtualizerStrength);
+            audioEffectInterface.onVirtualizerChanged(virtualizerStrength, virtualizer.isEnabled());
         });
         loudnessEnhancer.setOnControlKnobActionUpListener(() -> {
-            audioEffectInterface.onLoudnessEnhancerChanged(loudnessEnhancerStrength);
+            audioEffectInterface.onLoudnessEnhancerChanged(loudnessEnhancerStrength, loudnessEnhancer.isEnabled());
         });
 
         bassBoostSwitch.setOnCheckedChangeListener((compoundButton, b) -> {
-            bassBoostEnabled = b;
-            audioEffectInterface.onBassBoostStatusChanged(b);
+            audioEffectInterface.onBassBoostChanged(bassBoostStrength, b);
             bassBoost.isEnabled(b);
         });
         virtualizerSwitch.setOnCheckedChangeListener((compoundButton, b) -> {
-            virtualizerEnabled = b;
-            audioEffectInterface.onVirtualizerStatusChanged(b);
+            audioEffectInterface.onVirtualizerChanged(virtualizerStrength, b);
             virtualizer.isEnabled(b);
         });
         loudnessEnhancerSwitch.setOnCheckedChangeListener((compoundButton, b) -> {
-            loudnessEnhancerEnabled = b;
-            audioEffectInterface.onLoudnessEnhancerStatusChanged(b);
+            audioEffectInterface.onLoudnessEnhancerChanged(loudnessEnhancerStrength, b);
             loudnessEnhancer.isEnabled(b);
         });
     }

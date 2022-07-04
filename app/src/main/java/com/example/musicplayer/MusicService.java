@@ -43,7 +43,6 @@ import com.example.musicplayer.utils.images.BitmapColorExtractor;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Random;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -76,8 +75,6 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
     private final int NOTIFICATION_ID = 123456;
     private int bitmapWidth, bitmapHeight;
 
-    private boolean isOnPause = false;
-
     //return service instance
     public class MusicBinder extends Binder {
         public MusicService getServiceInstance() {
@@ -94,7 +91,6 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
 
     @Override
     public boolean onUnbind(Intent intent) {
-        isOnPause = true;
         player.stop();
         player.release();
         environmentalReverb.release();
@@ -108,7 +104,6 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
     @Override
     public void onDestroy() {
         super.onDestroy();
-        isOnPause = true;
         if (player != null) player.release();
         if (environmentalReverb != null) environmentalReverb.release();
         if (equalizer != null) equalizer.release();
@@ -156,6 +151,7 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
             mmr.setDataSource(this, trackUri);
             byte[] thumbnail = mmr.getEmbeddedPicture();
             mmr.release();
+
             Bitmap coverImage;
             if (thumbnail != null) {
                 coverImage = Bitmap.createScaledBitmap(BitmapFactory.decodeByteArray(thumbnail, 0, thumbnail.length), bitmapWidth, bitmapHeight, false);
@@ -178,8 +174,6 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
             createNotification();
         };
 
-        //metadataCompat = new MediaMetadataCompat.Builder().build();
-
         mediaSession = new MediaSessionCompat(getApplicationContext(), "MUSICPLAYER_MEDIASESSION");
         mediaSession.setCallback(new MediaSessionCompat.Callback() {
 
@@ -194,7 +188,7 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
                         }
                         MEDIA_BUTTON_DOWN_COUNT++;
                         if (MEDIA_BUTTON_DOWN_COUNT < 2) {
-                            if (isOnPause) {
+                            if (!player.isPlaying()) {
                                 resume();
                             } else {
                                 pause();
@@ -229,11 +223,9 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
         }
     };
 
-    // MediaPlayer Functions
     @Override
     public void onPrepared(MediaPlayer mediaPlayer) {
         sendCurrentStateToPlaybackControl();
-        //sendBroadcast(new Intent().setAction(getString(R.string.intent_mediaplayer_play)));
         handler.post(createMetadataRunnable);
         resume();
     }
@@ -241,7 +233,6 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
     @Override
     public boolean onError(MediaPlayer mediaPlayer, int i, int i1) {
         player.reset();
-        isOnPause = false;
         return true;
     }
 
@@ -250,12 +241,10 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
         skip();
     }
 
-    //Playback functions
     public void setSonglist(ArrayList<Track> list) {
         this.songlist.clear();
         this.songlist.addAll(list);
         sendCurrentStateToPlaybackControl();
-        //sendBroadcast(new Intent().setAction("MUSICPLAYER_QUEUE_SIZE").putExtra("MUSICPLAYER_QUEUE_SIZE", songlist.size()));
     }
 
     public void addToSonglist(ArrayList<Track> toAdd) {
@@ -270,7 +259,7 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
             this.songlist.addAll(list);
         }
         currSongIndex = 0;
-        playbackBehaviour = PlaybackBehaviour.PlaybackBehaviourState.PLAY_ORDER;
+        playbackBehaviour = PlaybackBehaviour.PlaybackBehaviourState.REPEAT_LIST;
         play();
     }
 
@@ -299,32 +288,41 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
                     break;
                 case REPEAT_SONG:
                     break;
-                case PLAY_ORDER:
-                    currSongIndex++;
-                    break;
             }
             play();
         }
     }
 
     public void skipPrevious() {
-
+        if (songlist.size() > 0) {
+            switch (playbackBehaviour) {
+                case SHUFFLE:
+                    Random random = new Random();
+                    currSongIndex = random.nextInt(songlist.size());
+                    break;
+                case REPEAT_LIST:
+                    currSongIndex--;
+                    if (currSongIndex < 0) {
+                        currSongIndex = songlist.size() - 1;
+                    }
+                    break;
+                case REPEAT_SONG:
+                    break;
+            }
+            play();
+        }
     }
 
     public void pause() {
         if (player.isPlaying()) {
-            isOnPause = true;
             player.pause();
             sendCurrentStateToPlaybackControl();
-            //sendBroadcast(new Intent().setAction(getString(R.string.music_service_action_pause)));
         }
     }
 
     public void resume() {
-        isOnPause = false;
         player.start();
         sendCurrentStateToPlaybackControl();
-        //sendBroadcast(new Intent().setAction(getString(R.string.music_service_action_resume)));
     }
 
     public void setSong(Track track) {
@@ -361,16 +359,8 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
         else return null;
     }
 
-    public int getCurrentSongIndex() {
-        return currSongIndex;
-    }
-
-    public int getQueueSize() {
-        return songlist.size();
-    }
-
     public int getDuration() {
-        if (player.isPlaying() || isOnPause) return player.getDuration();
+        if (player.isPlaying()) return player.getDuration();
         else return 0;
     }
 
@@ -382,16 +372,16 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
         playbackBehaviour = newState;
     }
 
-    public PlaybackBehaviour.PlaybackBehaviourState getPlaybackBehaviour() {
-        return playbackBehaviour;
-    }
-
     public int getSessionId() {
         return player.getAudioSessionId();
     }
 
     public void shuffle() {
         skip();
+    }
+
+    public boolean isPlaying() {
+        return player.isPlaying();
     }
 
     /*
@@ -411,7 +401,9 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
     }
 
     public void setReverbEnabled(boolean status) {
-        environmentalReverb.setEnabled(status);
+        if (environmentalReverb.getEnabled() != status) {
+            environmentalReverb.setEnabled(status);
+        }
     }
 
     public short[] getEqualizerBandLevels() {
@@ -444,7 +436,9 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
     }
 
     public void setEqualizerEnabled(boolean status) {
-        equalizer.setEnabled(status);
+        if (equalizer.getEnabled() != status) {
+            equalizer.setEnabled(status);
+        }
     }
 
     public EqualizerProperties getEqualizerProperties() {
@@ -486,7 +480,6 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
     public short getVirtualizerStrength() {
         return virtualizer.getRoundedStrength();
     }
-
 
     public boolean isLoudnessEnhancerEnabled() {
         return loudnessEnhancer.getEnabled();
@@ -538,7 +531,7 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
     private void setNotificationValues(RemoteViews remoteViews) {
         remoteViews.setTextViewText(R.id.notification_title, songlist.get(currSongIndex).getTTitle());
         remoteViews.setTextViewText(R.id.notification_artist, songlist.get(currSongIndex).getTArtist());
-        if (isOnPause) {
+        if (player.isPlaying()) {
             remoteViews.setImageViewResource(R.id.notification_pause, R.drawable.ic_play_arrow_black_24dp);
         } else {
             remoteViews.setImageViewResource(R.id.notification_pause, R.drawable.ic_pause_black_24dp);
@@ -564,13 +557,11 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
 
         remoteViews.setOnClickPendingIntent(R.id.notification_skip, PendingIntent.getBroadcast(this, 0, nextIntent, 0));
 
-        if (isOnPause) {
+        if (player.isPlaying()) {
             remoteViews.setOnClickPendingIntent(R.id.notification_pause, PendingIntent.getBroadcast(this, 1, playIntent, 0));
         } else {
             remoteViews.setOnClickPendingIntent(R.id.notification_pause, PendingIntent.getBroadcast(this, 2, pauseIntent, 0));
         }
-
-
     }
 
     private void createNotificationChannel() {
@@ -582,8 +573,7 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
             int importance = NotificationManager.IMPORTANCE_DEFAULT;
             NotificationChannel channel = new NotificationChannel("MUSICSERVICE_CHANNEL", name, importance);
             channel.setDescription(description);
-            // Register the channel with the system; you can't change the importance
-            // or other notification behaviors after this
+
             NotificationManager notificationManager = getSystemService(NotificationManager.class);
             notificationManager.createNotificationChannel(channel);
         }
@@ -596,18 +586,17 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
 
             bundle.putString("TITLE", currSong.getTTitle());
             bundle.putString("ARTIST", currSong.getTArtist());
-            bundle.putLong("DURATION", currSong.getTDuration());
+            bundle.putInt("DURATION", currSong.getTDuration());
             bundle.putLong("ID", currSong.getTId());
 
             bundle.putInt("QUEUE_SIZE", songlist.size());
             bundle.putInt("QUEUE_INDEX", currSongIndex);
-            bundle.putBoolean("ISONPAUSE", isOnPause);
+            bundle.putBoolean("ISONPAUSE", !player.isPlaying());
             bundle.putInt("BEHAVIOUR_STATE", PlaybackBehaviour.getStateAsInteger(playbackBehaviour));
             bundle.putInt("SESSION_ID", getSessionId());
             bundle.putInt("CURRENT_POSITION", getCurrentPosition());
 
             sendBroadcast(new Intent().setAction(getString(R.string.playback_control_values)).putExtras(bundle));
         }
-
     }
 }   
