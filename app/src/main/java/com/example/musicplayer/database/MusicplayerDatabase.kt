@@ -14,8 +14,11 @@ import kotlinx.coroutines.CoroutineScope
 /**
  * @author Andreas Lohninger
  */
-@Database(entities = [AdvancedReverbPreset::class, EqualizerPreset::class, Playlist::class,
-    PlaylistItem::class, PlaylistTagMtc::class, Tag::class, Track::class, TrackTagMtc::class, Album::class], version = 1)
+@Database(
+    entities = [AdvancedReverbPreset::class, EqualizerPreset::class, Playlist::class, PlaylistItem::class,
+        PlaylistTagMtc::class, Tag::class, Track::class, TrackTagMtc::class, Album::class,
+        AlbumPlayed::class, PlaylistPlayed::class, TrackPlayed::class], version = 1
+)
 abstract class MusicplayerDatabase : RoomDatabase() {
     abstract fun playlistDao(): PlaylistDataAccess
     abstract fun musicplayerDao(): MusicplayerDataAccess
@@ -23,7 +26,7 @@ abstract class MusicplayerDatabase : RoomDatabase() {
 
     private class MusicplayerDatabaseCallback(
         private val scope: CoroutineScope
-    )   : RoomDatabase.Callback() {
+    ) : RoomDatabase.Callback() {
         override fun onCreate(db: SupportSQLiteDatabase) {
             super.onCreate(db)
         }
@@ -38,7 +41,8 @@ abstract class MusicplayerDatabase : RoomDatabase() {
                 val instance = Room.databaseBuilder(
                     context.applicationContext,
                     MusicplayerDatabase::class.java,
-                    "musicplayer.db")
+                    "musicplayer.db"
+                )
                     .createFromAsset("database/musicplayer.db")
                     .addCallback(MusicplayerDatabaseCallback(scope))
                     .build()

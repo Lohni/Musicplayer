@@ -4,6 +4,7 @@ import androidx.lifecycle.*
 import com.example.musicplayer.database.dao.MusicplayerDataAccess
 import com.example.musicplayer.database.entity.Album
 import com.example.musicplayer.database.entity.Track
+import com.example.musicplayer.database.entity.TrackPlayed
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlin.streams.toList
@@ -47,6 +48,10 @@ class MusicplayerViewModel(private val dao: MusicplayerDataAccess) : ViewModel()
 
     fun updateTrack(track: Track) = viewModelScope.launch(Dispatchers.IO) {
         dao.updateTrack(track)
+    }
+
+    fun insertTrackPlayed(trackPlayed: TrackPlayed) = viewModelScope.launch(Dispatchers.IO) {
+        dao.insertTrackPlayed(trackPlayed)
     }
 
     class MusicplayerViewModelFactory(private val dataAccess: MusicplayerDataAccess) :

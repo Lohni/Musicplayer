@@ -226,6 +226,7 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
     @Override
     public void onPrepared(MediaPlayer mediaPlayer) {
         sendCurrentStateToPlaybackControl();
+        sendPreparedSong();
         handler.post(createMetadataRunnable);
         resume();
     }
@@ -351,6 +352,7 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
             }
             player.prepareAsync();
             sendCurrentStateToPlaybackControl();
+
         }
     }
 
@@ -597,6 +599,15 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
             bundle.putInt("CURRENT_POSITION", getCurrentPosition());
 
             sendBroadcast(new Intent().setAction(getString(R.string.playback_control_values)).putExtras(bundle));
+        }
+    }
+
+    private void sendPreparedSong() {
+        Track currSong = getCurrSong();
+        if (currSong != null) {
+            Bundle bundle = new Bundle();
+            bundle.putInt("ID", currSong.getTId());
+            sendBroadcast(new Intent().setAction(getString(R.string.musicservice_song_prepared)).putExtras(bundle));
         }
     }
 }   

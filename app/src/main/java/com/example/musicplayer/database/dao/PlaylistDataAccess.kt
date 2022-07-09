@@ -4,6 +4,7 @@ import androidx.room.*
 import androidx.room.OnConflictStrategy.IGNORE
 import com.example.musicplayer.database.entity.Playlist
 import com.example.musicplayer.database.entity.PlaylistItem
+import com.example.musicplayer.database.entity.PlaylistPlayed
 import com.example.musicplayer.ui.playlist.PlaylistDTO
 import kotlinx.coroutines.flow.Flow
 
@@ -44,4 +45,7 @@ interface PlaylistDataAccess {
 
     @Query("SELECT *, count(pi_p_id) as 'size' FROM Playlist LEFT JOIN PlaylistItem ON p_id = pi_p_id GROUP BY p_id")
     fun getAllPlaylistsWithSize(): Flow<List<PlaylistDTO>>
+
+    @Insert
+    fun insertPlaylistPlayed(playlistPlayed: PlaylistPlayed)
 }

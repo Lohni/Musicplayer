@@ -19,8 +19,8 @@ import com.example.musicplayer.database.MusicplayerApplication;
 import com.example.musicplayer.database.dao.MusicplayerDataAccess;
 import com.example.musicplayer.database.entity.Track;
 import com.example.musicplayer.database.viewmodel.MusicplayerViewModel;
-import com.example.musicplayer.inter.PlaybackControlInterface;
-import com.example.musicplayer.inter.SongInterface;
+import com.example.musicplayer.interfaces.PlaybackControlInterface;
+import com.example.musicplayer.interfaces.SongInterface;
 import com.example.musicplayer.utils.NavigationControlInterface;
 import com.example.musicplayer.utils.enums.PlaybackBehaviour;
 

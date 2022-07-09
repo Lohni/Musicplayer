@@ -28,9 +28,6 @@ public class Album {
     @ColumnInfo(name = "a_is_favourite", defaultValue = "0")
     private Integer aIsFavourite;
 
-    @ColumnInfo(name = "a_times_played", defaultValue = "0")
-    private Integer aTimesPlayed;
-
     @ColumnInfo(name = "a_num_songs")
     private Integer aNumSongs;
 
@@ -80,14 +77,6 @@ public class Album {
 
     public void setAIsFavourite(Integer aIsFavourite) {
         this.aIsFavourite = aIsFavourite;
-    }
-
-    public Integer getATimesPlayed() {
-        return aTimesPlayed;
-    }
-
-    public void setATimesPlayed(Integer aTimesPlayed) {
-        this.aTimesPlayed = aTimesPlayed;
     }
 
     public Integer getANumSongs() {

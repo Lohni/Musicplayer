@@ -1,16 +1,14 @@
 package com.example.musicplayer.database.entity;
 
-import java.util.List;
-import java.util.Set;
-
+import androidx.annotation.NonNull;
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
-import androidx.room.Relation;
 
 @Entity
 public class Playlist {
 
+    @NonNull
     @ColumnInfo(name = "p_id")
     @PrimaryKey(autoGenerate = true)
     private Integer pId;
@@ -18,16 +16,10 @@ public class Playlist {
     @ColumnInfo(name = "p_name")
     private String pName;
 
-    @ColumnInfo(name = "p_last_played")
-    private String pLastPlayed;
-
-    @ColumnInfo(name = "p_times_played")
-    private Integer pTimesPlayed;
-
     @ColumnInfo(name = "p_custom_ordinal")
     private Integer pCustomOrdinal;
 
-    @ColumnInfo(name = "p_favourite")
+    @ColumnInfo(name = "p_favourite", defaultValue = "0")
     private Integer pFavourite;
 
     public Integer getPId() {
@@ -44,22 +36,6 @@ public class Playlist {
 
     public void setPName(String pName) {
         this.pName = pName;
-    }
-
-    public String getPLastPlayed() {
-        return pLastPlayed;
-    }
-
-    public void setPLastPlayed(String pLastPlayed) {
-        this.pLastPlayed = pLastPlayed;
-    }
-
-    public Integer getPTimesPlayed() {
-        return pTimesPlayed;
-    }
-
-    public void setPTimesPlayed(Integer pTimesPlayed) {
-        this.pTimesPlayed = pTimesPlayed;
     }
 
     public Integer getPCustomOrdinal() {

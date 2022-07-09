@@ -1,4 +1,4 @@
-package com.example.musicplayer.inter
+package com.example.musicplayer.interfaces
 
 interface ServiceTriggerInterface {
     fun triggerCurrentDataBroadcast()

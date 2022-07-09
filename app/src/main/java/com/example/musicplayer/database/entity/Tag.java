@@ -1,5 +1,6 @@
 package com.example.musicplayer.database.entity;
 
+import androidx.annotation.NonNull;
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
@@ -7,6 +8,7 @@ import androidx.room.PrimaryKey;
 @Entity
 public class Tag {
 
+    @NonNull
     @ColumnInfo(name = "tag_id")
     @PrimaryKey(autoGenerate = true)
     private Integer tagId;

@@ -4,6 +4,7 @@ import androidx.lifecycle.*
 import com.example.musicplayer.database.dao.PlaylistDataAccess
 import com.example.musicplayer.database.entity.Playlist
 import com.example.musicplayer.database.entity.PlaylistItem
+import com.example.musicplayer.database.entity.PlaylistPlayed
 import com.example.musicplayer.ui.playlist.PlaylistDTO
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -48,6 +49,10 @@ class PlaylistViewModel(private val dao: PlaylistDataAccess) : ViewModel() {
         viewModelScope.launch(Dispatchers.IO) {
             dao.insertPlaylistItems(playlistItemList)
         }
+
+    fun insertPlaylistPlayed(playlistPlayed: PlaylistPlayed) = viewModelScope.launch(Dispatchers.IO) {
+        dao.insertPlaylistPlayed(playlistPlayed)
+    }
 
     class PlaylistViewModelFactory(private val dataAccess: PlaylistDataAccess) :
         ViewModelProvider.Factory {

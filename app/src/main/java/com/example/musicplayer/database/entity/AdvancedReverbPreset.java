@@ -1,5 +1,6 @@
 package com.example.musicplayer.database.entity;
 
+import androidx.annotation.NonNull;
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
@@ -9,12 +10,13 @@ public class AdvancedReverbPreset {
 
     @ColumnInfo(name = "ar_id")
     @PrimaryKey(autoGenerate = true)
+    @NonNull
     private Integer arId;
 
     @ColumnInfo(name = "ar_name")
     private String arName;
 
-    @ColumnInfo(name = "ar_active")
+    @ColumnInfo(name = "ar_active", defaultValue = "0")
     private Integer arActive;
 
     @ColumnInfo(name = "ar_master_level")

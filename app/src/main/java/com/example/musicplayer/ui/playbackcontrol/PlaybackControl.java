@@ -16,8 +16,8 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 
 import com.example.musicplayer.R;
-import com.example.musicplayer.inter.PlaybackControlInterface;
-import com.example.musicplayer.inter.ServiceTriggerInterface;
+import com.example.musicplayer.interfaces.PlaybackControlInterface;
+import com.example.musicplayer.interfaces.ServiceTriggerInterface;
 import com.example.musicplayer.ui.views.AudioVisualizerView;
 import com.example.musicplayer.ui.views.PlaybackControlSeekbar;
 

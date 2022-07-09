@@ -8,7 +8,7 @@ import android.os.IBinder;
 
 import com.example.musicplayer.MusicService;
 import com.example.musicplayer.R;
-import com.example.musicplayer.inter.ServiceConnectionListener;
+import com.example.musicplayer.interfaces.ServiceConnectionListener;
 
 public class MusicplayerServiceConnection implements ServiceConnection {
 

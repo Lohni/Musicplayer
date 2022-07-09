@@ -1,4 +1,4 @@
-package com.example.musicplayer.inter
+package com.example.musicplayer.interfaces
 
 import com.example.musicplayer.database.entity.Track
 

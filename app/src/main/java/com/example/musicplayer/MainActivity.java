@@ -2,9 +2,11 @@ package com.example.musicplayer;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.content.BroadcastReceiver;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
@@ -13,6 +15,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.provider.MediaStore;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 
@@ -23,12 +26,13 @@ import com.example.musicplayer.database.dao.AudioEffectDataAccess;
 import com.example.musicplayer.database.dao.MusicplayerDataAccess;
 import com.example.musicplayer.database.entity.Album;
 import com.example.musicplayer.database.entity.Track;
+import com.example.musicplayer.database.entity.TrackPlayed;
 import com.example.musicplayer.database.viewmodel.AudioEffectViewModel;
 import com.example.musicplayer.database.viewmodel.MusicplayerViewModel;
-import com.example.musicplayer.inter.PlaybackControlInterface;
-import com.example.musicplayer.inter.ServiceConnectionListener;
-import com.example.musicplayer.inter.ServiceTriggerInterface;
-import com.example.musicplayer.inter.SongInterface;
+import com.example.musicplayer.interfaces.PlaybackControlInterface;
+import com.example.musicplayer.interfaces.ServiceConnectionListener;
+import com.example.musicplayer.interfaces.ServiceTriggerInterface;
+import com.example.musicplayer.interfaces.SongInterface;
 import com.example.musicplayer.ui.album.AlbumFragment;
 import com.example.musicplayer.ui.audioeffects.AudioEffectInterface;
 import com.example.musicplayer.ui.audioeffects.AudioEffectSettingsHelper;
@@ -39,6 +43,7 @@ import com.example.musicplayer.ui.playbackcontrol.PlaybackControl;
 import com.example.musicplayer.ui.playlist.PlaylistFragment;
 import com.example.musicplayer.ui.songlist.SongList;
 import com.example.musicplayer.ui.tagEditor.TagEditorFragment;
+import com.example.musicplayer.utils.GeneralUtils;
 import com.example.musicplayer.utils.NavigationControlInterface;
 import com.example.musicplayer.utils.Permissions;
 import com.example.musicplayer.utils.enums.PlaybackBehaviour;
@@ -79,6 +84,8 @@ public class MainActivity extends AppCompatActivity implements PlaybackControlIn
     private final Handler mHandler = new Handler();
 
     private Fragment selectedDrawerFragment;
+
+    private BroadcastReceiver receiver;
 
     @SuppressLint("ClickableViewAccessibility")
     @Override
@@ -145,6 +152,20 @@ public class MainActivity extends AppCompatActivity implements PlaybackControlIn
         });
 
         navigationView.setNavigationItemSelectedListener(this);
+
+        IntentFilter intentFilter = new IntentFilter(getResources().getString(R.string.musicservice_song_prepared));
+        receiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                Bundle bundle = intent.getExtras();
+                int trackId = bundle.getInt("ID");
+                TrackPlayed trackPlayed = new TrackPlayed();
+                trackPlayed.setTpTId(trackId);
+                trackPlayed.setTpPlayed(GeneralUtils.getCurrentUTCTimestamp());
+                musicplayerViewModel.insertTrackPlayed(trackPlayed);
+            }
+        };
+        registerReceiver(receiver, intentFilter);
     }
 
     private void updateTracks() {
@@ -195,7 +216,6 @@ public class MainActivity extends AppCompatActivity implements PlaybackControlIn
                 if (optionalTrackDB.isPresent()) {
                     Track trackDB = optionalTrackDB.get();
                     track.setTIsFavourite(trackDB.getTIsFavourite());
-                    track.setTTimesPlayed(trackDB.getTTimesPlayed());
                 }
 
                 toInsert.add(track);
@@ -314,6 +334,7 @@ public class MainActivity extends AppCompatActivity implements PlaybackControlIn
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        unregisterReceiver(receiver);
         unbindService(serviceConnection);
     }
 

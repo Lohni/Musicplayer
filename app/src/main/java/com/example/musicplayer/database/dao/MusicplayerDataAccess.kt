@@ -4,6 +4,7 @@ import androidx.room.*
 import androidx.room.OnConflictStrategy.REPLACE
 import com.example.musicplayer.database.entity.Album
 import com.example.musicplayer.database.entity.Track
+import com.example.musicplayer.database.entity.TrackPlayed
 import kotlinx.coroutines.flow.Flow
 
 
@@ -51,4 +52,7 @@ interface MusicplayerDataAccess {
 
     @Update
     fun updateTrack(track: Track)
+
+    @Insert
+    fun insertTrackPlayed(trackPlayed: TrackPlayed)
 }
