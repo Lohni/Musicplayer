@@ -35,7 +35,6 @@
     <color name="colorDarkOnTertiaryContainer">#D6E2FF</color>
 
     <!-- Error colors -->
-
     <color name="colorDarkBackground">#191C1C</color>
     <color name="colorDarkOnBackground">#E0E3E3</color>
     <color name="colorDarkSurface">#191C1C</color>
@@ -45,6 +44,26 @@
     <color name="colorDarkOutline">#899394</color>
 
     <color name="colorDarkSurface8Percent">#1D2B2C</color>
+    
+    <!-- New scheme -->
+    <color name="NewcolorBackgroundSecondard">#49454F</color>
+    <color name="NewcolorBackgroundPrimary">#1C1B1F</color>
+    <color name="NewcolorText">#CAC4D0</color>
+    <color name="NewcolorStroke">#938F99</color>
+
+    <color name="NewcolorSecondaryContainer">#4A4458</color>
+    <color name="NewcolorOnSecondaryContainer">#E8DEF8</color>
+
+    <color name="NewcolorSecondary">#CCC2DC</color>
+    <color name="NewcolorOnSecondary">#332D41</color>
+
+    <color name="NewcolorTeritaryContainer">#492532</color>
+    <color name="NewcolorOnTeritaryContainer">#FFD8E4</color>
+
+    <color name="NewcolorPrimary">#D0BCFF</color>
+    <color name="NewcolorSurface">#1C1B1F</color>
+    <color name="NewcolorSurfaceVariant">#49454F</color>
+    <color name="NewcolorOnSurfaceVariant">#CAC4D0</color>
 </resources>
 
 

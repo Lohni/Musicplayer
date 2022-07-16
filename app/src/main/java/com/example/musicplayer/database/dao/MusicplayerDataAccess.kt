@@ -2,6 +2,7 @@ package com.example.musicplayer.database.dao
 
 import androidx.room.*
 import androidx.room.OnConflictStrategy.REPLACE
+import com.example.musicplayer.database.dto.TrackDTO
 import com.example.musicplayer.database.entity.Album
 import com.example.musicplayer.database.entity.Track
 import com.example.musicplayer.database.entity.TrackPlayed
@@ -55,4 +56,16 @@ interface MusicplayerDataAccess {
 
     @Insert
     fun insertTrackPlayed(trackPlayed: TrackPlayed)
+
+    @Transaction
+    @Query("SELECT t.*, null FROM Track t JOIN TrackPlayed tp on tp_t_id = t.t_id GROUP BY t.t_id ORDER BY max(datetime(tp_played)) DESC")
+    fun getTracksByLastPlayed(): Flow<List<TrackDTO>>
+
+    @Transaction
+    @Query("SELECT t.*, count(t.t_id) FROM Track t JOIN TrackPlayed on tp_t_id = t.t_id GROUP BY t.t_id ORDER BY count(t.t_id) DESC")
+    fun getTracksByTimesPlayed(): Flow<List<TrackDTO>>
+
+    @Transaction
+    @Query("SELECT *, null FROM Track WHERE t_isFavourite = 1")
+    fun getFavouriteTracks(): Flow<List<TrackDTO>>
 }

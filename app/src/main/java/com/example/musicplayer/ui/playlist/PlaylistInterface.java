@@ -5,5 +5,5 @@ import android.view.View;
 import com.example.musicplayer.database.entity.Playlist;
 
 public interface PlaylistInterface {
-    void OnClickListener(Playlist playlist, View view);
+    void OnClickListener(Integer playlistId, View view);
 }

@@ -83,4 +83,9 @@
     <string name="preference_loudnessenhancer_isenabled">PREFERENCE_LOUDNESSENHANCER_ISENABLED</string>
     <string name="preference_loudnessenhancer_strength">PREFERENCE_LOUDNESSENHANCER_STRENGTH</string>
 
+    <string name="preference_dashboard_first_list_type">PREFERENCE_DASHBOARD_FIRST_LIST_TYPE</string>
+    <string name="preference_dashboard_second_list_type">PREFERENCE_DASHBOARD_SECOND_LIST_TYPE</string>
+
+    <string name="preference_dashboard_first_list_filter">PREFERENCE_DASHBOARD_FIRST_LIST_FILTER</string>
+    <string name="preference_dashboard_second_list_filter">PREFERENCE_DASHBOARD_SECOND_LIST_FILTER</string>
 </resources>

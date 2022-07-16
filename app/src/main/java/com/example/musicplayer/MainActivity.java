@@ -15,7 +15,6 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.provider.MediaStore;
-import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 
@@ -116,9 +115,6 @@ public class MainActivity extends AppCompatActivity implements PlaybackControlIn
 
         Intent service = new Intent(this, MusicService.class);
 
-        loadPlayControl();
-        loadDashboard(new DashboardFragment());
-
         if (Permissions.permission(this, Manifest.permission.RECORD_AUDIO)) {
             bindService(service, serviceConnection, Context.BIND_AUTO_CREATE);
             startService(service);
@@ -172,6 +168,8 @@ public class MainActivity extends AppCompatActivity implements PlaybackControlIn
         musicplayerViewModel.getAllTracks().observe(this, tracks -> {
             compareTracksToDatabase((ArrayList<Track>) tracks);
             musicplayerViewModel.getAllTracks().removeObservers(this);
+            loadPlayControl();
+            loadDashboard(new DashboardFragment());
         });
     }
 

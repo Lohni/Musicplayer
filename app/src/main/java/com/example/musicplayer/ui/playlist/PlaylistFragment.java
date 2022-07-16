@@ -11,7 +11,6 @@ import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.text.InputType;
 import android.util.DisplayMetrics;
-import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -23,10 +22,9 @@ import android.widget.EditText;
 import com.example.musicplayer.R;
 import com.example.musicplayer.adapter.PlaylistAdapter;
 import com.example.musicplayer.database.MusicplayerApplication;
-import com.example.musicplayer.database.dao.AudioEffectDataAccess;
 import com.example.musicplayer.database.dao.PlaylistDataAccess;
+import com.example.musicplayer.database.dto.PlaylistDTO;
 import com.example.musicplayer.database.entity.Playlist;
-import com.example.musicplayer.database.viewmodel.AudioEffectViewModel;
 import com.example.musicplayer.database.viewmodel.PlaylistViewModel;
 import com.example.musicplayer.ui.other.CustomDividerItemDecoration;
 import com.example.musicplayer.ui.playlistdetail.PlaylistDetail;
@@ -37,8 +35,7 @@ import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.transition.MaterialElevationScale;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -65,6 +62,8 @@ public class PlaylistFragment extends Fragment implements PlaylistInterface {
     private ArrayList<PlaylistDTO> playlistWithSize;
     private PlaylistViewModel playlistViewModel;
 
+    private boolean isInsert = false, isStartup = true;
+
     public PlaylistFragment() {
     }
 
@@ -86,8 +85,7 @@ public class PlaylistFragment extends Fragment implements PlaylistInterface {
         super.onAttach(context);
 
         navigationControlInterface = (NavigationControlInterface) context;
-        playlistInterface = (PlaylistInterface) this;
-
+        playlistInterface = this;
     }
 
     @Override
@@ -109,8 +107,8 @@ public class PlaylistFragment extends Fragment implements PlaylistInterface {
                 Playlist playlist = new Playlist();
                 playlist.setPName(input.getText().toString());
                 playlist.setPCustomOrdinal(playlistWithSize.size());
-
                 playlistViewModel.insertPlaylist(playlist);
+                isInsert = true;
             });
             builder.setNegativeButton("Cancel", (dialogInterface, i) -> dialogInterface.cancel());
             builder.show();
@@ -132,7 +130,13 @@ public class PlaylistFragment extends Fragment implements PlaylistInterface {
             playlistWithSize.clear();
             playlistWithSize.addAll(list);
 
-            mAdapter.notifyItemRangeInserted(0, list.size());
+            if (isInsert) {
+                mAdapter.notifyItemInserted(list.size() - 1);
+                isInsert = false;
+            } else if (isStartup) {
+                mAdapter.notifyItemRangeInserted(0, list.size());
+                isStartup = false;
+            }
         });
 
         navigationControlInterface.setHomeAsUpEnabled(false);
@@ -237,11 +241,11 @@ public class PlaylistFragment extends Fragment implements PlaylistInterface {
     }
 
     @Override
-    public void OnClickListener(Playlist playlist, View view) {
+    public void OnClickListener(Integer playlistID, View view) {
         PlaylistDetail playlistDetailFragment = new PlaylistDetail();
 
         Bundle bundle = new Bundle();
-        bundle.putInt("PLAYLIST_ID", playlist.getPId());
+        bundle.putInt("PLAYLIST_ID", playlistID);
         playlistDetailFragment.setArguments(bundle);
 
         getParentFragmentManager().beginTransaction()
