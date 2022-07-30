@@ -61,4 +61,10 @@ interface PlaylistDataAccess {
     @Transaction
     @Query("SELECT *, null FROM Playlist WHERE p_favourite = 1 ORDER BY p_custom_ordinal ASC")
     fun getFavouritePlaylists(): Flow<List<PlaylistDTO>>
+
+    @Query("SELECT * FROM PlaylistPlayed ORDER BY pp_played DESC LIMIT 1")
+    fun getLastPlaylistPlayed(): Flow<PlaylistPlayed>
+
+    @Update
+    fun updatePlaylistPlayed(playlistPlayed: PlaylistPlayed)
 }

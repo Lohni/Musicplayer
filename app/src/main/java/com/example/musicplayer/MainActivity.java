@@ -23,11 +23,14 @@ import com.example.musicplayer.core.MusicplayerServiceConnection;
 import com.example.musicplayer.database.MusicplayerApplication;
 import com.example.musicplayer.database.dao.AudioEffectDataAccess;
 import com.example.musicplayer.database.dao.MusicplayerDataAccess;
+import com.example.musicplayer.database.dao.PlaylistDataAccess;
+import com.example.musicplayer.database.dto.TrackDTO;
 import com.example.musicplayer.database.entity.Album;
 import com.example.musicplayer.database.entity.Track;
 import com.example.musicplayer.database.entity.TrackPlayed;
 import com.example.musicplayer.database.viewmodel.AudioEffectViewModel;
 import com.example.musicplayer.database.viewmodel.MusicplayerViewModel;
+import com.example.musicplayer.database.viewmodel.PlaylistViewModel;
 import com.example.musicplayer.interfaces.PlaybackControlInterface;
 import com.example.musicplayer.interfaces.ServiceConnectionListener;
 import com.example.musicplayer.interfaces.ServiceTriggerInterface;
@@ -45,12 +48,15 @@ import com.example.musicplayer.ui.tagEditor.TagEditorFragment;
 import com.example.musicplayer.utils.GeneralUtils;
 import com.example.musicplayer.utils.NavigationControlInterface;
 import com.example.musicplayer.utils.Permissions;
+import com.example.musicplayer.utils.enums.DashboardEnumDeserializer;
+import com.example.musicplayer.utils.enums.DashboardListType;
 import com.example.musicplayer.utils.enums.PlaybackBehaviour;
 import com.google.android.material.navigation.NavigationView;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Observable;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -64,6 +70,7 @@ import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
+import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 
 public class MainActivity extends AppCompatActivity implements PlaybackControlInterface, NavigationView.OnNavigationItemSelectedListener,
@@ -74,6 +81,7 @@ public class MainActivity extends AppCompatActivity implements PlaybackControlIn
 
     private AudioEffectViewModel audioEffectViewModel;
     private MusicplayerViewModel musicplayerViewModel;
+    private PlaylistViewModel playlistViewModel;
 
     private MotionLayout motionLayout;
     private ActionBarDrawerToggle toggle;
@@ -81,10 +89,8 @@ public class MainActivity extends AppCompatActivity implements PlaybackControlIn
     private MusicplayerServiceConnection serviceConnection;
 
     private final Handler mHandler = new Handler();
-
     private Fragment selectedDrawerFragment;
-
-    private BroadcastReceiver receiver;
+    private boolean destroyed = false;
 
     @SuppressLint("ClickableViewAccessibility")
     @Override
@@ -112,6 +118,8 @@ public class MainActivity extends AppCompatActivity implements PlaybackControlIn
         audioEffectViewModel = new ViewModelProvider(this, new AudioEffectViewModel.AudioEffectViewModelFactory(aod)).get(AudioEffectViewModel.class);
         MusicplayerDataAccess mda = ((MusicplayerApplication) getApplication()).getDatabase().musicplayerDao();
         musicplayerViewModel = new ViewModelProvider(this, new MusicplayerViewModel.MusicplayerViewModelFactory(mda)).get(MusicplayerViewModel.class);
+        PlaylistDataAccess pda = ((MusicplayerApplication) getApplication()).getDatabase().playlistDao();
+        playlistViewModel = new ViewModelProvider(this, new PlaylistViewModel.PlaylistViewModelFactory(pda)).get(PlaylistViewModel.class);
 
         Intent service = new Intent(this, MusicService.class);
 
@@ -148,20 +156,6 @@ public class MainActivity extends AppCompatActivity implements PlaybackControlIn
         });
 
         navigationView.setNavigationItemSelectedListener(this);
-
-        IntentFilter intentFilter = new IntentFilter(getResources().getString(R.string.musicservice_song_prepared));
-        receiver = new BroadcastReceiver() {
-            @Override
-            public void onReceive(Context context, Intent intent) {
-                Bundle bundle = intent.getExtras();
-                int trackId = bundle.getInt("ID");
-                TrackPlayed trackPlayed = new TrackPlayed();
-                trackPlayed.setTpTId(trackId);
-                trackPlayed.setTpPlayed(GeneralUtils.getCurrentUTCTimestamp());
-                musicplayerViewModel.insertTrackPlayed(trackPlayed);
-            }
-        };
-        registerReceiver(receiver, intentFilter);
     }
 
     private void updateTracks() {
@@ -209,6 +203,7 @@ public class MainActivity extends AppCompatActivity implements PlaybackControlIn
                 track.setTArtist(thisArtist);
                 track.setTDuration((int) duration);
                 track.setTTrackNr(trackId);
+                track.setTIsFavourite(0);
 
                 Optional<Track> optionalTrackDB = tracks.stream().filter(trackDB -> trackDB.getTId().equals((int) thisId)).findFirst();
                 if (optionalTrackDB.isPresent()) {
@@ -330,9 +325,14 @@ public class MainActivity extends AppCompatActivity implements PlaybackControlIn
     }
 
     @Override
+    protected void onPause() {
+        musicService.sendOnSongCompleted();
+        super.onPause();
+    }
+
+    @Override
     protected void onDestroy() {
         super.onDestroy();
-        unregisterReceiver(receiver);
         unbindService(serviceConnection);
     }
 
@@ -525,8 +525,8 @@ public class MainActivity extends AppCompatActivity implements PlaybackControlIn
     }
 
     @Override
-    public void onSongListCreatedListener(@NonNull List<? extends Track> trackList) {
-        musicService.setSonglist((ArrayList<Track>) trackList);
+    public void onSongListCreatedListener(@NonNull List<? extends Track> trackList, DashboardListType dashboardListType) {
+        musicService.setSonglist((ArrayList<Track>) trackList, dashboardListType);
     }
 
     @Override

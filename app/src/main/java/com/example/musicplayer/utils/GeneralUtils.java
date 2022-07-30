@@ -11,6 +11,10 @@ public class GeneralUtils {
         return LocalDateTime.now(ZoneOffset.UTC).format(DB_TIMESTAMP);
     }
 
+    public static String getTimestampWeekBefor() {
+        return LocalDateTime.now(ZoneOffset.UTC).minusWeeks(1L).format(DB_TIMESTAMP);
+    }
+
     public static String convertTime(int duration) {
         float d = (float) duration / (1000 * 60);
         int min = (int) d;
@@ -20,5 +24,11 @@ public class GeneralUtils {
         if (min < 10) minute = "0" + minute;
         if (sec < 10) second = "0" + second;
         return minute + ":" + second;
+    }
+
+    public static String convertTimeWithUnit(int duration) {
+
+
+        return "";
     }
 }

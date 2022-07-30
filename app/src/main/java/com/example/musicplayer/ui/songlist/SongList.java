@@ -21,6 +21,7 @@ import com.example.musicplayer.interfaces.SongInterface;
 import com.example.musicplayer.ui.views.SideIndex;
 import com.example.musicplayer.utils.GeneralUtils;
 import com.example.musicplayer.utils.NavigationControlInterface;
+import com.example.musicplayer.utils.enums.DashboardListType;
 import com.example.musicplayer.utils.enums.PlaybackBehaviour;
 import com.google.android.material.button.MaterialButton;
 
@@ -111,7 +112,7 @@ public class SongList extends Fragment implements SongListInterface {
 
         shuffle.setOnClickListener(view -> {
             if (!isSonglistSet) {
-                songInterface.onSongListCreatedListener(songList);
+                songInterface.onSongListCreatedListener(songList, DashboardListType.TRACK);
                 isSonglistSet = true;
             }
 
@@ -125,7 +126,7 @@ public class SongList extends Fragment implements SongListInterface {
     @Override
     public void OnSongSelectedListener(int index) {
         if (!isSonglistSet) {
-            songInterface.onSongListCreatedListener(songList);
+            songInterface.onSongListCreatedListener(songList, DashboardListType.TRACK);
             isSonglistSet = true;
         }
 

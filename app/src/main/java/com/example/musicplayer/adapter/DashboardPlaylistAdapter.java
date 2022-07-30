@@ -79,7 +79,6 @@ public class DashboardPlaylistAdapter extends RecyclerView.Adapter<DashboardPlay
             imageView = itemView.findViewById(R.id.dashboard_list_item_image);
             title = itemView.findViewById(R.id.dashboard_list_item_title);
             subTitle = itemView.findViewById(R.id.dashboard_list_item_subtitle);
-            imageHolder = itemView.findViewById(R.id.dashboard_list_item_image_holder);
             root = itemView.findViewById(R.id.dashboard_list_item_holder);
         }
     }

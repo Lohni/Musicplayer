@@ -27,6 +27,7 @@
     <string name="intent_mediaplayer_play">MUSICPLAYER_PLAY</string>
     <string name="playback_control_values">PLAYBACK_CONTROL_VALUES</string>
     <string name="musicservice_song_prepared">MUSICSERVICE_SONG_PREPARED</string>
+    <string name="musicservice_song_ended">MUSICSERVICE_SONG_ENDED</string>
 
     <!-- Notification Intent-Tags-->
     <string name="notification_action_pause">NOTIFICATION_ACTION_PAUSE</string>

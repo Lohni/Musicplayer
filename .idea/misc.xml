@@ -24,9 +24,9 @@
         <entry key="..\:/MusicPlayer/app/src/main/res/layout/chip_with_image.xml" value="1.1320755124389186" />
         <entry key="..\:/MusicPlayer/app/src/main/res/layout/chip_without_image.xml" value="1.3584906149267022" />
         <entry key="..\:/MusicPlayer/app/src/main/res/layout/content_main.xml" value="0.14" />
-        <entry key="..\:/MusicPlayer/app/src/main/res/layout/dashboard.xml" value="0.4528302049755674" />
+        <entry key="..\:/MusicPlayer/app/src/main/res/layout/dashboard.xml" value="0.16768916155419222" />
         <entry key="..\:/MusicPlayer/app/src/main/res/layout/dashboard_list_edit_dialog.xml" value="0.6067924746672604" />
-        <entry key="..\:/MusicPlayer/app/src/main/res/layout/dashboard_list_item.xml" value="0.2988679352838745" />
+        <entry key="..\:/MusicPlayer/app/src/main/res/layout/dashboard_list_item.xml" value="0.2642241379310345" />
         <entry key="..\:/MusicPlayer/app/src/main/res/layout/equalizer_chip_layout.xml" value="0.4828125" />
         <entry key="..\:/MusicPlayer/app/src/main/res/layout/fragment_album.xml" value="0.4828125" />
         <entry key="..\:/MusicPlayer/app/src/main/res/layout/fragment_album_detail.xml" value="0.22327898550724637" />
@@ -34,7 +34,7 @@
         <entry key="..\:/MusicPlayer/app/src/main/res/layout/fragment_equalizer.xml" value="0.348731884057971" />
         <entry key="..\:/MusicPlayer/app/src/main/res/layout/fragment_equalizer_view_pager.xml" value="0.348731884057971" />
         <entry key="..\:/MusicPlayer/app/src/main/res/layout/fragment_expanded_playback_control.xml" value="0.2988679352838745" />
-        <entry key="..\:/MusicPlayer/app/src/main/res/layout/fragment_playback_control.xml" value="0.17831813576494426" />
+        <entry key="..\:/MusicPlayer/app/src/main/res/layout/fragment_playback_control.xml" value="0.4528302049755674" />
         <entry key="..\:/MusicPlayer/app/src/main/res/layout/fragment_playlist.xml" value="0.4828125" />
         <entry key="..\:/MusicPlayer/app/src/main/res/layout/fragment_playlist_detail_add.xml" value="0.4528302049755674" />
         <entry key="..\:/MusicPlayer/app/src/main/res/layout/fragment_reverb.xml" value="0.33" />

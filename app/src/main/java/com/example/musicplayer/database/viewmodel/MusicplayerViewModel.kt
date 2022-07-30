@@ -2,10 +2,12 @@ package com.example.musicplayer.database.viewmodel
 
 import androidx.lifecycle.*
 import com.example.musicplayer.database.dao.MusicplayerDataAccess
+import com.example.musicplayer.database.dto.StatisticDTO
 import com.example.musicplayer.database.dto.TrackDTO
 import com.example.musicplayer.database.entity.Album
 import com.example.musicplayer.database.entity.Track
 import com.example.musicplayer.database.entity.TrackPlayed
+import com.example.musicplayer.utils.GeneralUtils
 import com.example.musicplayer.utils.enums.DashboardFilterType
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -18,6 +20,8 @@ class MusicplayerViewModel(private val dao: MusicplayerDataAccess) : ViewModel()
     val lastPlayedTracks: LiveData<List<TrackDTO>> = dao.getTracksByLastPlayed().asLiveData()
     val favouriteTracks: LiveData<List<TrackDTO>> = dao.getFavouriteTracks().asLiveData()
     val mostPlayedTracks: LiveData<List<TrackDTO>> = dao.getTracksByTimesPlayed().asLiveData()
+
+    val lastTrackPlayed: LiveData<TrackPlayed> = dao.getLastTrackPlayed().asLiveData()
 
     fun getTracksByIdsOrderByPlaylistItemOrdinal(playlistId: Int): LiveData<List<Track>> {
         return dao.getTracksByIdsOrderByPlaylistItemOrdinal(playlistId).asLiveData()
@@ -61,9 +65,17 @@ class MusicplayerViewModel(private val dao: MusicplayerDataAccess) : ViewModel()
     fun getTrackListByFilter(filterType: DashboardFilterType): LiveData<List<TrackDTO>> {
         return when (filterType) {
             DashboardFilterType.FAVOURITE -> favouriteTracks
-            DashboardFilterType.TIMES_PLAYED -> lastPlayedTracks
+            DashboardFilterType.TIMES_PLAYED -> mostPlayedTracks
             else -> lastPlayedTracks
         }
+    }
+
+    fun getAllTrackPlayedInDaySteps(): LiveData<List<StatisticDTO>> {
+        return dao.getAllTrackPlayedInDaySteps(GeneralUtils.getTimestampWeekBefor()).asLiveData()
+    }
+
+    fun updateTrackPlayed(trackPlayed: TrackPlayed) = viewModelScope.launch(Dispatchers.IO) {
+        dao.updateTrackPlayed(trackPlayed)
     }
 
     class MusicplayerViewModelFactory(private val dataAccess: MusicplayerDataAccess) :

@@ -38,6 +38,7 @@ import com.example.musicplayer.interfaces.SongInterface;
 import com.example.musicplayer.ui.other.CustomDividerItemDecoration;
 import com.example.musicplayer.utils.GeneralUtils;
 import com.example.musicplayer.utils.NavigationControlInterface;
+import com.example.musicplayer.utils.enums.DashboardListType;
 import com.example.musicplayer.utils.enums.PlaybackBehaviour;
 import com.google.android.material.snackbar.BaseTransientBottomBar;
 import com.google.android.material.snackbar.Snackbar;
@@ -383,7 +384,7 @@ public class PlaylistDetail extends Fragment implements OnStartDragListener, Pla
 
     @Override
     public void onAdapterItemClickListener(int position) {
-        songInterface.onSongListCreatedListener(trackList);
+        songInterface.onSongListCreatedListener(trackList, DashboardListType.PLAYLIST);
         songInterface.onSongSelectedListener(trackList.get(position));
         onPlaylistPlayed();
     }
@@ -392,6 +393,7 @@ public class PlaylistDetail extends Fragment implements OnStartDragListener, Pla
         PlaylistPlayed playlistPlayed = new PlaylistPlayed();
         playlistPlayed.setPpPId(playlist.getPId());
         playlistPlayed.setPpPlayed(GeneralUtils.getCurrentUTCTimestamp());
+        playlistPlayed.setPpTimePlayed(0L);
         playlistViewModel.insertPlaylistPlayed(playlistPlayed);
     }
 }

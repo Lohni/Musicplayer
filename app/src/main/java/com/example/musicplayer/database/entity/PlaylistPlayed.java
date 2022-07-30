@@ -16,6 +16,10 @@ public class PlaylistPlayed {
     private String ppPlayed;
 
     @NonNull
+    @ColumnInfo(name = "pp_time_played")
+    private Long ppTimePlayed;
+
+    @NonNull
     public Integer getPpPId() {
         return ppPId;
     }
@@ -31,5 +35,14 @@ public class PlaylistPlayed {
 
     public void setPpPlayed(@NonNull String ppPlayed) {
         this.ppPlayed = ppPlayed;
+    }
+
+    @NonNull
+    public Long getPpTimePlayed() {
+        return ppTimePlayed;
+    }
+
+    public void setPpTimePlayed(@NonNull Long ppTimePlayed) {
+        this.ppTimePlayed = ppTimePlayed;
     }
 }

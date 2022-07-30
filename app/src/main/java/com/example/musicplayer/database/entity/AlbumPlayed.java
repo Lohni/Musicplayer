@@ -16,6 +16,10 @@ public class AlbumPlayed {
     private String apPlayed;
 
     @NonNull
+    @ColumnInfo(name = "ap_time_played")
+    private Long apTimePlayed;
+
+    @NonNull
     public Integer getApAId() {
         return apAId;
     }
@@ -31,5 +35,14 @@ public class AlbumPlayed {
 
     public void setApPlayed(@NonNull String apPlayed) {
         this.apPlayed = apPlayed;
+    }
+
+    @NonNull
+    public Long getApTimePlayed() {
+        return apTimePlayed;
+    }
+
+    public void setApTimePlayed(@NonNull Long apTimePlayed) {
+        this.apTimePlayed = apTimePlayed;
     }
 }

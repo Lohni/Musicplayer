@@ -22,8 +22,6 @@ public class ImageTransformUtil {
         return rbd;
     }
 
-
-
     public static float convertDpToPixel(float dp, Resources resources) {
         return dp * ((float) resources.getDisplayMetrics().densityDpi / DisplayMetrics.DENSITY_DEFAULT);
     }

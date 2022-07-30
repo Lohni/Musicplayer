@@ -64,6 +64,14 @@ class PlaylistViewModel(private val dao: PlaylistDataAccess) : ViewModel() {
         }
     }
 
+    fun getLastPlaylistPlayed(): LiveData<PlaylistPlayed> {
+        return dao.getLastPlaylistPlayed().asLiveData()
+    }
+
+    fun updatePlaylistPlayed(playlistPlayed: PlaylistPlayed) = viewModelScope.launch(Dispatchers.IO) {
+        dao.updatePlaylistPlayed(playlistPlayed)
+    }
+
     class PlaylistViewModelFactory(private val dataAccess: PlaylistDataAccess) :
         ViewModelProvider.Factory {
         override fun <T : ViewModel> create(modelClass: Class<T>): T {

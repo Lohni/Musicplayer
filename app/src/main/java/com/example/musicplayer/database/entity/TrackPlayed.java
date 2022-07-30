@@ -16,6 +16,10 @@ public class TrackPlayed {
     private String tpPlayed;
 
     @NonNull
+    @ColumnInfo(name = "tp_time_played")
+    private Long tpTimePlayed;
+
+    @NonNull
     public Integer getTpTId() {
         return tpTId;
     }
@@ -31,5 +35,14 @@ public class TrackPlayed {
 
     public void setTpPlayed(@NonNull String tpPlayed) {
         this.tpPlayed = tpPlayed;
+    }
+
+    @NonNull
+    public Long getTpTimePlayed() {
+        return tpTimePlayed;
+    }
+
+    public void setTpTimePlayed(@NonNull Long tpTimePlayed) {
+        this.tpTimePlayed = tpTimePlayed;
     }
 }

@@ -9,8 +9,7 @@
     android:background="@drawable/shuffle_ripple"
     android:layout_marginEnd="8dp"
     android:focusable="true"
-    android:clickable="true"
-    app:layout_constraintDimensionRatio="W,3:2">
+    android:clickable="true">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="0dp"
@@ -20,64 +19,63 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
+        <FrameLayout
+            android:id="@+id/dashboard_list_item_image"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:background="@drawable/background_button_secondary"
+            android:backgroundTint="@color/NewcolorTeritaryContainer"
+            app:layout_constraintDimensionRatio="1"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
         <TextView
             android:id="@+id/dashboard_list_item_title"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
+            android:layout_marginTop="4dp"
             android:textColor="@color/NewcolorText"
             android:textSize="16sp"
             android:maxLines="1"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/dashboard_list_item_image_holder" />
+            app:layout_constraintTop_toBottomOf="@id/dashboard_list_item_image" />
 
         <TextView
             android:id="@+id/dashboard_list_item_subtitle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
+            android:layout_marginBottom="8dp"
             android:textColor="@color/NewcolorText"
             android:textSize="14sp"
             android:maxLines="1"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/dashboard_list_item_title" />
+            app:layout_constraintTop_toBottomOf="@id/dashboard_list_item_title"
+            app:layout_constraintBottom_toBottomOf="parent"/>
 
-        <androidx.constraintlayout.widget.ConstraintLayout
-            android:id="@+id/dashboard_list_item_image_holder"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
+        <FrameLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="8dp"
+            android:layout_marginBottom="4dp"
             android:background="@drawable/background_button_secondary"
             android:backgroundTint="@color/NewcolorBackgroundPrimary"
-            app:layout_constraintDimensionRatio="1"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent">
+            app:layout_constraintBottom_toBottomOf="@id/dashboard_list_item_image">
 
-            <ImageView
-                android:id="@+id/dashboard_list_item_image"
-                android:layout_width="0dp"
-                android:layout_height="0dp"
-                app:layout_constraintBottom_toBottomOf="@id/dashboard_guideline_bottom"
-                app:layout_constraintDimensionRatio="1"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="@id/dashboard_guideline_top" />
-
-            <androidx.constraintlayout.widget.Guideline
-                android:id="@+id/dashboard_guideline_bottom"
-                android:layout_width="match_parent"
+            <TextView
+                android:id="@+id/dashboard_list_item_desc"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                app:layout_constraintGuide_percent="0.85" />
-
-            <androidx.constraintlayout.widget.Guideline
-                android:id="@+id/dashboard_guideline_top"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                app:layout_constraintGuide_percent="0.15" />
-        </androidx.constraintlayout.widget.ConstraintLayout>
+                android:layout_gravity="center"
+                android:layout_marginStart="6dp"
+                android:layout_marginEnd="6dp"
+                android:layout_marginBottom="0.5dp"
+                android:layout_marginTop="1dp"
+                android:textColor="@color/NewcolorText"
+                android:textSize="14sp"/>
+        </FrameLayout>
     </androidx.constraintlayout.widget.ConstraintLayout>
-
-
 </androidx.constraintlayout.widget.ConstraintLayout>

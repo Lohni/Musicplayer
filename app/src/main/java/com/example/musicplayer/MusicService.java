@@ -34,9 +34,11 @@ import android.util.Log;
 import android.view.KeyEvent;
 import android.widget.RemoteViews;
 
+import com.example.musicplayer.core.SystemBroadcastReceiver;
 import com.example.musicplayer.database.entity.EqualizerPreset;
 import com.example.musicplayer.database.entity.Track;
 import com.example.musicplayer.ui.audioeffects.EqualizerProperties;
+import com.example.musicplayer.utils.enums.DashboardListType;
 import com.example.musicplayer.utils.enums.PlaybackBehaviour;
 import com.example.musicplayer.utils.images.BitmapColorExtractor;
 
@@ -53,6 +55,7 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
     private final ArrayList<Track> songlist = new ArrayList<>();
     private int currSongIndex;
     private PlaybackBehaviour.PlaybackBehaviourState playbackBehaviour = PlaybackBehaviour.PlaybackBehaviourState.REPEAT_LIST;
+    private DashboardListType currentListType;
 
     private MediaPlayer player;
     private final IBinder mBinder = new MusicBinder();
@@ -242,9 +245,11 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
         skip();
     }
 
-    public void setSonglist(ArrayList<Track> list) {
+    public void setSonglist(ArrayList<Track> list, DashboardListType dashboardListType) {
+        sendOnSongCompleted();
         this.songlist.clear();
         this.songlist.addAll(list);
+        currentListType = dashboardListType;
         sendCurrentStateToPlaybackControl();
     }
 
@@ -253,29 +258,9 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
         sendCurrentStateToPlaybackControl();
     }
 
-    public void playNext(ArrayList<Track> list) {
-        if (songlist.size() > 0) {
-            this.songlist.addAll(0, list);
-        } else {
-            this.songlist.addAll(list);
-        }
-        currSongIndex = 0;
-        playbackBehaviour = PlaybackBehaviour.PlaybackBehaviourState.REPEAT_LIST;
-        play();
-    }
-
-    public void playNext(Track song) {
-        if (songlist.size() > 0) {
-            this.songlist.add(0, song);
-        } else {
-            this.songlist.add(song);
-        }
-        currSongIndex = 0;
-        play();
-    }
-
     public void skip() {
         if (songlist.size() > 0) {
+            sendOnSongCompleted();
             switch (playbackBehaviour) {
                 case SHUFFLE:
                     Random random = new Random();
@@ -296,6 +281,7 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
 
     public void skipPrevious() {
         if (songlist.size() > 0) {
+            sendOnSongCompleted();
             switch (playbackBehaviour) {
                 case SHUFFLE:
                     Random random = new Random();
@@ -327,6 +313,10 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
     }
 
     public void setSong(Track track) {
+        if (player.isPlaying()) {
+            sendOnSongCompleted();
+        }
+
         for (int i = 0; i < songlist.size(); i++) {
             if (songlist.get(i).getTId().equals(track.getTId())) {
                 currSongIndex = i;
@@ -352,7 +342,6 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
             }
             player.prepareAsync();
             sendCurrentStateToPlaybackControl();
-
         }
     }
 
@@ -517,7 +506,7 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
                 .setOngoing(true)
                 .setColorized(true)
                 .setContentInfo("Test")
-                .setContentIntent(PendingIntent.getActivity(this, 0, new Intent(this, MainActivity.class), 0))
+                .setContentIntent(PendingIntent.getActivity(this, 0, new Intent(this, MainActivity.class), PendingIntent.FLAG_IMMUTABLE))
                 .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
                 .setLargeIcon(metadataCompat.getBitmap(MediaMetadataCompat.METADATA_KEY_ALBUM_ART))
                 .setShowWhen(false)
@@ -557,12 +546,12 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
         Intent playIntent = new Intent();
         playIntent.setAction(getString(R.string.notification_action_play));
 
-        remoteViews.setOnClickPendingIntent(R.id.notification_skip, PendingIntent.getBroadcast(this, 0, nextIntent, 0));
+        remoteViews.setOnClickPendingIntent(R.id.notification_skip, PendingIntent.getBroadcast(this, 0, nextIntent, PendingIntent.FLAG_IMMUTABLE));
 
         if (player.isPlaying()) {
-            remoteViews.setOnClickPendingIntent(R.id.notification_pause, PendingIntent.getBroadcast(this, 1, playIntent, 0));
+            remoteViews.setOnClickPendingIntent(R.id.notification_pause, PendingIntent.getBroadcast(this, 1, playIntent, PendingIntent.FLAG_IMMUTABLE));
         } else {
-            remoteViews.setOnClickPendingIntent(R.id.notification_pause, PendingIntent.getBroadcast(this, 2, pauseIntent, 0));
+            remoteViews.setOnClickPendingIntent(R.id.notification_pause, PendingIntent.getBroadcast(this, 2, pauseIntent, PendingIntent.FLAG_IMMUTABLE));
         }
     }
 
@@ -607,7 +596,26 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
         if (currSong != null) {
             Bundle bundle = new Bundle();
             bundle.putInt("ID", currSong.getTId());
-            sendBroadcast(new Intent().setAction(getString(R.string.musicservice_song_prepared)).putExtras(bundle));
+            sendBroadcast(new Intent(this, SystemBroadcastReceiver.class).setAction(getString(R.string.musicservice_song_prepared)).putExtras(bundle));
         }
     }
-}   
+
+    public void sendOnSongCompleted() {
+        Bundle bundle = getOnSongCompletedBundle();
+        if (bundle != null) {
+            sendBroadcast(new Intent(this, SystemBroadcastReceiver.class).setAction(getString(R.string.musicservice_song_ended)).putExtras(bundle));
+        }
+    }
+
+    private Bundle getOnSongCompletedBundle() {
+        Track completedSong = getCurrSong();
+        if (completedSong != null) {
+            Bundle bundle = new Bundle();
+            bundle.putInt("ID", completedSong.getTId());
+            bundle.putInt("TYPE", currentListType.getTypeId());
+            bundle.putLong("TIME_PLAYED", getCurrentPosition());
+            return bundle;
+        }
+        return null;
+    }
+}

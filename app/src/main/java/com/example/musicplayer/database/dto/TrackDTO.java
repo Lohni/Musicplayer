@@ -10,9 +10,9 @@ public class TrackDTO {
     private Track track;
 
     @ColumnInfo(name = "size")
-    private Integer size;
+    private String size;
 
-    public TrackDTO(Track track, Integer size) {
+    public TrackDTO(Track track, String size) {
         this.track = track;
         this.size = size;
     }
@@ -25,11 +25,11 @@ public class TrackDTO {
         this.track = track;
     }
 
-    public Integer getSize() {
+    public String getSize() {
         return size;
     }
 
-    public void setSize(Integer size) {
+    public void setSize(String size) {
         this.size = size;
     }
 }

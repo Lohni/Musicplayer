@@ -13,7 +13,7 @@
     <com.example.musicplayer.ui.views.PlaybackControlSeekbar
         android:id="@+id/new_seekbar"
         android:layout_width="match_parent"
-        android:layout_height="8dp"
+        android:layout_height="10dp"
         app:layout_constraintBottom_toTopOf="@id/playbackcontrol_visualizer"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
