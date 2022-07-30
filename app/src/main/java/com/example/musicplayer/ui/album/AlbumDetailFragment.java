@@ -19,9 +19,10 @@ import com.example.musicplayer.database.MusicplayerApplication;
 import com.example.musicplayer.database.dao.MusicplayerDataAccess;
 import com.example.musicplayer.database.entity.Track;
 import com.example.musicplayer.database.viewmodel.MusicplayerViewModel;
-import com.example.musicplayer.inter.PlaybackControlInterface;
-import com.example.musicplayer.inter.SongInterface;
+import com.example.musicplayer.interfaces.PlaybackControlInterface;
+import com.example.musicplayer.interfaces.SongInterface;
 import com.example.musicplayer.utils.NavigationControlInterface;
+import com.example.musicplayer.utils.enums.DashboardListType;
 import com.example.musicplayer.utils.enums.PlaybackBehaviour;
 
 import java.util.ArrayList;
@@ -116,12 +117,12 @@ public class AlbumDetailFragment extends Fragment implements AlbumDetailAdapter.
         });
 
         albumDetailPlay.setOnClickListener((button -> {
-            songInterface.onSongListCreatedListener(albumSongs);
+            songInterface.onSongListCreatedListener(albumSongs, DashboardListType.ALBUM);
             playbackControlInterface.onPlaybackBehaviourChangeListener(PlaybackBehaviour.PlaybackBehaviourState.REPEAT_LIST);
         }));
 
         albumDetailShuffle.setOnClickListener((button) -> {
-            songInterface.onSongListCreatedListener(albumSongs);
+            songInterface.onSongListCreatedListener(albumSongs, DashboardListType.ALBUM);
             playbackControlInterface.onPlaybackBehaviourChangeListener(PlaybackBehaviour.PlaybackBehaviourState.SHUFFLE);
         });
 
@@ -135,7 +136,7 @@ public class AlbumDetailFragment extends Fragment implements AlbumDetailAdapter.
 
     @Override
     public void onItemClickListener(int position) {
-        songInterface.onSongListCreatedListener(albumSongs);
+        songInterface.onSongListCreatedListener(albumSongs, DashboardListType.ALBUM);
         songInterface.onSongSelectedListener(albumSongs.get(position));
     }
 }

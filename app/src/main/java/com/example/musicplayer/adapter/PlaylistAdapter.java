@@ -6,12 +6,10 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.example.musicplayer.R;
-import com.example.musicplayer.database.entity.Playlist;
-import com.example.musicplayer.ui.playlist.PlaylistDTO;
+import com.example.musicplayer.database.dto.PlaylistDTO;
 import com.example.musicplayer.ui.playlist.PlaylistInterface;
 
 import java.util.ArrayList;
-import java.util.Map;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -40,7 +38,7 @@ public class PlaylistAdapter extends RecyclerView.Adapter<PlaylistAdapter.ViewHo
         holder.itemView.setOnClickListener(view -> {
             if (onItemClickEnabled) {
                 view.setTransitionName("playlist_detail");
-                playlistInterface.OnClickListener(playlistWithSize.get(position).getPlaylist(), view);
+                playlistInterface.OnClickListener(playlistWithSize.get(position).getPlaylist().getPId(), view);
             }
         });
     }

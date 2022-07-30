@@ -10,12 +10,13 @@ public class EqualizerPreset {
 
     @ColumnInfo(name = "eq_id")
     @PrimaryKey(autoGenerate = true)
+    @NonNull
     private Integer eqId;
 
     @ColumnInfo(name = "eq_name")
     private String eqName;
 
-    @ColumnInfo(name = "eq_active")
+    @ColumnInfo(name = "eq_active", defaultValue = "0")
     private Integer eqActive;
 
     @ColumnInfo(name = "eq_level1")

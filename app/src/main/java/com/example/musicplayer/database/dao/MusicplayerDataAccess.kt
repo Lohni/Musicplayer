@@ -2,8 +2,11 @@ package com.example.musicplayer.database.dao
 
 import androidx.room.*
 import androidx.room.OnConflictStrategy.REPLACE
+import com.example.musicplayer.database.dto.StatisticDTO
+import com.example.musicplayer.database.dto.TrackDTO
 import com.example.musicplayer.database.entity.Album
 import com.example.musicplayer.database.entity.Track
+import com.example.musicplayer.database.entity.TrackPlayed
 import kotlinx.coroutines.flow.Flow
 
 
@@ -51,4 +54,28 @@ interface MusicplayerDataAccess {
 
     @Update
     fun updateTrack(track: Track)
+
+    @Insert
+    fun insertTrackPlayed(trackPlayed: TrackPlayed)
+
+    @Transaction
+    @Query("SELECT t.*, tp_played as size FROM Track t JOIN TrackPlayed tp on tp_t_id = t.t_id GROUP BY t.t_id ORDER BY max(datetime(tp_played)) DESC")
+    fun getTracksByLastPlayed(): Flow<List<TrackDTO>>
+
+    @Transaction
+    @Query("SELECT t.*, count(t.t_id) as size FROM Track t JOIN TrackPlayed on tp_t_id = t.t_id GROUP BY t.t_id ORDER BY count(t.t_id) DESC")
+    fun getTracksByTimesPlayed(): Flow<List<TrackDTO>>
+
+    @Transaction
+    @Query("SELECT *, null FROM Track WHERE t_isFavourite = 1")
+    fun getFavouriteTracks(): Flow<List<TrackDTO>>
+
+    @Query("SELECT * FROM TrackPlayed ORDER BY tp_played DESC LIMIT 1")
+    fun getLastTrackPlayed(): Flow<TrackPlayed>
+
+    @Update
+    fun updateTrackPlayed(trackPlayed: TrackPlayed)
+
+    @Query("SELECT tp_played as time, sum(tp_time_played) as total_time, count(tp_t_id) as amount FROM TrackPlayed WHERE tp_played > :date GROUP BY date(tp_played)")
+    fun getAllTrackPlayedInDaySteps(date: String): Flow<List<StatisticDTO>>
 }

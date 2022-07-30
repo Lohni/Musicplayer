@@ -8,6 +8,7 @@ import androidx.room.PrimaryKey;
 @Entity
 public class Track {
 
+    @NonNull
     @ColumnInfo(name = "t_id")
     @PrimaryKey(autoGenerate = false)
     private Integer tId;
@@ -21,11 +22,7 @@ public class Track {
     @ColumnInfo(name = "t_created")
     private String tCreated;
 
-    @ColumnInfo(name = "t_last_played")
-    private String tLastPlayed;
-
     @ColumnInfo(name = "t_isFavourite", defaultValue = "0")
-    @NonNull
     private Integer tIsFavourite;
 
     @ColumnInfo(name = "t_album_id")
@@ -33,10 +30,6 @@ public class Track {
 
     @ColumnInfo(name = "t_duration")
     private Integer tDuration;
-
-    @ColumnInfo(name = "t_times_played", defaultValue = "0")
-    @NonNull
-    private Integer tTimesPlayed;
 
     @ColumnInfo(name = "t_track_nr")
     private Integer tTrackNr;
@@ -73,14 +66,6 @@ public class Track {
         this.tCreated = tCreated;
     }
 
-    public String getTLastPlayed() {
-        return tLastPlayed;
-    }
-
-    public void setTLastPlayed(String tLastPlayed) {
-        this.tLastPlayed = tLastPlayed;
-    }
-
     public Integer getTIsFavourite() {
         return tIsFavourite;
     }
@@ -103,14 +88,6 @@ public class Track {
 
     public void setTDuration(Integer tDuration) {
         this.tDuration = tDuration;
-    }
-
-    public Integer getTTimesPlayed() {
-        return tTimesPlayed;
-    }
-
-    public void setTTimesPlayed(Integer tTimesPlayed) {
-        this.tTimesPlayed = tTimesPlayed;
     }
 
     public Integer getTTrackNr() {

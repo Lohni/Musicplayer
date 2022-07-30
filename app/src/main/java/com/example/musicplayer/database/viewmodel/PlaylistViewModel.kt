@@ -4,7 +4,10 @@ import androidx.lifecycle.*
 import com.example.musicplayer.database.dao.PlaylistDataAccess
 import com.example.musicplayer.database.entity.Playlist
 import com.example.musicplayer.database.entity.PlaylistItem
-import com.example.musicplayer.ui.playlist.PlaylistDTO
+import com.example.musicplayer.database.entity.PlaylistPlayed
+import com.example.musicplayer.database.dto.PlaylistDTO
+import com.example.musicplayer.database.dto.TrackDTO
+import com.example.musicplayer.utils.enums.DashboardFilterType
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
@@ -48,6 +51,26 @@ class PlaylistViewModel(private val dao: PlaylistDataAccess) : ViewModel() {
         viewModelScope.launch(Dispatchers.IO) {
             dao.insertPlaylistItems(playlistItemList)
         }
+
+    fun insertPlaylistPlayed(playlistPlayed: PlaylistPlayed) = viewModelScope.launch(Dispatchers.IO) {
+        dao.insertPlaylistPlayed(playlistPlayed)
+    }
+
+    fun getPlaylistByFilter(filterType: DashboardFilterType): LiveData<List<PlaylistDTO>> {
+        return when (filterType) {
+            DashboardFilterType.FAVOURITE -> dao.getFavouritePlaylists().asLiveData()
+            DashboardFilterType.TIMES_PLAYED -> dao.getPlaylistsByTimesPlayed().asLiveData()
+            else -> dao.getPlaylistsByLastPlayed().asLiveData()
+        }
+    }
+
+    fun getLastPlaylistPlayed(): LiveData<PlaylistPlayed> {
+        return dao.getLastPlaylistPlayed().asLiveData()
+    }
+
+    fun updatePlaylistPlayed(playlistPlayed: PlaylistPlayed) = viewModelScope.launch(Dispatchers.IO) {
+        dao.updatePlaylistPlayed(playlistPlayed)
+    }
 
     class PlaylistViewModelFactory(private val dataAccess: PlaylistDataAccess) :
         ViewModelProvider.Factory {

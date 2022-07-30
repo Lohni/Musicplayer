@@ -29,13 +29,16 @@ import com.example.musicplayer.database.dao.MusicplayerDataAccess;
 import com.example.musicplayer.database.dao.PlaylistDataAccess;
 import com.example.musicplayer.database.entity.Playlist;
 import com.example.musicplayer.database.entity.PlaylistItem;
+import com.example.musicplayer.database.entity.PlaylistPlayed;
 import com.example.musicplayer.database.entity.Track;
 import com.example.musicplayer.database.viewmodel.MusicplayerViewModel;
 import com.example.musicplayer.database.viewmodel.PlaylistViewModel;
-import com.example.musicplayer.inter.PlaybackControlInterface;
-import com.example.musicplayer.inter.SongInterface;
+import com.example.musicplayer.interfaces.PlaybackControlInterface;
+import com.example.musicplayer.interfaces.SongInterface;
 import com.example.musicplayer.ui.other.CustomDividerItemDecoration;
+import com.example.musicplayer.utils.GeneralUtils;
 import com.example.musicplayer.utils.NavigationControlInterface;
+import com.example.musicplayer.utils.enums.DashboardListType;
 import com.example.musicplayer.utils.enums.PlaybackBehaviour;
 import com.google.android.material.snackbar.BaseTransientBottomBar;
 import com.google.android.material.snackbar.Snackbar;
@@ -54,7 +57,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 
-public class PlaylistDetail extends Fragment implements OnStartDragListener {
+public class PlaylistDetail extends Fragment implements OnStartDragListener, PlaylistDetailAdapter.PlaylistClickListener {
 
     private RecyclerView list;
     private RecyclerView.LayoutManager layoutManager;
@@ -78,7 +81,7 @@ public class PlaylistDetail extends Fragment implements OnStartDragListener {
     private ArrayList<Track> trackList = new ArrayList<>();
 
     private SongInterface songInterface;
-    private PlaybackControlInterface playbackControlInterface;
+    protected PlaybackControlInterface playbackControlInterface;
 
     private int playlistId;
 
@@ -186,7 +189,7 @@ public class PlaylistDetail extends Fragment implements OnStartDragListener {
 
         CustomDividerItemDecoration dividerItemDecoration = new CustomDividerItemDecoration(requireContext(), R.drawable.recyclerview_divider);
         list.addItemDecoration(dividerItemDecoration);
-        list.setAdapter(playlistDetailAdapter = new PlaylistDetailAdapter(requireContext(), this.trackList, songInterface, this));
+        list.setAdapter(playlistDetailAdapter = new PlaylistDetailAdapter(requireContext(), this.trackList, this, this));
 
         playlistViewModel.getPlaylistById(playlistId).observe(getViewLifecycleOwner(), target -> {
             this.playlist = target;
@@ -293,6 +296,7 @@ public class PlaylistDetail extends Fragment implements OnStartDragListener {
         shuffle.setOnClickListener(shuffleView -> {
             playbackControlInterface.onPlaybackBehaviourChangeListener(PlaybackBehaviour.PlaybackBehaviourState.SHUFFLE);
             playbackControlInterface.onNextClickListener();
+            onPlaylistPlayed();
         });
         return view;
     }
@@ -375,5 +379,21 @@ public class PlaylistDetail extends Fragment implements OnStartDragListener {
     @Override
     public void onStartDrag(PlaylistDetailAdapter.ViewHolder viewHolder) {
         itemTouchhelper.startDrag(viewHolder);
+    }
+
+
+    @Override
+    public void onAdapterItemClickListener(int position) {
+        songInterface.onSongListCreatedListener(trackList, DashboardListType.PLAYLIST);
+        songInterface.onSongSelectedListener(trackList.get(position));
+        onPlaylistPlayed();
+    }
+
+    private void onPlaylistPlayed() {
+        PlaylistPlayed playlistPlayed = new PlaylistPlayed();
+        playlistPlayed.setPpPId(playlist.getPId());
+        playlistPlayed.setPpPlayed(GeneralUtils.getCurrentUTCTimestamp());
+        playlistPlayed.setPpTimePlayed(0L);
+        playlistViewModel.insertPlaylistPlayed(playlistPlayed);
     }
 }

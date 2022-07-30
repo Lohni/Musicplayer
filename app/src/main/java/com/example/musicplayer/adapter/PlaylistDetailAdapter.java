@@ -15,8 +15,9 @@ import android.widget.TextView;
 
 import com.example.musicplayer.R;
 import com.example.musicplayer.database.entity.Track;
-import com.example.musicplayer.inter.SongInterface;
+import com.example.musicplayer.interfaces.SongInterface;
 import com.example.musicplayer.ui.playlistdetail.OnStartDragListener;
+import com.example.musicplayer.ui.playlistdetail.PlaylistDetail;
 
 import java.util.ArrayList;
 
@@ -26,15 +27,19 @@ import androidx.recyclerview.widget.RecyclerView;
 
 public class PlaylistDetailAdapter extends RecyclerView.Adapter<PlaylistDetailAdapter.ViewHolder> {
 
-    private final SongInterface songInterface;
+    private final PlaylistClickListener playlistClickListener;
     private final OnStartDragListener onStartDragListener;
     private final Drawable customCover;
     private final Context context;
     private final ArrayList<Track> itemList;
 
-    public PlaylistDetailAdapter(Context c, ArrayList<Track> tracks, SongInterface songInterface, OnStartDragListener onStartDragListener) {
+    public interface PlaylistClickListener {
+        void onAdapterItemClickListener(int position);
+    }
+
+    public PlaylistDetailAdapter(Context c, ArrayList<Track> tracks, PlaylistClickListener playlistClickListener, OnStartDragListener onStartDragListener) {
         this.itemList = tracks;
-        this.songInterface = songInterface;
+        this.playlistClickListener = playlistClickListener;
         this.onStartDragListener = onStartDragListener;
         this.context = c;
         this.customCover = ResourcesCompat.getDrawable(c.getResources(), R.drawable.ic_baseline_music_note_24, null);
@@ -53,8 +58,7 @@ public class PlaylistDetailAdapter extends RecyclerView.Adapter<PlaylistDetailAd
         holder.artist.setText(itemList.get(position).getTArtist());
         holder.cover.setImageDrawable(customCover);
         holder.itemView.setOnClickListener(view -> {
-            songInterface.onSongListCreatedListener(itemList);
-            songInterface.onSongSelectedListener(itemList.get(position));
+            playlistClickListener.onAdapterItemClickListener(position);
         });
 
         holder.itemView.setOnLongClickListener(view -> {

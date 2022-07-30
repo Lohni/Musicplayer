@@ -1,4 +1,4 @@
-package com.example.musicplayer.ui.playlist;
+package com.example.musicplayer.database.dto;
 
 import com.example.musicplayer.database.entity.Playlist;
 

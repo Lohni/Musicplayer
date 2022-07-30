@@ -31,6 +31,12 @@
                 android:resource="@xml/searchable"/>
         </activity>
         <service android:name=".MusicService"/>
+        <receiver android:name=".core.SystemBroadcastReceiver" android:exported="false">
+            <intent-filter>
+                <action android:name="MUSICSERVICE_SONG_ENDED"/>
+                <action android:name="MUSICSERVICE_SONG_PREPARED"/>
+            </intent-filter>
+        </receiver>
     </application>
 
 </manifest>
