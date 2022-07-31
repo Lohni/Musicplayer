@@ -12,7 +12,6 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Color;
 import android.media.MediaMetadataRetriever;
 import android.media.MediaPlayer;
 import android.media.audiofx.BassBoost;
@@ -30,9 +29,9 @@ import android.os.PowerManager;
 import android.provider.MediaStore;
 import android.support.v4.media.MediaMetadataCompat;
 import android.support.v4.media.session.MediaSessionCompat;
+import android.support.v4.media.session.PlaybackStateCompat;
 import android.util.Log;
 import android.view.KeyEvent;
-import android.widget.RemoteViews;
 
 import com.example.musicplayer.core.SystemBroadcastReceiver;
 import com.example.musicplayer.database.entity.EqualizerPreset;
@@ -127,7 +126,6 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
 
         player = new MediaPlayer();
         player.setWakeMode(getApplicationContext(), PowerManager.PARTIAL_WAKE_LOCK);
-        //player.setAudioStreamType(AudioManager.STREAM_MUSIC);
         player.setOnPreparedListener(this);
         player.setOnErrorListener(this);
         player.setOnCompletionListener(this);
@@ -142,6 +140,7 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
         filter.addAction(getString(R.string.notification_action_next));
         filter.addAction(getString(R.string.notification_action_pause));
         filter.addAction(getString(R.string.notification_action_play));
+        filter.addAction(getString(R.string.notification_action_previous));
         this.registerReceiver(this.broadcastReceiver, filter);
 
         customCoverImage = BitmapFactory.decodeResource(this.getResources(), R.drawable.ic_baseline_music_note_24);
@@ -162,22 +161,22 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
                 coverImage = customCoverImage;
             }
 
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                bitmapColorExtractor = new BitmapColorExtractor(this, coverImage);
-            } else {
-                bitmapColorExtractor = new BitmapColorExtractor(this, coverImage, Color.WHITE);
-            }
+            bitmapColorExtractor = new BitmapColorExtractor(this, coverImage);
 
             metadataCompat = new MediaMetadataCompat.Builder()
+                    .putBitmap(MediaMetadataCompat.METADATA_KEY_ART, coverImage)
                     .putString(MediaMetadataCompat.METADATA_KEY_TITLE, songlist.get(currSongIndex).getTTitle())
                     .putString(MediaMetadataCompat.METADATA_KEY_ARTIST, songlist.get(currSongIndex).getTArtist())
                     .putBitmap(MediaMetadataCompat.METADATA_KEY_ALBUM_ART, coverImage)
+                    .putLong(MediaMetadataCompat.METADATA_KEY_DURATION, player.getDuration())
                     .build();
             mediaSession.setMetadata(metadataCompat);
+            updateMediaSessionPlaybackState();
+
             createNotification();
         };
 
-        mediaSession = new MediaSessionCompat(getApplicationContext(), "MUSICPLAYER_MEDIASESSION");
+        mediaSession = new MediaSessionCompat(getBaseContext(), "MUSICPLAYER_MEDIASESSION");
         mediaSession.setCallback(new MediaSessionCompat.Callback() {
 
             @Override
@@ -204,10 +203,16 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
                 return true;
             }
         });
-        mediaSession.setFlags(MediaSessionCompat.FLAG_HANDLES_MEDIA_BUTTONS | MediaSessionCompat.FLAG_HANDLES_TRANSPORT_CONTROLS);
         mediaSession.setActive(true);
 
         super.onCreate();
+    }
+
+    private void updateMediaSessionPlaybackState() {
+        int state = (isPlaying()) ? PlaybackStateCompat.STATE_PLAYING : PlaybackStateCompat.STATE_PAUSED;
+        mediaSession.setPlaybackState(new PlaybackStateCompat.Builder()
+                .setState(state, player.getCurrentPosition(), 1f)
+                .build());
     }
 
     private final BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
@@ -220,7 +225,16 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
                     pause();
                 } else if (intent.getAction().equals(getString(R.string.notification_action_next))) {
                     skip();
+                } else if (intent.getAction().equals(getString(R.string.notification_action_previous))) {
+                    skipPrevious();
                 }
+
+                int state = (isPlaying()) ? PlaybackStateCompat.STATE_PLAYING : PlaybackStateCompat.STATE_PAUSED;
+                float speed = (isPlaying()) ? 1f : 0f;
+                mediaSession.setPlaybackState(new PlaybackStateCompat.Builder()
+                        .setState(state, player.getCurrentPosition(), speed)
+                        .build());
+
                 createNotification();
             }
         }
@@ -304,12 +318,14 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
         if (player.isPlaying()) {
             player.pause();
             sendCurrentStateToPlaybackControl();
+            updateMediaSessionPlaybackState();
         }
     }
 
     public void resume() {
         player.start();
         sendCurrentStateToPlaybackControl();
+        updateMediaSessionPlaybackState();
     }
 
     public void setSong(Track track) {
@@ -490,53 +506,6 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
 
 
     private void createNotification() {
-        RemoteViews remoteViews = new RemoteViews(getPackageName(), R.layout.notification_custom);
-
-        setNotificationValues(remoteViews);
-        createNotificationActions(remoteViews);
-
-        NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this, "MUSICSERVICE_CHANNEL")
-                .setStyle(new androidx.media.app.NotificationCompat.DecoratedMediaCustomViewStyle().setMediaSession(mediaSession.getSessionToken()))
-                .setCustomContentView(remoteViews)
-                .setColor(bitmapColorExtractor.getBackgroundColor())
-                .setSmallIcon(R.drawable.ic_baseline_music_note_24)
-                .setPriority(NotificationCompat.PRIORITY_HIGH)
-                .setOnlyAlertOnce(true)
-                .setAutoCancel(false)
-                .setOngoing(true)
-                .setColorized(true)
-                .setContentInfo("Test")
-                .setContentIntent(PendingIntent.getActivity(this, 0, new Intent(this, MainActivity.class), PendingIntent.FLAG_IMMUTABLE))
-                .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
-                .setLargeIcon(metadataCompat.getBitmap(MediaMetadataCompat.METADATA_KEY_ALBUM_ART))
-                .setShowWhen(false)
-                .setVibrate(new long[]{0});
-
-        //https://stackoverflow.com/questions/8471236/finding-the-dominant-color-of-an-image-in-an-android-drawable
-        NotificationManagerCompat managerCompat = NotificationManagerCompat.from(this);
-
-        Notification n = notificationBuilder.build();
-        managerCompat.notify(NOTIFICATION_ID, n);
-    }
-
-    private void setNotificationValues(RemoteViews remoteViews) {
-        remoteViews.setTextViewText(R.id.notification_title, songlist.get(currSongIndex).getTTitle());
-        remoteViews.setTextViewText(R.id.notification_artist, songlist.get(currSongIndex).getTArtist());
-        if (player.isPlaying()) {
-            remoteViews.setImageViewResource(R.id.notification_pause, R.drawable.ic_play_arrow_black_24dp);
-        } else {
-            remoteViews.setImageViewResource(R.id.notification_pause, R.drawable.ic_pause_black_24dp);
-        }
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            remoteViews.setInt(R.id.notification_skip, "setColorFilter", bitmapColorExtractor.getPrimaryTextColor());
-            remoteViews.setInt(R.id.notification_pause, "setColorFilter", bitmapColorExtractor.getPrimaryTextColor());
-            remoteViews.setInt(R.id.notification_title, "setTextColor", bitmapColorExtractor.getPrimaryTextColor());
-            remoteViews.setInt(R.id.notification_artist, "setTextColor", bitmapColorExtractor.getPrimaryTextColor());
-        }
-    }
-
-    private void createNotificationActions(RemoteViews remoteViews) {
         Intent nextIntent = new Intent();
         nextIntent.setAction(getString(R.string.notification_action_next));
 
@@ -546,22 +515,39 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
         Intent playIntent = new Intent();
         playIntent.setAction(getString(R.string.notification_action_play));
 
-        remoteViews.setOnClickPendingIntent(R.id.notification_skip, PendingIntent.getBroadcast(this, 0, nextIntent, PendingIntent.FLAG_IMMUTABLE));
+        Intent skipPreviousIntent = new Intent();
+        skipPreviousIntent.setAction(getString(R.string.notification_action_previous));
 
-        if (player.isPlaying()) {
-            remoteViews.setOnClickPendingIntent(R.id.notification_pause, PendingIntent.getBroadcast(this, 1, playIntent, PendingIntent.FLAG_IMMUTABLE));
-        } else {
-            remoteViews.setOnClickPendingIntent(R.id.notification_pause, PendingIntent.getBroadcast(this, 2, pauseIntent, PendingIntent.FLAG_IMMUTABLE));
-        }
+        int playPause = (isPlaying()) ? R.drawable.ic_pause_black_24dp : R.drawable.ic_play_arrow_black_24dp;
+        Intent playPauseIntent = isPlaying() ? pauseIntent : playIntent;
+
+        NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this, "MUSICSERVICE_CHANNEL")
+                .setStyle(new androidx.media.app.NotificationCompat.MediaStyle().setMediaSession(mediaSession.getSessionToken()).setShowActionsInCompactView(2, 1, 0))
+                .setSmallIcon(R.drawable.ic_baseline_music_note_24)
+                .setOnlyAlertOnce(true)
+                .setAutoCancel(false)
+                .setOngoing(true)
+                .setColorized(true)
+                .setColor(bitmapColorExtractor.getBackgroundColor())
+                .setContentIntent(PendingIntent.getActivity(this, 0, new Intent(this, MainActivity.class), PendingIntent.FLAG_IMMUTABLE))
+                .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+                .setLargeIcon(metadataCompat.getBitmap(MediaMetadataCompat.METADATA_KEY_ALBUM_ART))
+                .addAction(R.drawable.ic_skip_previous_black_24dp, "Previous", PendingIntent.getBroadcast(this, 2, skipPreviousIntent, PendingIntent.FLAG_IMMUTABLE))
+                .addAction(playPause, "Play/Pause", PendingIntent.getBroadcast(this, 1, playPauseIntent, PendingIntent.FLAG_IMMUTABLE))
+                .addAction(R.drawable.ic_skip_next_black_24dp, "Skip", PendingIntent.getBroadcast(this, 0, nextIntent, PendingIntent.FLAG_IMMUTABLE))
+                .setVibrate(new long[]{0});
+
+        NotificationManager managerCompat = getSystemService(NotificationManager.class);
+
+        Notification n = notificationBuilder.build();
+        managerCompat.notify(NOTIFICATION_ID, n);
     }
 
     private void createNotificationChannel() {
-        // Create the NotificationChannel, but only on API 26+ because
-        // the NotificationChannel class is new and not in the support library
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            CharSequence name = "MUSICSERVICE_CHANNEl";
+            CharSequence name = "MUSICSERVICE_CHANNEL";
             String description = "PLAYBACK_CONTROL";
-            int importance = NotificationManager.IMPORTANCE_DEFAULT;
+            int importance = NotificationManager.IMPORTANCE_HIGH;
             NotificationChannel channel = new NotificationChannel("MUSICSERVICE_CHANNEL", name, importance);
             channel.setDescription(description);
 
