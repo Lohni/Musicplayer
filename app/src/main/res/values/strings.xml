@@ -33,6 +33,7 @@
     <string name="notification_action_pause">NOTIFICATION_ACTION_PAUSE</string>
     <string name="notification_action_play">NOTIFICATION_ACTION_PLAY</string>
     <string name="notification_action_next">NOTIFICATION_ACTION_NEXT</string>
+    <string name="notification_action_previous">NOTIFICATION_ACTION_PREVIOUS</string>
 
     <!-- FragmentManager Tags -->
     <string name="fragment_expandedPlaybackControl">FRAGMENT_EXPANDEDPLAYBACKCONTROL</string>
