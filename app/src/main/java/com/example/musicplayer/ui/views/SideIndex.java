@@ -47,11 +47,10 @@ public class SideIndex {
         LinearLayout indexLayout = new LinearLayout(context) {
             @Override
             public boolean dispatchTouchEvent(MotionEvent ev) {
-                int x = Math.round(ev.getX());
                 int y = Math.round(ev.getY());
                 for (int i = 0; i < getChildCount(); i++) {
                     TextView child = (TextView) getChildAt(i);
-                    if (x > child.getLeft() && x < child.getRight() && y > child.getTop() && y < child.getBottom()) {
+                    if (y > child.getTop() && y < child.getBottom()) {
                         child.callOnClick();
 
                         if (ev.getAction() == MotionEvent.ACTION_UP) {
@@ -59,7 +58,7 @@ public class SideIndex {
                         }
                     }
                 }
-                if (!(x > getLeft() && x < getRight() && y > getTop() && y < getBottom())) {
+                if (!(y > getTop() && y < getBottom())) {
                     indexZoomHolder.setVisibility(View.GONE);
                 }
                 return true;
