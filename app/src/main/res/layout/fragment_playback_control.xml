@@ -31,8 +31,8 @@
 
     <ImageButton
         android:id="@+id/control_play"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
+        android:layout_width="44dp"
+        android:layout_height="44dp"
         android:clickable="true"
         android:focusable="true"
         android:background="@drawable/play_to_pause_anim"
@@ -44,8 +44,8 @@
 
     <ImageButton
         android:id="@+id/control_skip"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
+        android:layout_width="44dp"
+        android:layout_height="44dp"
         android:background="@drawable/anim_skip_forward"
         android:backgroundTint="@color/colorTextLight"
         app:layout_constraintBottom_toBottomOf="@id/playbackcontrol_visualizer"

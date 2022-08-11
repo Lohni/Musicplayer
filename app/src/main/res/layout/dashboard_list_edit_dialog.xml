@@ -9,66 +9,45 @@
         android:id="@+id/dashboard_list_dialog_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
         android:text="Configure"
         android:textColor="@color/NewcolorOnSurfaceVariant"
-        android:textSize="20sp"
+        android:textSize="24sp"
+        app:layout_constraintBottom_toTopOf="@id/dashboard_list_dialog_type"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toTopOf="@id/dashboard_list_dialog_first_seperator"/>
+        app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
         android:id="@+id/dashboard_list_dialog_type"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
         android:text="Type"
-        android:textSize="18sp"
         android:textColor="@color/NewcolorOnSurfaceVariant"
+        android:textSize="18sp"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/dashboard_list_dialog_first_seperator" />
+        app:layout_constraintTop_toBottomOf="@id/dashboard_list_dialog_title" />
 
     <TextView
         android:id="@+id/dashboard_list_dialog_filter"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
+        android:layout_marginStart="16dp"
         android:layout_marginTop="16dp"
         android:text="Filter"
-        android:textSize="18sp"
         android:textColor="@color/NewcolorOnSurfaceVariant"
+        android:textSize="18sp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/dashboard_list_dialog_first_chipgroup" />
-
-    <View
-        android:id="@+id/dashboard_list_dialog_first_seperator"
-        android:layout_width="match_parent"
-        android:layout_height="2px"
-        android:layout_marginTop="8dp"
-        android:background="@color/NewcolorOnSurfaceVariant"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/dashboard_list_dialog_title"
-        app:layout_constraintBottom_toTopOf="@id/dashboard_list_dialog_type"/>
-
-    <View
-        android:id="@+id/dashboard_list_dialog_second_seperator"
-        android:layout_width="match_parent"
-        android:layout_height="2px"
-        android:layout_marginTop="8dp"
-        android:background="@color/NewcolorOnSurfaceVariant"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/dashboard_list_dialog_second_chipgroup" />
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/dashboard_list_dialog_save"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:layout_marginEnd="8dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="16dp"
         android:layout_marginBottom="8dp"
         android:background="@drawable/shuffle_ripple"
         android:text="Save"
@@ -76,13 +55,13 @@
         app:cornerRadius="5dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/dashboard_list_dialog_second_seperator" />
+        app:layout_constraintTop_toBottomOf="@id/dashboard_list_dialog_list_size_holder" />
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/dashboard_list_dialog_cancel"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
+        android:layout_marginTop="16dp"
         android:layout_marginEnd="8dp"
         android:layout_marginBottom="8dp"
         android:background="@drawable/shuffle_ripple"
@@ -91,15 +70,15 @@
         app:cornerRadius="5dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@id/dashboard_list_dialog_save"
-        app:layout_constraintTop_toBottomOf="@id/dashboard_list_dialog_second_seperator" />
+        app:layout_constraintTop_toBottomOf="@id/dashboard_list_dialog_list_size_holder" />
 
     <com.google.android.material.chip.ChipGroup
         android:id="@+id/dashboard_list_dialog_second_chipgroup"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
         app:chipSpacingHorizontal="8dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginEnd="8dp"
         app:chipSpacingVertical="2dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/dashboard_list_dialog_filter"
@@ -109,11 +88,38 @@
         android:id="@+id/dashboard_list_dialog_first_chipgroup"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
         app:chipSpacingHorizontal="8dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginEnd="8dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/dashboard_list_dialog_type"
         app:singleSelection="true" />
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:id="@+id/dashboard_list_dialog_list_size_holder"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+        android:hint="List size"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginTop="16dp"
+        app:boxStrokeColor="@color/chip_text"
+        app:boxStrokeWidth="2px"
+        android:textColorHint="@color/NewcolorText"
+        app:layout_constraintTop_toBottomOf="@id/dashboard_list_dialog_second_chipgroup"
+        app:layout_constraintBottom_toTopOf="@id/dashboard_list_dialog_save"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/dashboard_list_dialog_list_size"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:text="10"
+            android:textColor="@color/NewcolorText"
+            android:inputType="number" />
+
+    </com.google.android.material.textfield.TextInputLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

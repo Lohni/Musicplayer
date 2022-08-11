@@ -2,8 +2,9 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
-        android:id="@+id/action_playlist_add"
-        android:icon="@drawable/ic_add_black_24dp"
-        android:title="playlist_add"
+        android:id="@+id/action_songlist_search"
+        android:icon="@drawable/ic_search_black_24dp"
+        android:iconTint="@android:color/white"
+        android:title="playlist_detail_edit"
         app:showAsAction="ifRoom" />
 </menu>

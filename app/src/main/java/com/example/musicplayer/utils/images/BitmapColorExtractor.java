@@ -28,11 +28,9 @@ public class BitmapColorExtractor {
     private int backgroundColor, foregroundColor, primaryTextColor;
     private float[] filteredBackgroundHsl;
 
-    private Context context;
     private Drawable drawable;
 
     public BitmapColorExtractor(Context context, Bitmap bitmap) {
-        this.context = context;
         backgroundColor = 0;
         if (bitmap != null) {
             drawable = new BitmapDrawable(context.getResources(), bitmap);
@@ -41,7 +39,6 @@ public class BitmapColorExtractor {
     }
 
     public BitmapColorExtractor(Context context, Bitmap bitmap, int backgroundColor) {
-        this.context = context;
         this.backgroundColor = backgroundColor;
         if (bitmap != null) {
             drawable = new BitmapDrawable(context.getResources(), bitmap);

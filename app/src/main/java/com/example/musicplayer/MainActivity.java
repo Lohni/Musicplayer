@@ -125,7 +125,7 @@ public class MainActivity extends AppCompatActivity implements PlaybackControlIn
 
         if (Permissions.permission(this, Manifest.permission.RECORD_AUDIO)) {
             bindService(service, serviceConnection, Context.BIND_AUTO_CREATE);
-            startService(service);
+            startForegroundService(service);
 
             if (Permissions.permission(this, Manifest.permission.READ_EXTERNAL_STORAGE)) {
                 updateTracks();
@@ -327,13 +327,25 @@ public class MainActivity extends AppCompatActivity implements PlaybackControlIn
     @Override
     protected void onPause() {
         musicService.sendOnSongCompleted();
+        destroyed = true;
         super.onPause();
+    }
+
+    @Override
+    protected void onResume() {
+        if (destroyed) {
+            destroyed = false;
+            mHandler.post(runnable);
+        }
+
+        super.onResume();
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
         unbindService(serviceConnection);
+        stopService(new Intent(this, MusicService.class));
     }
 
     final Runnable runnable = new Runnable() {
@@ -350,7 +362,10 @@ public class MainActivity extends AppCompatActivity implements PlaybackControlIn
                     }
                 }
             }
-            mHandler.postDelayed(runnable, 200);
+
+            if (!destroyed) {
+                mHandler.postDelayed(runnable, 200);
+            }
         }
     };
 

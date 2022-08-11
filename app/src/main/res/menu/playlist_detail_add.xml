@@ -3,15 +3,14 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
         android:id="@+id/action_playlist_detail_edit"
-        app:showAsAction="ifRoom"
         android:icon="@drawable/ic_baseline_edit_24"
         android:title="playlist_detail_edit"
-        />
+        app:showAsAction="ifRoom" />
 
     <item
         android:id="@+id/action_playlist_detail_add"
         android:icon="@drawable/ic_playlist_add_black_24dp"
-        app:showAsAction="ifRoom"
-        android:title="playlist_detail_add" />
+        android:title="playlist_detail_add"
+        app:showAsAction="ifRoom" />
 
 </menu>
