@@ -1,23 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
+<LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:id="@+id/dashboard_list_item_holder"
     android:layout_width="wrap_content"
     android:layout_height="match_parent"
     android:foreground="@drawable/rounded_border"
-    android:background="@drawable/shuffle_ripple"
-    android:layout_marginEnd="8dp"
     android:focusable="true"
-    android:clickable="true">
+    android:clickable="true"
+    android:layout_marginEnd="8dp">
 
     <androidx.constraintlayout.widget.ConstraintLayout
-        android:layout_width="0dp"
-        android:layout_height="match_parent"
-        app:layout_constraintDimensionRatio="W,4:6"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:id="@+id/dashboard_list_item_holder"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:foreground="@drawable/shuffle_ripple">
+
+        <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/dashboard_list_item_guideline"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            app:layout_constraintGuide_percent="0.66" />
 
         <FrameLayout
             android:id="@+id/dashboard_list_item_image"
@@ -28,30 +33,33 @@
             app:layout_constraintDimensionRatio="1"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toTopOf="@id/dashboard_list_item_guideline"/>
 
         <TextView
             android:id="@+id/dashboard_list_item_title"
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
             android:layout_marginTop="4dp"
             android:textColor="@color/NewcolorText"
             android:textSize="16sp"
             android:maxLines="1"
-            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintStart_toStartOf="@id/dashboard_list_item_image"
+            app:layout_constraintEnd_toEndOf="@id/dashboard_list_item_image"
             app:layout_constraintTop_toBottomOf="@id/dashboard_list_item_image" />
 
         <TextView
             android:id="@+id/dashboard_list_item_subtitle"
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
             android:layout_marginBottom="8dp"
             android:textColor="@color/NewcolorText"
             android:textSize="14sp"
             android:maxLines="1"
-            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintStart_toStartOf="@id/dashboard_list_item_image"
+            app:layout_constraintEnd_toEndOf="@id/dashboard_list_item_image"
             app:layout_constraintTop_toBottomOf="@id/dashboard_list_item_title"
             app:layout_constraintBottom_toBottomOf="parent"/>
 
@@ -78,4 +86,4 @@
                 android:textSize="14sp"/>
         </FrameLayout>
     </androidx.constraintlayout.widget.ConstraintLayout>
-</androidx.constraintlayout.widget.ConstraintLayout>
+</LinearLayout>

@@ -3,6 +3,9 @@ package com.example.musicplayer.ui.songlist;
 import android.content.Context;
 import android.os.Bundle;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.AnimationUtils;
@@ -23,12 +26,15 @@ import com.example.musicplayer.utils.GeneralUtils;
 import com.example.musicplayer.utils.NavigationControlInterface;
 import com.example.musicplayer.utils.enums.DashboardListType;
 import com.example.musicplayer.utils.enums.PlaybackBehaviour;
-import com.google.android.material.button.MaterialButton;
+import com.google.android.material.textfield.TextInputEditText;
+import com.google.android.material.textfield.TextInputLayout;
 
 import java.util.ArrayList;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -38,7 +44,6 @@ public class SongList extends Fragment implements SongListInterface {
     private RecyclerView listView;
     private View view;
     private SongListAdapter songListAdapter;
-    private MaterialButton shuffle;
 
     private final ArrayList<Track> songList = new ArrayList<>();
     private NavigationControlInterface navigationControlInterface;
@@ -46,11 +51,14 @@ public class SongList extends Fragment implements SongListInterface {
     private PlaybackControlInterface playbackControlInterface;
     private SongListInterface songListInterface;
     private TextView shuffle_size;
+    private ConstraintLayout shuffle;
+    private TextInputEditText search;
+    private TextInputLayout search_layout;
     private SideIndex sideIndex;
 
     private MusicplayerViewModel musicplayerViewModel;
 
-    private boolean isSonglistSet = false;
+    private boolean isSonglistSet = false, isSearchModeActive = false;
 
     public SongList() {
     }
@@ -71,9 +79,38 @@ public class SongList extends Fragment implements SongListInterface {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setHasOptionsMenu(true);
 
         MusicplayerDataAccess mda = ((MusicplayerApplication) requireActivity().getApplication()).getDatabase().musicplayerDao();
         musicplayerViewModel = new ViewModelProvider(this, new MusicplayerViewModel.MusicplayerViewModelFactory(mda)).get(MusicplayerViewModel.class);
+    }
+
+    @Override
+    public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
+        super.onCreateOptionsMenu(menu, inflater);
+        inflater.inflate(R.menu.songlist_menu, menu);
+        menu.getItem(0).setIconTintList(ContextCompat.getColorStateList(requireContext(), R.color.NewcolorText));
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        if (item.getItemId() == R.id.action_songlist_search) {
+            if (!isSearchModeActive) {
+                item.setIcon(R.drawable.ic_shuffle_black_24dp);
+                item.setIconTintList(ContextCompat.getColorStateList(requireContext(), R.color.NewcolorText));
+                shuffle.setVisibility(View.GONE);
+                search_layout.setVisibility(View.VISIBLE);
+                isSearchModeActive = true;
+            } else {
+                item.setIcon(R.drawable.ic_search_black_24dp);
+                item.setIconTintList(ContextCompat.getColorStateList(requireContext(), R.color.NewcolorText));
+                shuffle.setVisibility(View.VISIBLE);
+                search_layout.setVisibility(View.GONE);
+                isSearchModeActive = false;
+            }
+        }
+
+        return super.onOptionsItemSelected(item);
     }
 
     @Override
@@ -85,7 +122,9 @@ public class SongList extends Fragment implements SongListInterface {
         navigationControlInterface.setToolbarTitle("Tracklist");
         listView = view.findViewById(R.id.songList);
         shuffle = view.findViewById(R.id.songlist_shuffle);
-        shuffle_size = view.findViewById(R.id.songlist_size);
+        search = view.findViewById(R.id.songlist_search);
+        search_layout = view.findViewById(R.id.songlist_search_layout);
+        shuffle_size = view.findViewById(R.id.songlist_shuffle_size);
 
         LinearLayout linearLayout = view.findViewById(R.id.side_index);
         FrameLayout indexZoomHolder = view.findViewById(R.id.songlist_indexzoom_holder);

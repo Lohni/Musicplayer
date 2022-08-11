@@ -32,7 +32,7 @@ public class MotionLayoutTransitionListenerImpl implements MotionLayout.Transiti
     @Override
     public void onTransitionChange(MotionLayout layout, int i, int i1, float progress) {
         if (expand) {
-            if (progress > 0.7 && !isTransitionFragmentChanged && layout.getTargetPosition() == 1) {
+            if (progress > 0.9 && !isTransitionFragmentChanged && layout.getTargetPosition() == 1) {
                 ExpandedPlaybackControl expandedPlaybackControl = new ExpandedPlaybackControl();
                 expandedPlaybackControl.setEnterTransition(new Fade().setDuration(500));
                 expandedPlaybackControl.setSharedElementEnterTransition(new AlbumDetailTransition());
@@ -51,7 +51,7 @@ public class MotionLayoutTransitionListenerImpl implements MotionLayout.Transiti
                 System.out.println("Transition target Position: " + layout.getTargetPosition());
             }
         } else {
-            if (progress < 0.8 && !isTransitionFragmentChanged && layout.getTargetPosition() == 0) {
+            if (progress < 0.9 && !isTransitionFragmentChanged && layout.getTargetPosition() == 0) {
                 PlaybackControl playcontrol = new PlaybackControl();
                 fragmentManager.beginTransaction()
                         .replace(R.id.playbackcontrol_holder, playcontrol, context.getString(R.string.fragment_playbackControl))

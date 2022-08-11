@@ -31,6 +31,5 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"/>
-        <Constraint android:id="@+id/appbar" android:visibility="gone"/>
     </ConstraintSet>
 </MotionScene>

@@ -3,14 +3,10 @@ package com.example.musicplayer.ui.views;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.Rect;
 import android.util.AttributeSet;
-import android.util.Log;
-import android.view.DragEvent;
-import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
 
@@ -31,59 +27,54 @@ public class PlaybackControlSeekbar extends View {
 
     public PlaybackControlSeekbar(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
-        TypedArray attrib = context.getTheme().obtainStyledAttributes(attrs, R.styleable.PlaybackControlSeekbar,android.R.attr.paddingTop,0);
-        try {
-
-        } finally {
-            attrib.recycle();
-        }
+        TypedArray attrib = context.getTheme().obtainStyledAttributes(attrs, R.styleable.PlaybackControlSeekbar, android.R.attr.paddingTop, 0);
+        attrib.recycle();
         clipBounds = new Rect();
     }
 
 
     @Override
     protected void onDraw(Canvas canvas) {
-        //super.onDraw(canvas);
         canvas.getClipBounds(clipBounds);
         width = clipBounds.right;
-        int height = clipBounds.bottom/2;
+        int height = clipBounds.bottom / 2;
 
         float scale = 0;
-        if (size > 0){
+        if (size > 0) {
             scale = (float) width / size;
         }
 
         //Draw Primary Progress
         progressPrimaryPath.reset();
-        progressPrimaryPath.moveTo(clipBounds.left,clipBounds.top+height);
-        progressPrimaryPath.lineTo(scale*progress,clipBounds.top+height);
-        progressPrimaryPath.lineTo(scale*progress,clipBounds.bottom);
-        progressPrimaryPath.lineTo(clipBounds.left,clipBounds.bottom);
+        progressPrimaryPath.moveTo(clipBounds.left, clipBounds.top + height);
+        progressPrimaryPath.lineTo(scale * progress, clipBounds.top + height);
+        progressPrimaryPath.lineTo(scale * progress, clipBounds.bottom);
+        progressPrimaryPath.lineTo(clipBounds.left, clipBounds.bottom);
         progressPrimaryPath.close();
 
         //Draw seconary progress
         progressSecondaryPath.reset();
-        progressSecondaryPath.moveTo(scale*progress,clipBounds.top+height);
-        progressSecondaryPath.lineTo(clipBounds.right,clipBounds.top+height);
-        progressSecondaryPath.lineTo(clipBounds.right,clipBounds.bottom);
-        progressSecondaryPath.lineTo(scale*progress,clipBounds.bottom);
+        progressSecondaryPath.moveTo(scale * progress, clipBounds.top + height);
+        progressSecondaryPath.lineTo(clipBounds.right, clipBounds.top + height);
+        progressSecondaryPath.lineTo(clipBounds.right, clipBounds.bottom);
+        progressSecondaryPath.lineTo(scale * progress, clipBounds.bottom);
         progressSecondaryPath.close();
 
-        canvas.drawPath(progressPrimaryPath,progressPrimaryBackgroundTint);
-        canvas.drawPath(progressSecondaryPath,progressSecondaryBackgroundTint);
+        canvas.drawPath(progressPrimaryPath, progressPrimaryBackgroundTint);
+        canvas.drawPath(progressSecondaryPath, progressSecondaryBackgroundTint);
     }
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        if (clipBounds.contains((int) event.getX(), (int) event.getY())){
-            switch (event.getAction()){
+        if (clipBounds.contains((int) event.getX(), (int) event.getY()) || fromUser) {
+            switch (event.getAction()) {
                 case MotionEvent.ACTION_DOWN:
                     fromUser = true;
                     startDrag(event);
                     break;
                 case MotionEvent.ACTION_MOVE:
                     fromUser = true;
-                    if (mIsDragged)trackingTouch(event);
+                    if (mIsDragged) trackingTouch(event);
                     else startDrag(event);
                     return false;
 
@@ -94,25 +85,26 @@ public class PlaybackControlSeekbar extends View {
                     invalidate();
                     break;
             }
-            //return true;
         }
         return true;
     }
 
-    private void startDrag(MotionEvent event){
+    private void startDrag(MotionEvent event) {
         onStartTrackingTouch();
         trackingTouch(event);
     }
 
-    public void setMax(int max){this.size = max;}
+    public void setMax(int max) {
+        this.size = max;
+    }
 
-    public void setProgress(int progress){
+    public void setProgress(int progress) {
         fromUser = false;
-        this.progress=progress;
+        this.progress = progress;
         invalidate();
     }
 
-    public void init(int progressPrimaryBackgroundTint, int progressSecondaryBackgroundTint){
+    public void init(int progressPrimaryBackgroundTint, int progressSecondaryBackgroundTint) {
         progressPrimaryPath = new Path();
         progressSecondaryPath = new Path();
 
@@ -122,29 +114,34 @@ public class PlaybackControlSeekbar extends View {
         this.progressSecondaryBackgroundTint.setColor(getContext().getResources().getColor(progressSecondaryBackgroundTint));
     }
 
-    public void onStartTrackingTouch(){
+    public void onStartTrackingTouch() {
         mIsDragged = true;
-        if (onSeekbarChangeListener != null)onSeekbarChangeListener.onStartTrackingTouch(this);
+        if (onSeekbarChangeListener != null) onSeekbarChangeListener.onStartTrackingTouch(this);
     }
 
-    public void onStopTrackingTouch(){
+    public void onStopTrackingTouch() {
         mIsDragged = false;
-        if (onSeekbarChangeListener != null)onSeekbarChangeListener.onStopTrackingTouch(this);
+        if (onSeekbarChangeListener != null) onSeekbarChangeListener.onStopTrackingTouch(this);
     }
 
-    private void trackingTouch(MotionEvent event){
+    private void trackingTouch(MotionEvent event) {
         int x = Math.round(event.getX());
-        float p = x/((float)width);
-        progress = (int)(p*size);
-        if (onSeekbarChangeListener != null)onSeekbarChangeListener.onProgressChanged(this,progress,fromUser);
+        float p = x / ((float) width);
+        progress = (int) (p * size);
+        if (onSeekbarChangeListener != null)
+            onSeekbarChangeListener.onProgressChanged(this, progress, fromUser);
         invalidate();
     }
 
-    public void setSeekbarChangeListener(OnSeekbarChangeListener onSeekbarChangeListener){this.onSeekbarChangeListener = onSeekbarChangeListener;}
+    public void setSeekbarChangeListener(OnSeekbarChangeListener onSeekbarChangeListener) {
+        this.onSeekbarChangeListener = onSeekbarChangeListener;
+    }
 
-    public interface OnSeekbarChangeListener{
+    public interface OnSeekbarChangeListener {
         void onProgressChanged(PlaybackControlSeekbar seekbar, int progress, boolean fromUser);
+
         void onStartTrackingTouch(PlaybackControlSeekbar seekbar);
+
         void onStopTrackingTouch(PlaybackControlSeekbar seekbar);
     }
 }

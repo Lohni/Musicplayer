@@ -11,6 +11,7 @@
         <entry key="..\:/MusicPlayer/app/src/main/res/drawable/background_tracklist_item.xml" value="0.3828125" />
         <entry key="..\:/MusicPlayer/app/src/main/res/drawable/circular_background.xml" value="0.304" />
         <entry key="..\:/MusicPlayer/app/src/main/res/drawable/circular_badge.xml" value="0.304" />
+        <entry key="..\:/MusicPlayer/app/src/main/res/drawable/ic_baseline_arrow_back_24.xml" value="0.2775" />
         <entry key="..\:/MusicPlayer/app/src/main/res/drawable/ic_baseline_music_note_24.xml" value="0.3828125" />
         <entry key="..\:/MusicPlayer/app/src/main/res/drawable/ic_outline_favorite_border_24.xml" value="0.439" />
         <entry key="..\:/MusicPlayer/app/src/main/res/drawable/ic_pause_black_24dp.xml" value="0.3828125" />
@@ -19,14 +20,15 @@
         <entry key="..\:/MusicPlayer/app/src/main/res/drawable/ic_skip_next_margin_right.xml" value="0.3828125" />
         <entry key="..\:/MusicPlayer/app/src/main/res/drawable/rounded_border.xml" value="0.426" />
         <entry key="..\:/MusicPlayer/app/src/main/res/drawable/rounded_border_medium.xml" value="0.3275" />
+        <entry key="..\:/MusicPlayer/app/src/main/res/drawable/shuffle_ripple.xml" value="0.479" />
         <entry key="..\:/MusicPlayer/app/src/main/res/layout/activity_main.xml" value="0.11296296296296296" />
         <entry key="..\:/MusicPlayer/app/src/main/res/layout/audioeffect_enable_view.xml" value="0.2653985507246377" />
         <entry key="..\:/MusicPlayer/app/src/main/res/layout/chip_with_image.xml" value="1.1320755124389186" />
         <entry key="..\:/MusicPlayer/app/src/main/res/layout/chip_without_image.xml" value="1.3584906149267022" />
         <entry key="..\:/MusicPlayer/app/src/main/res/layout/content_main.xml" value="0.14" />
-        <entry key="..\:/MusicPlayer/app/src/main/res/layout/dashboard.xml" value="0.16768916155419222" />
-        <entry key="..\:/MusicPlayer/app/src/main/res/layout/dashboard_list_edit_dialog.xml" value="0.6067924746672604" />
-        <entry key="..\:/MusicPlayer/app/src/main/res/layout/dashboard_list_item.xml" value="0.2642241379310345" />
+        <entry key="..\:/MusicPlayer/app/src/main/res/layout/dashboard.xml" value="0.4528302049755674" />
+        <entry key="..\:/MusicPlayer/app/src/main/res/layout/dashboard_list_edit_dialog.xml" value="0.4528302049755674" />
+        <entry key="..\:/MusicPlayer/app/src/main/res/layout/dashboard_list_item.xml" value="0.15822784810126583" />
         <entry key="..\:/MusicPlayer/app/src/main/res/layout/equalizer_chip_layout.xml" value="0.4828125" />
         <entry key="..\:/MusicPlayer/app/src/main/res/layout/fragment_album.xml" value="0.4828125" />
         <entry key="..\:/MusicPlayer/app/src/main/res/layout/fragment_album_detail.xml" value="0.22327898550724637" />
@@ -34,7 +36,7 @@
         <entry key="..\:/MusicPlayer/app/src/main/res/layout/fragment_equalizer.xml" value="0.348731884057971" />
         <entry key="..\:/MusicPlayer/app/src/main/res/layout/fragment_equalizer_view_pager.xml" value="0.348731884057971" />
         <entry key="..\:/MusicPlayer/app/src/main/res/layout/fragment_expanded_playback_control.xml" value="0.2988679352838745" />
-        <entry key="..\:/MusicPlayer/app/src/main/res/layout/fragment_playback_control.xml" value="0.4528302049755674" />
+        <entry key="..\:/MusicPlayer/app/src/main/res/layout/fragment_playback_control.xml" value="0.6067924746672604" />
         <entry key="..\:/MusicPlayer/app/src/main/res/layout/fragment_playlist.xml" value="0.4828125" />
         <entry key="..\:/MusicPlayer/app/src/main/res/layout/fragment_playlist_detail_add.xml" value="0.4528302049755674" />
         <entry key="..\:/MusicPlayer/app/src/main/res/layout/fragment_reverb.xml" value="0.33" />
@@ -48,14 +50,15 @@
         <entry key="..\:/MusicPlayer/app/src/main/res/layout/simple_listitem.xml" value="0.17777777777777778" />
         <entry key="..\:/MusicPlayer/app/src/main/res/layout/songlist_item.xml" value="0.17831813576494426" />
         <entry key="..\:/MusicPlayer/app/src/main/res/layout/tageditor_item.xml" value="0.17777777777777778" />
-        <entry key="..\:/MusicPlayer/app/src/main/res/layout/top_app_bar.xml" value="0.1" />
-        <entry key="..\:/MusicPlayer/app/src/main/res/layout/tracklist_item.xml" value="0.25" />
+        <entry key="..\:/MusicPlayer/app/src/main/res/layout/top_app_bar.xml" value="0.2988679352838745" />
+        <entry key="..\:/MusicPlayer/app/src/main/res/layout/tracklist_item.xml" value="0.2264151024877837" />
         <entry key="..\:/MusicPlayer/app/src/main/res/menu/activity_main_drawer.xml" value="0.25170068027210885" />
         <entry key="..\:/MusicPlayer/app/src/main/res/menu/album_item_menu.xml" value="0.4828125" />
         <entry key="..\:/MusicPlayer/app/src/main/res/menu/audioeffect_enable.xml" value="0.3444976076555024" />
         <entry key="..\:/MusicPlayer/app/src/main/res/menu/main.xml" value="0.4828125" />
         <entry key="..\:/MusicPlayer/app/src/main/res/menu/playlist_detail_add.xml" value="0.4753846153846154" />
         <entry key="..\:/MusicPlayer/app/src/main/res/menu/playlist_menu.xml" value="0.4828125" />
+        <entry key="..\:/MusicPlayer/app/src/main/res/menu/songlist_menu.xml" value="0.4817708333333333" />
       </map>
     </option>
   </component>
@@ -64,5 +67,12 @@
   </component>
   <component name="ProjectType">
     <option name="id" value="Android" />
+  </component>
+  <component name="VisualizationToolProject">
+    <option name="state">
+      <ProjectState>
+        <option name="scale" value="0.2264151024877837" />
+      </ProjectState>
+    </option>
   </component>
 </project>

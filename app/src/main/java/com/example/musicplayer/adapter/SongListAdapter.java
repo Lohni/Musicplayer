@@ -24,6 +24,7 @@ import com.example.musicplayer.ui.songlist.SongListInterface;
 import java.util.ArrayList;
 
 import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
 import androidx.core.content.res.ResourcesCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -56,6 +57,7 @@ public class SongListAdapter extends RecyclerView.Adapter<SongListAdapter.ViewHo
         holder.artist.setText(track.getTArtist());
         holder.title.setText(track.getTTitle());
         holder.coverImage.setImageDrawable(customCoverImage);
+        holder.coverImage.setImageTintList(ContextCompat.getColorStateList(context, R.color.NewcolorSurfaceVariant));
         holder.itemView.setOnClickListener(view -> songListInterface.OnSongSelectedListener(position));
 
         int pos = holder.getAbsoluteAdapterPosition();
@@ -74,9 +76,9 @@ public class SongListAdapter extends RecyclerView.Adapter<SongListAdapter.ViewHo
                     mmr.release();
                     if (thumbnail != null) {
                         Bitmap cover = BitmapFactory.decodeByteArray(thumbnail, 0, thumbnail.length);
-                        //ImageTransformUtil.getRoundedCornerBitmap(cover, context.getResources())
                         holder.coverImage.setClipToOutline(true);
                         holder.coverImage.setImageBitmap(cover);
+                        holder.coverImage.setImageTintList(null);
                         Animation fadeIn = new AlphaAnimation(0, 1);
                         fadeIn.setInterpolator(new DecelerateInterpolator());
                         fadeIn.setDuration(350);

@@ -56,7 +56,7 @@
 
     <color name="NewcolorSecondary">#CCC2DC</color>
     <color name="NewcolorOnSecondary">#332D41</color>
-
+^
     <color name="NewcolorTeritaryContainer">#492532</color>
     <color name="NewcolorOnTeritaryContainer">#FFD8E4</color>
 
@@ -64,6 +64,8 @@
     <color name="NewcolorSurface">#1C1B1F</color>
     <color name="NewcolorSurfaceVariant">#49454F</color>
     <color name="NewcolorOnSurfaceVariant">#CAC4D0</color>
+
+    <color name="NewcolorSurfaceLevel2">#312E39</color>
 </resources>
 
 
