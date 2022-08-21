@@ -53,6 +53,7 @@ import com.example.musicplayer.utils.enums.DashboardListType;
 import com.example.musicplayer.utils.enums.PlaybackBehaviour;
 import com.google.android.material.navigation.NavigationView;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -146,6 +147,13 @@ public class MainActivity extends AppCompatActivity implements PlaybackControlIn
             @Override
             public void onDrawerClosed(@NonNull View drawerView) {
                 if (selectedDrawerFragment != null) {
+
+                    if (selectedDrawerFragment instanceof SongList && musicService.getCurrSong() != null) {
+                        Bundle bundle = new Bundle();
+                        bundle.putInt("ID", musicService.getCurrSong().getTId());
+                        selectedDrawerFragment.setArguments(bundle);
+                    }
+
                     getSupportFragmentManager().beginTransaction().replace(R.id.nav_host_fragment, selectedDrawerFragment).commit();
                 }
             }
@@ -160,7 +168,7 @@ public class MainActivity extends AppCompatActivity implements PlaybackControlIn
 
     private void updateTracks() {
         musicplayerViewModel.getAllTracks().observe(this, tracks -> {
-            compareTracksToDatabase((ArrayList<Track>) tracks);
+            compareTracksToDatabase((ArrayList<TrackDTO>) tracks);
             musicplayerViewModel.getAllTracks().removeObservers(this);
             loadPlayControl();
             loadDashboard(new DashboardFragment());
@@ -174,7 +182,7 @@ public class MainActivity extends AppCompatActivity implements PlaybackControlIn
         });
     }
 
-    private void compareTracksToDatabase(ArrayList<Track> tracks) {
+    private void compareTracksToDatabase(ArrayList<TrackDTO> tracks) {
         ArrayList<Track> toInsert = new ArrayList<>();
 
         ContentResolver contentResolver = getContentResolver();
@@ -204,11 +212,13 @@ public class MainActivity extends AppCompatActivity implements PlaybackControlIn
                 track.setTDuration((int) duration);
                 track.setTTrackNr(trackId);
                 track.setTIsFavourite(0);
+                track.setTCreated(GeneralUtils.getCurrentUTCTimestamp());
 
-                Optional<Track> optionalTrackDB = tracks.stream().filter(trackDB -> trackDB.getTId().equals((int) thisId)).findFirst();
+                Optional<TrackDTO> optionalTrackDB = tracks.stream().filter(trackDB -> trackDB.getTrack().getTId().equals((int) thisId)).findFirst();
                 if (optionalTrackDB.isPresent()) {
-                    Track trackDB = optionalTrackDB.get();
+                    Track trackDB = optionalTrackDB.get().getTrack();
                     track.setTIsFavourite(trackDB.getTIsFavourite());
+                    track.setTCreated(trackDB.getTCreated());
                 }
 
                 toInsert.add(track);
@@ -219,7 +229,7 @@ public class MainActivity extends AppCompatActivity implements PlaybackControlIn
         if (musicCursor != null) musicCursor.close();
 
         ArrayList<Integer> insertIds = toInsert.stream().map(Track::getTId).collect(Collectors.toCollection(ArrayList::new));
-        ArrayList<Track> toDelete = tracks.stream().filter(track -> !insertIds.contains(track.getTId())).collect(Collectors.toCollection(ArrayList::new));
+        ArrayList<Track> toDelete = tracks.stream().map(TrackDTO::getTrack).filter(track -> !insertIds.contains(track.getTId())).collect(Collectors.toCollection(ArrayList::new));
 
         if (!toDelete.isEmpty()) {
             musicplayerViewModel.deleteTracks(toDelete);

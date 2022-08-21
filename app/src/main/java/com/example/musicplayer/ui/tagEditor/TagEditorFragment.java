@@ -11,11 +11,13 @@ import com.example.musicplayer.R;
 import com.example.musicplayer.adapter.TagEditorAdapter;
 import com.example.musicplayer.database.MusicplayerApplication;
 import com.example.musicplayer.database.dao.MusicplayerDataAccess;
+import com.example.musicplayer.database.dto.TrackDTO;
 import com.example.musicplayer.database.entity.Track;
 import com.example.musicplayer.database.viewmodel.MusicplayerViewModel;
 import com.example.musicplayer.utils.NavigationControlInterface;
 
 import java.util.ArrayList;
+import java.util.stream.Collectors;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -78,7 +80,7 @@ public class TagEditorFragment extends Fragment implements TagEditorInterface {
 
         musicplayerViewModel.getAllTracks().observe(getViewLifecycleOwner(), tracks -> {
             this.trackList.clear();
-            this.trackList.addAll(tracks);
+            this.trackList.addAll(tracks.stream().map(TrackDTO::getTrack).collect(Collectors.toList()));
 
             adapter.notifyItemRangeInserted(0, tracks.size());
         });

@@ -93,4 +93,6 @@
 
     <string name="preference_dashboard_first_list_size">PREFERENCE_DASHBOARD_FIRST_LIST_SIZE</string>
     <string name="preference_dashboard_second_list_size">PREFERENCE_DASHBOARD_SECOND_LIST_SIZE</string>
+
+    <string name="preference_songlist_filter_type">PREFERENCE_SONGLIST_FILTER_TYPE</string>
 </resources>

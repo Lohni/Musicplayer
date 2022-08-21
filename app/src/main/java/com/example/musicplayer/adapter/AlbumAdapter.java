@@ -51,7 +51,6 @@ public class AlbumAdapter extends RecyclerView.Adapter<AlbumAdapter.ViewHolder> 
         void onSharedElementsViewCreated();
     }
 
-    @SuppressLint("ServiceCast")
     public AlbumAdapter(Context c, ArrayList<Album> albumList, AlbumAdapterCallback albumAdapterCallback, MediaOptionsAdapter.MediaOptionsAdapterListener mediaOptionsAdapterListener, int sharedElementsPosition) {
         this.context = c;
         this.albumList = albumList;

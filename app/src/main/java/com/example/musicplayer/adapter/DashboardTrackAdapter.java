@@ -7,7 +7,6 @@ import android.graphics.BitmapFactory;
 import android.graphics.drawable.Drawable;
 import android.media.MediaMetadataRetriever;
 import android.net.Uri;
-import android.os.Handler;
 import android.provider.MediaStore;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -16,7 +15,6 @@ import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
 import android.view.animation.DecelerateInterpolator;
 import android.widget.FrameLayout;
-import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.example.musicplayer.R;
@@ -24,13 +22,11 @@ import com.example.musicplayer.database.dto.TrackDTO;
 import com.example.musicplayer.database.entity.Track;
 import com.example.musicplayer.interfaces.SongInterface;
 import com.example.musicplayer.utils.GeneralUtils;
-import com.example.musicplayer.utils.enums.DashboardFilterType;
 import com.example.musicplayer.utils.enums.DashboardListType;
+import com.example.musicplayer.utils.enums.ListFilterType;
 import com.example.musicplayer.utils.images.ImageTransformUtil;
 
 import java.time.LocalDateTime;
-import java.time.ZoneOffset;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -45,14 +41,14 @@ public class DashboardTrackAdapter extends RecyclerView.Adapter<DashboardTrackAd
     private final Drawable customCoverDrawable, backgroundDrawable;
     private final Context context;
     private SongInterface songInterface;
-    private DashboardFilterType dashboardFilterType;
+    private ListFilterType listFilterType;
     private int imagesLoading = 0;
 
-    public DashboardTrackAdapter(Context context, List<TrackDTO> trackList, SongInterface songInterface, DashboardFilterType dashboardFilterType) {
+    public DashboardTrackAdapter(Context context, List<TrackDTO> trackList, SongInterface songInterface, ListFilterType listFilterType) {
         this.trackList = trackList;
         this.context = context;
         this.songInterface = songInterface;
-        this.dashboardFilterType = dashboardFilterType;
+        this.listFilterType = listFilterType;
         customCoverDrawable = ResourcesCompat.getDrawable(context.getResources(), R.drawable.ic_baseline_music_note_24, null);
         backgroundDrawable = ResourcesCompat.getDrawable(context.getResources(), R.drawable.background_button_secondary, null);
     }
@@ -142,26 +138,23 @@ public class DashboardTrackAdapter extends RecyclerView.Adapter<DashboardTrackAd
     }
 
     private String getDescription(TrackDTO trackDTO) {
-        if (dashboardFilterType.equals(DashboardFilterType.LAST_PLAYED)) {
-            LocalDateTime ldt = LocalDateTime.parse(trackDTO.getSize(), GeneralUtils.DB_TIMESTAMP);
-            LocalDateTime ldtNow = LocalDateTime.now(ZoneOffset.UTC);
-
-            long dayDiff = ChronoUnit.DAYS.between(ldt, ldtNow);
-            if (dayDiff < 1) {
-                long hours = ChronoUnit.HOURS.between(ldt, ldtNow);
-                if (hours < 1) {
-                    long minutes = ChronoUnit.MINUTES.between(ldt, ldtNow);
-                    if (minutes < 1) {
-                        return "<1 minutes";
-                    }
-                    return minutes + " minutes";
+        if (trackDTO.getSize() != null || listFilterType.equals(ListFilterType.LAST_CREATED)) {
+            if (listFilterType.equals(ListFilterType.LAST_PLAYED)) {
+                LocalDateTime ldt = LocalDateTime.parse(trackDTO.getSize(), GeneralUtils.DB_TIMESTAMP);
+                return GeneralUtils.getTimeDiffAsText(ldt);
+            } else if (listFilterType.equals(ListFilterType.LAST_CREATED) && trackDTO.getTrack().getTCreated() != null) {
+                LocalDateTime dbTime = LocalDateTime.parse(trackDTO.getTrack().getTCreated(), GeneralUtils.DB_TIMESTAMP);
+                return GeneralUtils.getTimeDiffAsText(dbTime);
+            } else if (listFilterType.equals(ListFilterType.TIMES_PLAYED)) {
+                return trackDTO.getSize();
+            } else if (listFilterType.equals(ListFilterType.TIME_PLAYED)) {
+                try {
+                    return GeneralUtils.convertTimeWithUnit(Integer.parseInt(trackDTO.getSize()));
+                } catch (NumberFormatException ignored) {
                 }
-                return hours + " hours";
             }
-            return dayDiff + " days";
-        } else if (dashboardFilterType.equals(DashboardFilterType.TIMES_PLAYED)) {
-            return String.valueOf(trackDTO.getSize());
         }
+
         return "";
     }
 

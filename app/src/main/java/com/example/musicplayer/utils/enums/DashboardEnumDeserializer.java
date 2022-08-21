@@ -1,12 +1,5 @@
 package com.example.musicplayer.utils.enums;
 
-import android.content.Context;
-import android.graphics.drawable.Drawable;
-
-import com.example.musicplayer.R;
-
-import androidx.core.content.res.ResourcesCompat;
-
 public class DashboardEnumDeserializer {
     public static DashboardListType getDashboardListType(int type) {
         switch (type) {
@@ -16,21 +9,25 @@ public class DashboardEnumDeserializer {
         }
     }
 
-    public static DashboardFilterType getDashboardListFilter(int type) {
+    public static ListFilterType getListFilterTypeByInt(int type) {
         switch (type) {
-            case 0: return DashboardFilterType.FAVOURITE;
-            case 1: return DashboardFilterType.LAST_PLAYED;
-            default: return DashboardFilterType.TIMES_PLAYED;
+            case 0: return ListFilterType.FAVOURITE;
+            case 1: return ListFilterType.LAST_PLAYED;
+            case 3: return ListFilterType.ALPHABETICAL;
+            case 4: return ListFilterType.TIME_PLAYED;
+            case 5: return ListFilterType.LAST_CREATED;
+            default: return ListFilterType.TIMES_PLAYED;
         }
     }
 
-    public static String getTitleForFilterType(DashboardFilterType filterType) {
-        if (filterType == DashboardFilterType.FAVOURITE) {
-            return "Favourite";
-        } else if (filterType == DashboardFilterType.TIMES_PLAYED) {
-            return "Most played";
-        } else {
-            return "Last played";
+    public static String getTitleForFilterType(ListFilterType filterType) {
+        switch (filterType) {
+            case FAVOURITE: return "Favourite";
+            case LAST_PLAYED: return "Last played";
+            case ALPHABETICAL: return "Alphabetical";
+            case TIME_PLAYED: return "Time played";
+            case LAST_CREATED: return "Last created";
+            default: return "Times played";
         }
     }
 
@@ -39,14 +36,6 @@ public class DashboardEnumDeserializer {
             case ALBUM: return "Album";
             case PLAYLIST: return "Playlist";
             default: return "Track";
-        }
-    }
-
-    public static Drawable getTypeDrawable(Context context, DashboardListType type) {
-        switch (type) {
-            case ALBUM: return ResourcesCompat.getDrawable(context.getResources(), R.drawable.ic_album_black_24dp, null);
-            case PLAYLIST: return ResourcesCompat.getDrawable(context.getResources(), R.drawable.ic_playlist_play_black_24dp, null);
-            default: return ResourcesCompat.getDrawable(context.getResources(), R.drawable.ic_baseline_music_note_24, null);
         }
     }
 }

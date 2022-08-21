@@ -58,9 +58,9 @@
         android:layout_width="0dp"
         android:layout_height="24dp"
         android:layout_marginStart="8dp"
-        android:textColor="@color/colorTextLight"
+        android:textColor="@color/NewcolorText"
         android:focusable="false"
-        android:textSize="16sp"
+        android:textSize="18sp"
         android:ellipsize="marquee"
         android:marqueeRepeatLimit="marquee_forever"
         android:scrollHorizontally="true"
@@ -68,6 +68,7 @@
         app:layout_constraintLeft_toRightOf="@id/control_queue"
         app:layout_constraintRight_toLeftOf="@id/control_play"
         app:layout_constraintTop_toTopOf="@id/control_play"
+        app:layout_constraintBottom_toTopOf="@id/control_artist"
         android:transitionName="@string/transition_playback_title"/>
 
     <com.google.android.material.textview.MaterialTextView
@@ -75,7 +76,9 @@
         android:layout_width="0dp"
         android:layout_height="24dp"
         android:layout_marginStart="8dp"
-        android:textColor="@color/colorTextLight"
+        android:layout_marginBottom="4dp"
+        android:textColor="@color/NewcolorText"
+        android:alpha="0.8"
         android:textSize="16sp"
         android:focusable="false"
         app:layout_constraintBottom_toBottomOf="@id/playbackcontrol_visualizer"

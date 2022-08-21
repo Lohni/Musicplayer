@@ -18,6 +18,7 @@ import com.example.musicplayer.adapter.TrackSelectionAdapter;
 import com.example.musicplayer.database.MusicplayerApplication;
 import com.example.musicplayer.database.dao.MusicplayerDataAccess;
 import com.example.musicplayer.database.dao.PlaylistDataAccess;
+import com.example.musicplayer.database.dto.TrackDTO;
 import com.example.musicplayer.database.entity.PlaylistItem;
 import com.example.musicplayer.database.entity.Track;
 import com.example.musicplayer.database.viewmodel.MusicplayerViewModel;
@@ -29,6 +30,7 @@ import com.google.android.material.floatingactionbutton.ExtendedFloatingActionBu
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.stream.Collectors;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -115,7 +117,7 @@ public class PlaylistDetailAdd extends Fragment implements OnTrackSelectedListen
 
         musicplayerViewModel.getAllTracks().observe(getViewLifecycleOwner(), tracklist -> {
             this.trackList.clear();
-            this.trackList.addAll(tracklist);
+            this.trackList.addAll(tracklist.stream().map(TrackDTO::getTrack).collect(Collectors.toList()));
 
             Collections.sort(this.trackList, (a, b) -> a.getTTitle().compareToIgnoreCase(b.getTTitle()));
             mAdapter = new TrackSelectionAdapter(requireContext(), trackList, this);

@@ -4,20 +4,18 @@ import android.app.Dialog;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
-import android.graphics.drawable.Drawable;
-import android.icu.text.CaseMap;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
-import android.view.Window;
+import android.view.WindowManager;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.musicplayer.R;
 import com.example.musicplayer.utils.enums.DashboardEnumDeserializer;
-import com.example.musicplayer.utils.enums.DashboardFilterType;
 import com.example.musicplayer.utils.enums.DashboardListType;
+import com.example.musicplayer.utils.enums.ListFilterType;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.chip.Chip;
 import com.google.android.material.chip.ChipGroup;
@@ -32,7 +30,7 @@ public class DashboardListDialog extends Dialog implements View.OnClickListener 
     private TextInputEditText listSizeInput;
 
     private DashboardListType selectedListType;
-    private DashboardFilterType selectedFilterType;
+    private ListFilterType selectedFilterType;
 
     private int listSize;
 
@@ -43,7 +41,7 @@ public class DashboardListDialog extends Dialog implements View.OnClickListener 
 
     private View.OnClickListener onFinish;
 
-    public DashboardListDialog(@NonNull Context context, String title, DashboardListType selectedListType, DashboardFilterType selectedFilterType, int listSize) {
+    public DashboardListDialog(@NonNull Context context, String title, DashboardListType selectedListType, ListFilterType selectedFilterType, int listSize) {
         super(context);
         this.title = title;
         this.selectedFilterType = selectedFilterType;
@@ -58,6 +56,10 @@ public class DashboardListDialog extends Dialog implements View.OnClickListener 
         setContentView(R.layout.dashboard_list_edit_dialog);
         getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
 
+        WindowManager.LayoutParams params = getWindow().getAttributes();
+        params.width = WindowManager.LayoutParams.MATCH_PARENT;
+        getWindow().setAttributes((android.view.WindowManager.LayoutParams) params);
+
         TextView title = findViewById(R.id.dashboard_list_dialog_title);
         title.setText(this.title);
         save = findViewById(R.id.dashboard_list_dialog_save);
@@ -68,7 +70,7 @@ public class DashboardListDialog extends Dialog implements View.OnClickListener 
         filterChips = findViewById(R.id.dashboard_list_dialog_second_chipgroup);
 
         listSizeInput.setText(String.valueOf(listSize));
-        for (DashboardFilterType filterType : DashboardFilterType.values()) {
+        for (ListFilterType filterType : ListFilterType.values()) {
             Chip chip = (Chip) getLayoutInflater().inflate(R.layout.chip_without_image, filterChips, false);
             chip.setText(DashboardEnumDeserializer.getTitleForFilterType(filterType));
             chip.setTag(filterType);
@@ -139,16 +141,16 @@ public class DashboardListDialog extends Dialog implements View.OnClickListener 
         return DashboardListType.TRACK;
     }
 
-    public DashboardFilterType getSelectedFilterType() {
+    public ListFilterType getSelectedFilterType() {
         for (int i = 0; i < filterChips.getChildCount(); i++) {
             Chip chip = (Chip) filterChips.getChildAt(i);
 
             if (chip.isChecked()) {
-                return (DashboardFilterType) chip.getTag();
+                return (ListFilterType) chip.getTag();
             }
         }
 
-        return DashboardFilterType.TIMES_PLAYED;
+        return ListFilterType.TIMES_PLAYED;
     }
 
     public int getSelectedListSize() {

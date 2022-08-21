@@ -14,13 +14,20 @@ import android.view.ViewGroup;
 import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
 import android.view.animation.DecelerateInterpolator;
+import android.widget.Filter;
+import android.widget.Filterable;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.example.musicplayer.R;
+import com.example.musicplayer.database.dto.TrackDTO;
 import com.example.musicplayer.database.entity.Track;
 import com.example.musicplayer.ui.songlist.SongListInterface;
+import com.example.musicplayer.utils.GeneralUtils;
+import com.example.musicplayer.utils.enums.ListFilterType;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 
 import androidx.annotation.NonNull;
@@ -28,18 +35,23 @@ import androidx.core.content.ContextCompat;
 import androidx.core.content.res.ResourcesCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
-public class SongListAdapter extends RecyclerView.Adapter<SongListAdapter.ViewHolder> {
+public class SongListAdapter extends RecyclerView.Adapter<SongListAdapter.ViewHolder> implements Filterable {
 
-    private ArrayList<Track> songList;
+    private ArrayList<TrackDTO> songList, mDisplayedValues;
     private SongListInterface songListInterface;
     private Drawable customCoverImage;
     private Context context;
-    private int imagesLoading = 0;
+    private ListFilterType listFilterType;
+    private int currPlayingSongIndex = -1, imagesLoading = 0;
+    MediaMetadataRetriever mmr = null;
+    boolean isScrolling = false;
 
-    public SongListAdapter(Context c, ArrayList<Track> songList, SongListInterface songListInterface) {
+    public SongListAdapter(Context c, ArrayList<TrackDTO> songList, SongListInterface songListInterface, ListFilterType listFilterType) {
         this.songList = songList;
+        this.mDisplayedValues = songList;
         this.songListInterface = songListInterface;
         this.context = c;
+        this.listFilterType = listFilterType;
         this.customCoverImage = ResourcesCompat.getDrawable(c.getResources(), R.drawable.ic_baseline_music_note_24, null);
     }
 
@@ -51,72 +63,121 @@ public class SongListAdapter extends RecyclerView.Adapter<SongListAdapter.ViewHo
     }
 
     @Override
+    public void onViewRecycled(@NonNull ViewHolder holder) {
+        holder.imageTrackID = -1;
+        super.onViewRecycled(holder);
+    }
+
+    @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        Track track = songList.get(position);
-        holder.position = holder.getAbsoluteAdapterPosition();
+        TrackDTO dto = mDisplayedValues.get(position);
+        Track track = dto.getTrack();
+        holder.trackDTO = dto;
         holder.artist.setText(track.getTArtist());
         holder.title.setText(track.getTTitle());
-        holder.coverImage.setImageDrawable(customCoverImage);
-        holder.coverImage.setImageTintList(ContextCompat.getColorStateList(context, R.color.NewcolorSurfaceVariant));
+        holder.info.setText(getInfoText(songList.get(position)));
         holder.itemView.setOnClickListener(view -> songListInterface.OnSongSelectedListener(position));
 
-        int pos = holder.getAbsoluteAdapterPosition();
-        imagesLoading++;
-        holder.coverImage.postDelayed(() -> {
-            if (holder.position == pos) {
-                Uri trackUri = ContentUris.withAppendedId(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, track.getTId());
+        if (holder.imageTrackID != track.getTId()) {
+            holder.coverImage.setImageDrawable(customCoverImage);
+            holder.coverImage.setImageTintList(ContextCompat.getColorStateList(context, R.color.NewcolorSurfaceVariant));
+        }
+
+        if (!isScrolling && holder.imageTrackID != track.getTId()) {
+            holder.coverImage.post(() -> {
+                Uri trackUri = ContentUris.withAppendedId(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, holder.trackDTO.getTrack().getTId());
+
+                if (mmr == null) {
+                    mmr = new MediaMetadataRetriever();
+                }
+
                 byte[] thumbnail = null;
-                MediaMetadataRetriever mmr = new MediaMetadataRetriever();
                 try {
                     mmr.setDataSource(context, trackUri);
                     thumbnail = mmr.getEmbeddedPicture();
                 } catch (IllegalArgumentException e) {
                     System.out.println("MediaMetadataRetriever IllegalArgument");
                 } finally {
-                    mmr.release();
                     if (thumbnail != null) {
+                        imagesLoading++;
+                        Animation fadeIn = new AlphaAnimation(0, 1);
+                        fadeIn.setInterpolator(new DecelerateInterpolator());
+
+                        int addTime = (holder.getAbsoluteAdapterPosition() < 15 || holder.getAbsoluteAdapterPosition() > (songList.size() - 15)) ? 4 : 1;
+
+                        fadeIn.setDuration(350 + (120L * imagesLoading * addTime));
+                        holder.coverImage.setAnimation(fadeIn);
                         Bitmap cover = BitmapFactory.decodeByteArray(thumbnail, 0, thumbnail.length);
                         holder.coverImage.setClipToOutline(true);
                         holder.coverImage.setImageBitmap(cover);
                         holder.coverImage.setImageTintList(null);
-                        Animation fadeIn = new AlphaAnimation(0, 1);
-                        fadeIn.setInterpolator(new DecelerateInterpolator());
-                        fadeIn.setDuration(350);
-                        holder.coverImage.setAnimation(fadeIn);
+                        imagesLoading--;
                     }
+                    holder.imageTrackID = holder.trackDTO.getTrack().getTId();
                 }
-            }
-            imagesLoading--;
-        }, 300 + (30L * imagesLoading));
+            });
+        }
+
+        if (!isScrolling) {
+            holder.info.postDelayed(() -> {
+                if (position == holder.getAbsoluteAdapterPosition()) {
+                    notifyItemChanged(holder.getAbsoluteAdapterPosition(), "");
+                }
+            }, 10000);
+        }
+
+        if (currPlayingSongIndex >= 0 && track.getTId().equals(currPlayingSongIndex)) {
+            holder.itemView.setBackgroundTintList(ContextCompat.getColorStateList(context, R.color.NewcolorTeritaryContainer));
+            holder.title.setTextColor(ContextCompat.getColorStateList(context, R.color.NewcolorOnTeritaryContainer));
+            holder.artist.setTextColor(ContextCompat.getColorStateList(context, R.color.NewcolorOnTeritaryContainer));
+            holder.more.setBackgroundTintList(ContextCompat.getColorStateList(context, R.color.NewcolorOnTeritaryContainer));
+        } else {
+            holder.itemView.setBackgroundTintList(ContextCompat.getColorStateList(context, R.color.NewcolorSurfaceVariant));
+            holder.title.setTextColor(ContextCompat.getColorStateList(context, R.color.NewcolorText));
+            holder.artist.setTextColor(ContextCompat.getColorStateList(context, R.color.NewcolorText));
+            holder.more.setBackgroundTintList(ContextCompat.getColorStateList(context, R.color.NewcolorText));
+        }
     }
 
-    /*
+    private String getInfoText(TrackDTO trackDTO) {
+        if (trackDTO.getSize() != null || listFilterType.equals(ListFilterType.LAST_CREATED)) {
+            if (listFilterType.equals(ListFilterType.LAST_PLAYED)) {
+                LocalDateTime ldt = LocalDateTime.parse(trackDTO.getSize(), GeneralUtils.DB_TIMESTAMP);
+                return GeneralUtils.getTimeDiffAsText(ldt);
+            } else if (listFilterType.equals(ListFilterType.LAST_CREATED) && trackDTO.getTrack().getTCreated() != null) {
+                LocalDateTime dbTime = LocalDateTime.parse(trackDTO.getTrack().getTCreated(), GeneralUtils.DB_TIMESTAMP);
+                return GeneralUtils.getTimeDiffAsText(dbTime);
+            } else if (listFilterType.equals(ListFilterType.TIMES_PLAYED)) {
+                return trackDTO.getSize();
+            } else if (listFilterType.equals(ListFilterType.TIME_PLAYED)) {
+                try {
+                    return GeneralUtils.convertTimeWithUnit(Integer.parseInt(trackDTO.getSize()));
+                } catch (NumberFormatException ignored) {
+                }
+            }
+        }
+
+        return "";
+    }
+
     @Override
     public Filter getFilter() {
-        Filter filter = new Filter() {
-            @SuppressWarnings("unchecked")
+        return new Filter() {
             @Override
             protected FilterResults performFiltering(CharSequence constraint) {
                 FilterResults filterResults = new FilterResults();
-                ArrayList<MusicResolver> filteredList = new ArrayList<>();
-
-                if(songList==null){
-                    songList = new ArrayList<MusicResolver>(mDisplayedValues);
-                }
-                if (constraint == null || constraint.length() == 0) {
-
-                    // set the Original result to return
+                ArrayList<TrackDTO> filteredList = new ArrayList<>();
+                if (constraint == null || constraint.length() == 0 || constraint.equals("")) {
                     filterResults.count = songList.size();
                     filterResults.values = songList;
                 } else {
                     constraint = constraint.toString().toLowerCase();
                     for (int i = 0; i < songList.size(); i++) {
-                        String data = songList.get(i).getTitle();
-                        if (data.toLowerCase().startsWith(constraint.toString())) {
+                        String data = songList.get(i).getTrack().getTTitle();
+                        if (data.toLowerCase().contains(constraint.toString())) {
                             filteredList.add(songList.get(i));
                         }
                     }
-                    // set the Filtered result to return
                     filterResults.count = filteredList.size();
                     filterResults.values = filteredList;
                 }
@@ -125,30 +186,52 @@ public class SongListAdapter extends RecyclerView.Adapter<SongListAdapter.ViewHo
 
             @Override
             protected void publishResults(CharSequence charSequence, FilterResults filterResults) {
-                mDisplayedValues = (ArrayList<MusicResolver>) filterResults.values; // has the filtered values
+                mDisplayedValues = (ArrayList<TrackDTO>) filterResults.values; // has the filtered values
                 notifyDataSetChanged();  // notifies the data with new filtered values
             }
         };
-        return filter;
     }
-
-     */
 
     @Override
     public int getItemCount() {
-        return songList.size();
+        return mDisplayedValues.size();
+    }
+
+    public void setListFilterType(ListFilterType listFilterType) {
+        this.listFilterType = listFilterType;
+    }
+
+    public void isScrolling(boolean newIsScrolling) {
+        this.isScrolling = newIsScrolling;
+    }
+
+    public void setCurrentPlayingIndex(int currentPlayingIndex) {
+        int oldIndex = this.currPlayingSongIndex;
+        this.currPlayingSongIndex = currentPlayingIndex;
+
+        for (int i = 0; i < songList.size(); i++) {
+            if (songList.get(i).getTrack().getTId().equals(currentPlayingIndex)) {
+                notifyItemChanged(i, "");
+            } else if (songList.get(i).getTrack().getTId().equals(oldIndex)) {
+                notifyItemChanged(i, "");
+            }
+        }
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {
-        TextView title, artist;
+        TextView title, artist, info;
         ImageView coverImage;
-        int position;
+        ImageButton more;
+        TrackDTO trackDTO;
+        int imageTrackID = -1;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
             title = itemView.findViewById(R.id.tracklist_title);
             artist = itemView.findViewById(R.id.tracklist_artist);
             coverImage = itemView.findViewById(R.id.tracklist_cover);
+            more = itemView.findViewById(R.id.tracklist_more);
+            info = itemView.findViewById(R.id.tracklist_info);
         }
     }
 }

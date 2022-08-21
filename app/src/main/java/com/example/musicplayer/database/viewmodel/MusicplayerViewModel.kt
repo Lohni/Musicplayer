@@ -8,18 +8,20 @@ import com.example.musicplayer.database.entity.Album
 import com.example.musicplayer.database.entity.Track
 import com.example.musicplayer.database.entity.TrackPlayed
 import com.example.musicplayer.utils.GeneralUtils
-import com.example.musicplayer.utils.enums.DashboardFilterType
+import com.example.musicplayer.utils.enums.ListFilterType
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlin.streams.toList
 
 class MusicplayerViewModel(private val dao: MusicplayerDataAccess) : ViewModel() {
 
-    val allTracks: LiveData<List<Track>> = dao.getAllTracks().asLiveData()
+    val allTracks: LiveData<List<TrackDTO>> = dao.getAllTracks().asLiveData()
     val allAlbums: LiveData<List<Album>> = dao.getAllAbums().asLiveData()
     val lastPlayedTracks: LiveData<List<TrackDTO>> = dao.getTracksByLastPlayed().asLiveData()
     val favouriteTracks: LiveData<List<TrackDTO>> = dao.getFavouriteTracks().asLiveData()
     val mostPlayedTracks: LiveData<List<TrackDTO>> = dao.getTracksByTimesPlayed().asLiveData()
+    val tracksTimePlayed: LiveData<List<TrackDTO>> = dao.getTracksbyTimePlayed().asLiveData()
+    val tracksCreated: LiveData<List<TrackDTO>> = dao.getAllTracksByCreated().asLiveData()
 
     val lastTrackPlayed: LiveData<TrackPlayed> = dao.getLastTrackPlayed().asLiveData()
 
@@ -62,10 +64,13 @@ class MusicplayerViewModel(private val dao: MusicplayerDataAccess) : ViewModel()
         dao.insertTrackPlayed(trackPlayed)
     }
 
-    fun getTrackListByFilter(filterType: DashboardFilterType): LiveData<List<TrackDTO>> {
+    fun getTrackListByFilter(filterType: ListFilterType): LiveData<List<TrackDTO>> {
         return when (filterType) {
-            DashboardFilterType.FAVOURITE -> favouriteTracks
-            DashboardFilterType.TIMES_PLAYED -> mostPlayedTracks
+            ListFilterType.FAVOURITE -> favouriteTracks
+            ListFilterType.TIMES_PLAYED -> mostPlayedTracks
+            ListFilterType.ALPHABETICAL -> allTracks
+            ListFilterType.TIME_PLAYED -> tracksTimePlayed
+            ListFilterType.LAST_CREATED -> tracksCreated
             else -> lastPlayedTracks
         }
     }

@@ -11,6 +11,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.example.musicplayer.R;
+import com.example.musicplayer.database.dto.TrackDTO;
 import com.example.musicplayer.database.entity.Track;
 import com.google.android.material.textview.MaterialTextView;
 
@@ -93,6 +94,26 @@ public class SideIndex {
         mapIndex = new LinkedHashMap<>();
         for (int i = 0; i < songList.size(); i++) {
             Track item = songList.get(i);
+            String index = item.getTTitle().substring(0, 1);
+            Character character = index.charAt(0);
+
+            if (character <= 64 || character >= 123) {
+                index = "#";
+            } else if (character >= 91 && character <= 96) index = "#";
+            else if (character > 96) {
+                character = Character.toUpperCase(character);
+                index = character.toString();
+            }
+
+            mapIndex.putIfAbsent(index, i);
+        }
+        return this;
+    }
+
+    public SideIndex setIndexListDTO(ArrayList<TrackDTO> songList) {
+        mapIndex = new LinkedHashMap<>();
+        for (int i = 0; i < songList.size(); i++) {
+            Track item = songList.get(i).getTrack();
             String index = item.getTTitle().substring(0, 1);
             Character character = index.charAt(0);
 

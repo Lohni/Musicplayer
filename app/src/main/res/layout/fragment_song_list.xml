@@ -28,6 +28,13 @@
             android:textSize="25sp" />
     </FrameLayout>
 
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/songlist_guideline"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.07"/>
+
     <LinearLayout
         android:id="@+id/side_index"
         android:layout_width="20dp"
@@ -41,7 +48,7 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/songlist_shuffle_container"
         android:layout_width="0dp"
-        android:layout_height="50dp"
+        android:layout_height="50sp"
         android:layout_marginStart="8dp"
         android:layout_marginEnd="4dp"
         app:layout_constraintBottom_toTopOf="@id/songList"
@@ -81,8 +88,8 @@
                 android:id="@+id/songlist_shuffle_size"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
-                android:layout_marginStart="16dp"
-                android:layout_marginEnd="16dp"
+                android:layout_marginStart="8dp"
+                android:layout_marginEnd="8dp"
                 android:gravity="center"
                 android:lines="1"
                 android:text="Shuffle"
@@ -136,19 +143,23 @@
         android:layout_width="0dp"
         android:layout_height="0dp"
         app:layout_constraintDimensionRatio="1"
-        android:layout_marginStart="4dp"
         app:layout_constraintBottom_toTopOf="@id/songList"
-        android:layout_marginBottom="4dp"
+        android:layout_marginBottom="0dp"
         android:layout_marginTop="8dp"
+        android:layout_marginStart="4dp"
+        android:layout_marginEnd="4dp"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintEnd_toEndOf="@id/songList">
+        app:layout_constraintEnd_toEndOf="parent"
+        android:clickable="true"
+        android:focusable="true"
+        android:foreground="@drawable/shuffle_ripple">
 
         <TextView
             android:id="@+id/songlist_filter_title"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             app:layout_constraintTop_toTopOf="parent"
-            android:textSize="12sp"
+            android:textSize="10sp"
             android:text="A-Z"
             android:textColor="@color/NewcolorText"
             android:gravity="center"
@@ -161,6 +172,7 @@
             android:layout_height="0dp"
             android:layout_marginTop="10dp"
             android:background="@drawable/ic_baseline_filter_list_24"
+            android:layout_marginBottom="4dp"
             app:layout_constraintDimensionRatio="1"
             android:backgroundTint="@color/NewcolorText"
             app:layout_constraintTop_toTopOf="parent"

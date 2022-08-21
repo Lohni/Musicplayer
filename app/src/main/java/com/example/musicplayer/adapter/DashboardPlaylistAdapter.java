@@ -12,7 +12,7 @@ import com.example.musicplayer.R;
 import com.example.musicplayer.database.entity.Playlist;
 import com.example.musicplayer.database.dto.PlaylistDTO;
 import com.example.musicplayer.ui.playlist.PlaylistInterface;
-import com.example.musicplayer.utils.enums.DashboardFilterType;
+import com.example.musicplayer.utils.enums.ListFilterType;
 
 import java.util.List;
 
@@ -20,16 +20,15 @@ import androidx.annotation.NonNull;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.content.ContextCompat;
 import androidx.core.content.res.ResourcesCompat;
-import androidx.core.graphics.drawable.DrawableCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 public class DashboardPlaylistAdapter extends RecyclerView.Adapter<DashboardPlaylistAdapter.ViewHolder> {
     private final List<PlaylistDTO> playlists;
     private final Drawable customCoverDrawable;
-    private final DashboardFilterType type;
+    private final ListFilterType type;
     private PlaylistInterface playlistInterface;
 
-    public DashboardPlaylistAdapter(Context context, List<PlaylistDTO> playlists, DashboardFilterType type, PlaylistInterface playlistInterface) {
+    public DashboardPlaylistAdapter(Context context, List<PlaylistDTO> playlists, ListFilterType type, PlaylistInterface playlistInterface) {
         this.playlists = playlists;
         this.type = type;
         this.playlistInterface = playlistInterface;
@@ -58,7 +57,7 @@ public class DashboardPlaylistAdapter extends RecyclerView.Adapter<DashboardPlay
     }
 
     private String getSubtitleMessage(Integer amount) {
-        return (type.equals(DashboardFilterType.TIMES_PLAYED))
+        return (type.equals(ListFilterType.TIMES_PLAYED))
                 ? amount + " times played"
                 : amount + " songs";
     }

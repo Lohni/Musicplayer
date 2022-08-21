@@ -6,4 +6,4 @@
     android:toYScale="1.0"
     android:fromYScale="0.0"
 
-    android:duration="400" />
+    android:duration="100" />
