@@ -6,8 +6,7 @@ import com.example.musicplayer.database.entity.Playlist
 import com.example.musicplayer.database.entity.PlaylistItem
 import com.example.musicplayer.database.entity.PlaylistPlayed
 import com.example.musicplayer.database.dto.PlaylistDTO
-import com.example.musicplayer.database.dto.TrackDTO
-import com.example.musicplayer.utils.enums.DashboardFilterType
+import com.example.musicplayer.utils.enums.ListFilterType
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
@@ -56,10 +55,10 @@ class PlaylistViewModel(private val dao: PlaylistDataAccess) : ViewModel() {
         dao.insertPlaylistPlayed(playlistPlayed)
     }
 
-    fun getPlaylistByFilter(filterType: DashboardFilterType): LiveData<List<PlaylistDTO>> {
+    fun getPlaylistByFilter(filterType: ListFilterType): LiveData<List<PlaylistDTO>> {
         return when (filterType) {
-            DashboardFilterType.FAVOURITE -> dao.getFavouritePlaylists().asLiveData()
-            DashboardFilterType.TIMES_PLAYED -> dao.getPlaylistsByTimesPlayed().asLiveData()
+            ListFilterType.FAVOURITE -> dao.getFavouritePlaylists().asLiveData()
+            ListFilterType.TIMES_PLAYED -> dao.getPlaylistsByTimesPlayed().asLiveData()
             else -> dao.getPlaylistsByLastPlayed().asLiveData()
         }
     }

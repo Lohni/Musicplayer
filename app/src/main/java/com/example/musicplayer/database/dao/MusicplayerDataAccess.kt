@@ -16,8 +16,8 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface MusicplayerDataAccess {
 
-    @Query("SELECT * FROM Track ORDER BY t_title ASC")
-    fun getAllTracks(): Flow<List<Track>>
+    @Query("SELECT t.*, null FROM Track as t ORDER BY t_title ASC")
+    fun getAllTracks(): Flow<List<TrackDTO>>
 
     @Query("SELECT t.* FROM PlaylistItem JOIN TRACK as t on pi_t_id = t_id WHERE pi_p_id = :playlistId ORDER BY pi_custom_ordinal ASC")
     fun getTracksByIdsOrderByPlaylistItemOrdinal(playlistId: Int): Flow<List<Track>>
@@ -67,6 +67,10 @@ interface MusicplayerDataAccess {
     fun getTracksByTimesPlayed(): Flow<List<TrackDTO>>
 
     @Transaction
+    @Query("SELECT t.*, sum(tp_time_played) as size FROM TrackPlayed JOIN Track as t on tp_t_id = t.t_id GROUP BY t_id ORDER BY sum(tp_time_played) DESC")
+    fun getTracksbyTimePlayed(): Flow<List<TrackDTO>>
+
+    @Transaction
     @Query("SELECT *, null FROM Track WHERE t_isFavourite = 1")
     fun getFavouriteTracks(): Flow<List<TrackDTO>>
 
@@ -78,4 +82,7 @@ interface MusicplayerDataAccess {
 
     @Query("SELECT tp_played as time, sum(tp_time_played) as total_time, count(tp_t_id) as amount FROM TrackPlayed WHERE tp_played > :date GROUP BY date(tp_played)")
     fun getAllTrackPlayedInDaySteps(date: String): Flow<List<StatisticDTO>>
+
+    @Query("SELECT *, null FROM Track ORDER BY t_created DESC")
+    fun getAllTracksByCreated(): Flow<List<TrackDTO>>
 }

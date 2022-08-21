@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/songlist_filter_menu"
+    android:layout_width="180dp"
+    android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:background="@drawable/background_button_secondary"
+    android:backgroundTint="@color/NewcolorSurfaceLevel2">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/songlist_filter_menu_az"
+        android:layout_width="180dp"
+        android:layout_height="60dp"
+        android:clickable="true"
+        android:focusable="true"
+        android:foreground="@drawable/shuffle_ripple"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/songlist_filter_menu_lastplayed">
+
+        <TextView
+            android:id="@+id/songlist_filter_menu_az_title"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:text="Alphabetical"
+            android:textColor="@color/NewcolorText"
+            android:textSize="16sp"
+            android:layout_marginEnd="32dp"
+            android:layout_marginStart="16dp"
+            app:layout_constraintStart_toStartOf="parent"/>
+
+        <TextView
+            android:id="@+id/songlist_filter_menu_az_subtitle"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:text="A-Z"
+            android:textColor="@color/NewcolorText"
+            android:textSize="11sp"
+            android:layout_marginEnd="16dp"
+            app:layout_constraintEnd_toEndOf="parent"/>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/songlist_filter_menu_lastplayed"
+        android:layout_width="180dp"
+        android:layout_height="60dp"
+        android:clickable="true"
+        android:focusable="true"
+        android:foreground="@drawable/shuffle_ripple"
+        app:layout_constraintTop_toBottomOf="@id/songlist_filter_menu_az"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
+
+        <TextView
+            android:id="@+id/songlist_filter_menu_lastplayed_title"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:text="Last played"
+            android:lines="1"
+            android:textColor="@color/NewcolorText"
+            android:textSize="16sp"
+            android:layout_marginStart="16dp"
+            app:layout_constraintStart_toStartOf="parent" />
+
+        <TextView
+            android:id="@+id/songlist_filter_menu_lastplayed_subtitle"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:text="LAST"
+            android:textColor="@color/NewcolorText"
+            android:textSize="11sp"
+            android:layout_marginEnd="16dp"
+            app:layout_constraintEnd_toEndOf="parent"/>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/songlist_filter_menu_timesplayed"
+        android:layout_width="180dp"
+        android:layout_height="60dp"
+        android:clickable="true"
+        android:focusable="true"
+        android:foreground="@drawable/shuffle_ripple"
+        app:layout_constraintTop_toBottomOf="@id/songlist_filter_menu_lastplayed"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
+
+        <TextView
+            android:id="@+id/songlist_filter_menu_timesplayed_title"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:text="Times played"
+            android:textColor="@color/NewcolorText"
+            android:lines="1"
+            android:textSize="16sp"
+            android:layout_marginEnd="32dp"
+            android:layout_marginStart="16dp"
+            app:layout_constraintStart_toStartOf="parent" />
+
+        <TextView
+            android:id="@+id/songlist_filter_menu_timesplayed_subtitle"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:text="TIMES"
+            android:textColor="@color/NewcolorText"
+            android:textSize="11sp"
+            android:layout_marginEnd="16dp"
+            app:layout_constraintEnd_toEndOf="parent"/>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/songlist_filter_menu_timeplayed"
+        android:layout_width="180dp"
+        android:layout_height="60dp"
+        android:clickable="true"
+        android:focusable="true"
+        android:foreground="@drawable/shuffle_ripple"
+        app:layout_constraintTop_toBottomOf="@id/songlist_filter_menu_timesplayed"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
+
+        <TextView
+            android:id="@+id/songlist_filter_menu_timeplayed_title"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:text="Time played"
+            android:textColor="@color/NewcolorText"
+            android:lines="1"
+            android:textSize="16sp"
+            android:layout_marginStart="16dp"
+            app:layout_constraintStart_toStartOf="parent" />
+
+        <TextView
+            android:id="@+id/songlist_filter_menu_timeplayed_subtitle"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:text="TIME"
+            android:textColor="@color/NewcolorText"
+            android:textSize="11sp"
+            android:layout_marginEnd="16dp"
+            app:layout_constraintEnd_toEndOf="parent"/>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/songlist_filter_menu_created"
+        android:layout_width="180dp"
+        android:layout_height="60dp"
+        android:clickable="true"
+        android:focusable="true"
+        android:foreground="@drawable/shuffle_ripple"
+        app:layout_constraintTop_toBottomOf="@id/songlist_filter_menu_timeplayed"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
+
+        <TextView
+            android:id="@+id/songlist_filter_menu_created_title"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:text="Created"
+            android:textColor="@color/NewcolorText"
+            android:lines="1"
+            android:textSize="16sp"
+            android:layout_marginStart="16dp"
+            app:layout_constraintStart_toStartOf="parent" />
+
+        <TextView
+            android:id="@+id/songlist_filter_menu_created_subtitle"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:text="CREATE"
+            android:textColor="@color/NewcolorText"
+            android:textSize="11sp"
+            android:layout_marginEnd="16dp"
+            app:layout_constraintEnd_toEndOf="parent"/>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

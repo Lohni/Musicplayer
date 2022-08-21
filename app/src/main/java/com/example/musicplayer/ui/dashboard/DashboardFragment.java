@@ -21,16 +21,15 @@ import com.example.musicplayer.database.viewmodel.PlaylistViewModel;
 import com.example.musicplayer.interfaces.SongInterface;
 import com.example.musicplayer.ui.playlist.PlaylistInterface;
 import com.example.musicplayer.ui.playlistdetail.PlaylistDetail;
+import com.example.musicplayer.ui.songlist.SongList;
 import com.example.musicplayer.ui.views.DashboardListDialog;
 import com.example.musicplayer.ui.views.XYGraphView;
 import com.example.musicplayer.utils.enums.DashboardEnumDeserializer;
-import com.example.musicplayer.utils.enums.DashboardFilterType;
+import com.example.musicplayer.utils.enums.ListFilterType;
 import com.example.musicplayer.utils.enums.DashboardListType;
-import com.google.android.material.textfield.TextInputEditText;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -45,8 +44,8 @@ public class DashboardFragment extends Fragment implements PlaylistInterface {
 
     private DashboardListType firstListType = DashboardListType.PLAYLIST;
     private DashboardListType secondlistType = DashboardListType.TRACK;
-    private DashboardFilterType firstFilterType = DashboardFilterType.LAST_PLAYED;
-    private DashboardFilterType secondFilterType = DashboardFilterType.TIMES_PLAYED;
+    private ListFilterType firstFilterType = ListFilterType.LAST_PLAYED;
+    private ListFilterType secondFilterType = ListFilterType.TIMES_PLAYED;
 
     private int firstListSize, secondListSize;
 
@@ -62,6 +61,9 @@ public class DashboardFragment extends Fragment implements PlaylistInterface {
 
     private SharedPreferences sharedPreferences;
     private SongInterface songInterface;
+
+    private LinearLayoutManager firstListManager;
+    private LinearLayoutManager secondListManager;
 
     public DashboardFragment() {
     }
@@ -94,24 +96,26 @@ public class DashboardFragment extends Fragment implements PlaylistInterface {
         statTitle = root.findViewById(R.id.dashboard_stat_title);
         View firstEdit = root.findViewById(R.id.dashboard_first_element_edit);
         View secondEdit = root.findViewById(R.id.dashboard_second_element_edit);
+        View firstGoto = root.findViewById(R.id.dashboard_first_element_goto);
+        View secondGoto = root.findViewById(R.id.dashboard_second_element_goto);
         stat = root.findViewById(R.id.dashboard_statistics);
 
         firstListType = DashboardEnumDeserializer.getDashboardListType(sharedPreferences.getInt(getString(R.string.preference_dashboard_first_list_type), 1));
         secondlistType = DashboardEnumDeserializer.getDashboardListType(sharedPreferences.getInt(getString(R.string.preference_dashboard_second_list_type), 0));
 
-        firstFilterType = DashboardEnumDeserializer.getDashboardListFilter(sharedPreferences.getInt(getString(R.string.preference_dashboard_first_list_filter), 1));
-        secondFilterType = DashboardEnumDeserializer.getDashboardListFilter(sharedPreferences.getInt(getString(R.string.preference_dashboard_second_list_filter), 1));
+        firstFilterType = DashboardEnumDeserializer.getListFilterTypeByInt(sharedPreferences.getInt(getString(R.string.preference_dashboard_first_list_filter), 1));
+        secondFilterType = DashboardEnumDeserializer.getListFilterTypeByInt(sharedPreferences.getInt(getString(R.string.preference_dashboard_second_list_filter), 1));
 
         firstListSize = sharedPreferences.getInt(getString(R.string.preference_dashboard_first_list_size), 10);
         secondListSize = sharedPreferences.getInt(getString(R.string.preference_dashboard_second_list_size), 10);
 
-        LinearLayoutManager firstListManager = new LinearLayoutManager(requireContext());
+        firstListManager = new LinearLayoutManager(requireContext());
         firstListManager.setOrientation(RecyclerView.HORIZONTAL);
         firstList.setHasFixedSize(true);
         firstList.setLayoutManager(firstListManager);
         firstList.setAdapter(getAdapter(firstListType, firstAdapterList, firstFilterType));
 
-        LinearLayoutManager secondListManager = new LinearLayoutManager(requireContext());
+        secondListManager = new LinearLayoutManager(requireContext());
         secondListManager.setOrientation(RecyclerView.HORIZONTAL);
         secondList.setHasFixedSize(true);
         secondList.setLayoutManager(secondListManager);
@@ -164,6 +168,34 @@ public class DashboardFragment extends Fragment implements PlaylistInterface {
             });
         });
 
+        firstGoto.setOnClickListener((view) -> {
+            if (firstListType.equals(DashboardListType.TRACK)) {
+                Bundle bundle = new Bundle();
+                bundle.putInt("FILTER", firstFilterType.getFilterType());
+
+                SongList fragment = new SongList();
+                fragment.setArguments(bundle);
+
+                getParentFragmentManager().beginTransaction()
+                        .replace(R.id.nav_host_fragment, fragment)
+                        .addToBackStack(null).commit();
+            }
+        });
+
+        secondGoto.setOnClickListener((view) -> {
+            if (secondlistType.equals(DashboardListType.TRACK)) {
+                Bundle bundle = new Bundle();
+                bundle.putInt("FILTER", secondFilterType.getFilterType());
+
+                SongList fragment = new SongList();
+                fragment.setArguments(bundle);
+
+                getParentFragmentManager().beginTransaction()
+                        .replace(R.id.nav_host_fragment, fragment)
+                        .addToBackStack(null).commit();
+            }
+        });
+
         return root;
     }
 
@@ -171,7 +203,7 @@ public class DashboardFragment extends Fragment implements PlaylistInterface {
         first.setText(DashboardEnumDeserializer.getTitleForFilterType(firstFilterType));
         switch (firstListType) {
             case TRACK:
-                useTrackViewModel(firstFilterType, (ArrayList<TrackDTO>) firstAdapterList, firstList.getAdapter(), firstListSize);
+                useTrackViewModel(firstFilterType, (ArrayList<TrackDTO>) firstAdapterList, firstList.getAdapter(), firstListManager, firstListSize);
                 break;
             case PLAYLIST:
                 usePlaylistViewModel(firstFilterType, (ArrayList<PlaylistDTO>) firstAdapterList, firstList.getAdapter());
@@ -183,7 +215,7 @@ public class DashboardFragment extends Fragment implements PlaylistInterface {
         second.setText(DashboardEnumDeserializer.getTitleForFilterType(secondFilterType));
         switch (secondlistType) {
             case TRACK:
-                useTrackViewModel(secondFilterType, (ArrayList<TrackDTO>) secondAdapterList, secondList.getAdapter(), secondListSize);
+                useTrackViewModel(secondFilterType, (ArrayList<TrackDTO>) secondAdapterList, secondList.getAdapter(), secondListManager, secondListSize);
                 break;
             case PLAYLIST:
                 usePlaylistViewModel(secondFilterType, (ArrayList<PlaylistDTO>) secondAdapterList, secondList.getAdapter());
@@ -191,7 +223,7 @@ public class DashboardFragment extends Fragment implements PlaylistInterface {
         }
     }
 
-    private RecyclerView.Adapter getAdapter(DashboardListType listType, ArrayList<?> list, DashboardFilterType filterType) {
+    private RecyclerView.Adapter getAdapter(DashboardListType listType, ArrayList<?> list, ListFilterType filterType) {
         switch (listType) {
             case ALBUM:
                 return null;
@@ -202,18 +234,17 @@ public class DashboardFragment extends Fragment implements PlaylistInterface {
         }
     }
 
-    private void useTrackViewModel(DashboardFilterType filterType, ArrayList<TrackDTO> listToFill, RecyclerView.Adapter adapter, int listSize) {
+    private void useTrackViewModel(ListFilterType filterType, ArrayList<TrackDTO> listToFill, RecyclerView.Adapter adapter, LinearLayoutManager layoutManager, int listSize) {
         musicplayerViewModel.getTrackListByFilter(filterType).observe(getViewLifecycleOwner(), trackDTOS -> {
             int size = Math.min(trackDTOS.size(), listSize);
             if (listToFill.size() == 0) {
                 listToFill.addAll(trackDTOS.subList(0, size));
                 adapter.notifyItemRangeInserted(0, listToFill.size());
-            } else if (filterType.equals(DashboardFilterType.TIMES_PLAYED)
-                    || filterType.equals(DashboardFilterType.LAST_PLAYED)) {
+            } else if (filterType.equals(ListFilterType.TIMES_PLAYED)
+                    || filterType.equals(ListFilterType.LAST_PLAYED)) {
                 ArrayList<TrackDTO> oldList = new ArrayList<>(listToFill);
                 listToFill.clear();
                 listToFill.addAll(trackDTOS.subList(0, size));
-
                 int toPos = 0, targetId = -1;
                 for (int i = 0; i < oldList.size(); i++) {
                     if (!trackDTOS.get(i).getTrack().getTId().equals(oldList.get(i).getTrack().getTId())) {
@@ -233,13 +264,17 @@ public class DashboardFragment extends Fragment implements PlaylistInterface {
                     }
 
                     adapter.notifyItemMoved(fromPos, toPos);
+
+                    if (toPos == 0) {
+                        layoutManager.scrollToPosition(0);
+                    }
                 }
                 adapter.notifyItemRangeChanged(0, listSize, "");
             }
         });
     }
 
-    private synchronized void usePlaylistViewModel(DashboardFilterType filterType, ArrayList<PlaylistDTO> listToFill, RecyclerView.Adapter adapter) {
+    private synchronized void usePlaylistViewModel(ListFilterType filterType, ArrayList<PlaylistDTO> listToFill, RecyclerView.Adapter adapter) {
         playlistViewModel.getPlaylistByFilter(filterType).observe(getViewLifecycleOwner(), playlistDTOS -> {
             playlistViewModel.getPlaylistByFilter(filterType).removeObservers(getViewLifecycleOwner());
             listToFill.clear();

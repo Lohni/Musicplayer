@@ -1,7 +1,13 @@
 package com.example.musicplayer.ui.songlist;
 
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -9,14 +15,18 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.AnimationUtils;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
+import android.widget.PopupWindow;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.musicplayer.R;
 import com.example.musicplayer.adapter.SongListAdapter;
 import com.example.musicplayer.database.MusicplayerApplication;
 import com.example.musicplayer.database.dao.MusicplayerDataAccess;
+import com.example.musicplayer.database.dto.TrackDTO;
 import com.example.musicplayer.database.entity.Track;
 import com.example.musicplayer.database.viewmodel.MusicplayerViewModel;
 import com.example.musicplayer.interfaces.PlaybackControlInterface;
@@ -24,12 +34,16 @@ import com.example.musicplayer.interfaces.SongInterface;
 import com.example.musicplayer.ui.views.SideIndex;
 import com.example.musicplayer.utils.GeneralUtils;
 import com.example.musicplayer.utils.NavigationControlInterface;
+import com.example.musicplayer.utils.enums.DashboardEnumDeserializer;
 import com.example.musicplayer.utils.enums.DashboardListType;
+import com.example.musicplayer.utils.enums.ListFilterType;
 import com.example.musicplayer.utils.enums.PlaybackBehaviour;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 
 import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -43,22 +57,27 @@ import androidx.recyclerview.widget.RecyclerView;
 public class SongList extends Fragment implements SongListInterface {
     private RecyclerView listView;
     private View view;
-    private SongListAdapter songListAdapter;
+    private TextView shuffle_size,filterTitle;
+    private ConstraintLayout shuffle, filter;
+    private TextInputEditText search;
+    private TextInputLayout search_layout;
 
-    private final ArrayList<Track> songList = new ArrayList<>();
     private NavigationControlInterface navigationControlInterface;
     private SongInterface songInterface;
     private PlaybackControlInterface playbackControlInterface;
     private SongListInterface songListInterface;
-    private TextView shuffle_size;
-    private ConstraintLayout shuffle;
-    private TextInputEditText search;
-    private TextInputLayout search_layout;
-    private SideIndex sideIndex;
 
+    private SongListAdapter songListAdapter;
+    private SideIndex sideIndex;
+    private ListFilterType listFilterType;
+    private LinearLayoutManager listViewManager;
+
+    private SharedPreferences sharedPreferences;
     private MusicplayerViewModel musicplayerViewModel;
 
-    private boolean isSonglistSet = false, isSearchModeActive = false;
+    private final ArrayList<TrackDTO> songList = new ArrayList<>();
+    private boolean isSonglistSet = false, isSearchModeActive = false, firstLoad = true, listChange = false;
+    private int currentPlayingSongId = -1, currentScrollingSpeed = 0;
 
     public SongList() {
     }
@@ -77,12 +96,31 @@ public class SongList extends Fragment implements SongListInterface {
     }
 
     @Override
+    public void onDetach() {
+        requireActivity().unregisterReceiver(receiver);
+        super.onDetach();
+    }
+
+    @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
 
+        if (getArguments() != null) {
+            currentPlayingSongId = getArguments().getInt("ID", -1);
+            int filter = getArguments().getInt("FILTER", -1);
+            if (filter >= 0) {
+                listFilterType = DashboardEnumDeserializer.getListFilterTypeByInt(filter);
+            }
+        }
+
         MusicplayerDataAccess mda = ((MusicplayerApplication) requireActivity().getApplication()).getDatabase().musicplayerDao();
         musicplayerViewModel = new ViewModelProvider(this, new MusicplayerViewModel.MusicplayerViewModelFactory(mda)).get(MusicplayerViewModel.class);
+
+        IntentFilter intentFilter = new IntentFilter(getResources().getString(R.string.musicservice_song_prepared));
+        requireActivity().registerReceiver(receiver, intentFilter);
+
+        sharedPreferences = requireActivity().getPreferences(Context.MODE_PRIVATE);
     }
 
     @Override
@@ -90,6 +128,7 @@ public class SongList extends Fragment implements SongListInterface {
         super.onCreateOptionsMenu(menu, inflater);
         inflater.inflate(R.menu.songlist_menu, menu);
         menu.getItem(0).setIconTintList(ContextCompat.getColorStateList(requireContext(), R.color.NewcolorText));
+        menu.getItem(1).setIconTintList(ContextCompat.getColorStateList(requireContext(), R.color.NewcolorText));
     }
 
     @Override
@@ -102,12 +141,19 @@ public class SongList extends Fragment implements SongListInterface {
                 search_layout.setVisibility(View.VISIBLE);
                 isSearchModeActive = true;
             } else {
+                search.setText("");
+                songListAdapter.getFilter().filter("");
                 item.setIcon(R.drawable.ic_search_black_24dp);
                 item.setIconTintList(ContextCompat.getColorStateList(requireContext(), R.color.NewcolorText));
                 shuffle.setVisibility(View.VISIBLE);
                 search_layout.setVisibility(View.GONE);
                 isSearchModeActive = false;
+
+                InputMethodManager imm = (InputMethodManager) requireContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+                imm.hideSoftInputFromWindow(search.getWindowToken(), 0);
             }
+        } else if (item.getItemId() == R.id.action_songlist_jumpto)  {
+            jumpToCurrentPlayingSong();
         }
 
         return super.onOptionsItemSelected(item);
@@ -125,33 +171,60 @@ public class SongList extends Fragment implements SongListInterface {
         search = view.findViewById(R.id.songlist_search);
         search_layout = view.findViewById(R.id.songlist_search_layout);
         shuffle_size = view.findViewById(R.id.songlist_shuffle_size);
+        filter = view.findViewById(R.id.songlist_filter_holder);
+        filterTitle = view.findViewById(R.id.songlist_filter_title);
+
+        if (listFilterType == null) {
+            listFilterType = DashboardEnumDeserializer.getListFilterTypeByInt(sharedPreferences.getInt(getString(R.string.preference_songlist_filter_type), 3));
+        }
+
+        filterTitle.setText(listFilterType.getId());
 
         LinearLayout linearLayout = view.findViewById(R.id.side_index);
         FrameLayout indexZoomHolder = view.findViewById(R.id.songlist_indexzoom_holder);
         TextView indexZoom = view.findViewById(R.id.songlist_indexzoom);
-        LinearLayoutManager listViewManager = new LinearLayoutManager(requireContext());
+        listViewManager = new LinearLayoutManager(requireContext());
         sideIndex = new SideIndex(requireActivity(), linearLayout, indexZoomHolder, indexZoom, listViewManager);
 
         listView.setLayoutAnimation(AnimationUtils.loadLayoutAnimation(requireContext(), R.anim.layout_animation_fall_down));
         listView.setHasFixedSize(true);
         listView.setLayoutManager(listViewManager);
 
-        musicplayerViewModel.getAllTracks().observe(getViewLifecycleOwner(), tracks -> {
-            this.songList.clear();
-            this.songList.addAll(tracks);
+        listView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
+                if (newState == 0) {
+                    songListAdapter.isScrolling(false);
+                    if (currentScrollingSpeed > 8) {
+                        songListAdapter.notifyItemRangeChanged(0, songList.size(), "SCROLL");
+                    }
+                    currentScrollingSpeed = 0;
+                }
+                super.onScrollStateChanged(recyclerView, newState);
+            }
 
-            sideIndex.setIndexList(songList).displayIndex();
+            @Override
+            public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
+                int dyAbs = Math.abs(dy);
+                songListAdapter.isScrolling(dyAbs > 50);
 
-            songListAdapter = new SongListAdapter(requireContext(), songList, songListInterface);
-            listView.setAdapter(songListAdapter);
+                if (!(currentScrollingSpeed > 25 && dy < 5) && !((currentScrollingSpeed - dyAbs) > 60 && dyAbs < 20)) {
+                    currentScrollingSpeed = dyAbs;
+                }
 
-            int time = tracks.stream().map(Track::getTDuration).reduce(0, Integer::sum);
-            shuffle_size.setText(tracks.size() + " songs - " + GeneralUtils.convertTime(time));
+                System.out.println(dy);
+                super.onScrolled(recyclerView, dx, dy);
+            }
         });
+
+        songListAdapter = new SongListAdapter(requireContext(), songList, songListInterface, listFilterType);
+        songListAdapter.setCurrentPlayingIndex(currentPlayingSongId);
+        listView.setAdapter(songListAdapter);
 
         shuffle.setOnClickListener(view -> {
             if (!isSonglistSet) {
-                songInterface.onSongListCreatedListener(songList, DashboardListType.TRACK);
+                List<Track> songListAsTracks = songList.stream().map(TrackDTO::getTrack).collect(Collectors.toList());
+                songInterface.onSongListCreatedListener(songListAsTracks, DashboardListType.TRACK);
                 isSonglistSet = true;
             }
 
@@ -159,16 +232,164 @@ public class SongList extends Fragment implements SongListInterface {
             playbackControlInterface.onNextClickListener();
         });
 
+        filter.setOnClickListener(view -> {
+            View menuLayout = inflater.inflate(R.layout.songlist_filter_menu, null);
+            int wrapContent = LinearLayout.LayoutParams.WRAP_CONTENT;
+            menuLayout.setAnimation(AnimationUtils.loadAnimation(requireContext(), R.anim.popupwindow_show));
+            PopupWindow filterMenu = new PopupWindow(menuLayout, wrapContent, wrapContent, true);
+
+            menuLayout.findViewById(R.id.songlist_filter_menu_az).setOnClickListener(view1 -> {
+                musicplayerViewModel.getTrackListByFilter(listFilterType).removeObservers(getViewLifecycleOwner());
+                listFilterType = ListFilterType.ALPHABETICAL;
+                onMenuClick(filterMenu);});
+
+            menuLayout.findViewById(R.id.songlist_filter_menu_lastplayed).setOnClickListener(view1 -> {
+                musicplayerViewModel.getTrackListByFilter(listFilterType).removeObservers(getViewLifecycleOwner());
+                listFilterType = ListFilterType.LAST_PLAYED;
+                onMenuClick(filterMenu);});
+
+            menuLayout.findViewById(R.id.songlist_filter_menu_timeplayed).setOnClickListener(view1 -> {
+                musicplayerViewModel.getTrackListByFilter(listFilterType).removeObservers(getViewLifecycleOwner());
+                listFilterType = ListFilterType.TIME_PLAYED;
+                onMenuClick(filterMenu);});
+
+            menuLayout.findViewById(R.id.songlist_filter_menu_timesplayed).setOnClickListener(view1 -> {
+                musicplayerViewModel.getTrackListByFilter(listFilterType).removeObservers(getViewLifecycleOwner());
+                listFilterType = ListFilterType.TIMES_PLAYED;
+                onMenuClick(filterMenu);});
+
+            menuLayout.findViewById(R.id.songlist_filter_menu_created).setOnClickListener(view1 -> {
+                musicplayerViewModel.getTrackListByFilter(listFilterType).removeObservers(getViewLifecycleOwner());
+                listFilterType = ListFilterType.LAST_CREATED;
+                onMenuClick(filterMenu);});
+
+            filterMenu.setContentView(menuLayout);
+            filterMenu.setOutsideTouchable(true);
+            filterMenu.showAsDropDown(filter);
+        });
+
+        search.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                songListAdapter.getFilter().filter(charSequence);
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+            }
+        });
+
+        loadSonglist();
         return view;
+    }
+
+    private void onMenuClick(PopupWindow filterMenu) {
+        filterTitle.setText(listFilterType.getId());
+        listChange = true;
+        loadSonglist();
+        filterMenu.dismiss();
+
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putInt(getResources().getString(R.string.preference_songlist_filter_type), listFilterType.getFilterType());
+        editor.apply();
+    }
+
+    private void loadSonglist() {
+        musicplayerViewModel.getTrackListByFilter(listFilterType).observe(getViewLifecycleOwner(), tracks -> {
+            ArrayList<TrackDTO> oldList = new ArrayList<>(this.songList);
+            this.songList.clear();
+            this.songList.addAll(tracks);
+
+            if (firstLoad) {
+                songListAdapter.notifyItemRangeInserted(0, tracks.size());
+                int time = tracks.stream().map(TrackDTO::getTrack).map(Track::getTDuration).reduce(0, Integer::sum);
+                shuffle_size.setText(tracks.size() + " songs - " + GeneralUtils.convertTime(time));
+                firstLoad = false;
+            }
+
+            if (listFilterType.equals(ListFilterType.ALPHABETICAL)) {
+                sideIndex.setIndexListDTO(songList).displayIndex();
+            } else if (listFilterType.equals(ListFilterType.LAST_PLAYED)
+                    || listFilterType.equals(ListFilterType.TIMES_PLAYED)
+                    || listFilterType.equals(ListFilterType.TIME_PLAYED)) {
+
+                if (oldList.size() == tracks.size()) {
+                    int toPos = 0, targetId = -1;
+                    for (int i = 0; i < oldList.size(); i++) {
+                        if (!tracks.get(i).getTrack().getTId().equals(oldList.get(i).getTrack().getTId())) {
+                            toPos = i;
+                            targetId = tracks.get(i).getTrack().getTId();
+                            break;
+                        }
+                    }
+
+                    if (targetId >= 0) {
+                        int fromPos = 0;
+                        for (int i = 0; i < oldList.size(); i++) {
+                            if (oldList.get(i).getTrack().getTId().equals(targetId)) {
+                                fromPos = i;
+                                break;
+                            }
+                        }
+
+                        songListAdapter.notifyItemMoved(fromPos, toPos);
+
+                        if (toPos == 0) {
+                            listViewManager.scrollToPosition(0);
+                        }
+                    }
+                }
+            }
+
+            songListAdapter.setListFilterType(listFilterType);
+            if (listChange) {
+                listViewManager.scrollToPosition(0);
+                songListAdapter.notifyDataSetChanged();
+                listChange = false;
+            } else {
+                songListAdapter.notifyItemRangeChanged(0, tracks.size() - 1, "");
+            }
+        });
     }
 
     @Override
     public void OnSongSelectedListener(int index) {
         if (!isSonglistSet) {
-            songInterface.onSongListCreatedListener(songList, DashboardListType.TRACK);
+            List<Track> songListAsTracks = songList.stream().map(TrackDTO::getTrack).collect(Collectors.toList());
+            songInterface.onSongListCreatedListener(songListAsTracks, DashboardListType.TRACK);
             isSonglistSet = true;
         }
 
-        songInterface.onSongSelectedListener(songList.get(index));
+        songInterface.onSongSelectedListener(songList.get(index).getTrack());
     }
+
+    private void jumpToCurrentPlayingSong() {
+        int targetIndex = -1;
+        for (int i = 0; i < songList.size(); i++) {
+            Track track = songList.get(i).getTrack();
+            if (track.getTId().equals(currentPlayingSongId)) {
+                targetIndex = i;
+                break;
+            }
+        }
+
+        if (targetIndex >= 0) {
+            listViewManager.scrollToPositionWithOffset(targetIndex, listViewManager.getHeight() / 2);
+        } else {
+            Toast.makeText(requireContext(), "No playing song found", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private final BroadcastReceiver receiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            Bundle bundle = intent.getExtras();
+            currentPlayingSongId = bundle.getInt("ID", -1);
+            songListAdapter.setCurrentPlayingIndex(currentPlayingSongId);
+        }
+    };
 }

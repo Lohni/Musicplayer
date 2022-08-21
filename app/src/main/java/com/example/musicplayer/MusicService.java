@@ -39,6 +39,7 @@ import com.example.musicplayer.core.SystemBroadcastReceiver;
 import com.example.musicplayer.database.entity.EqualizerPreset;
 import com.example.musicplayer.database.entity.Track;
 import com.example.musicplayer.ui.audioeffects.EqualizerProperties;
+import com.example.musicplayer.ui.songlist.SongList;
 import com.example.musicplayer.utils.enums.DashboardListType;
 import com.example.musicplayer.utils.enums.PlaybackBehaviour;
 import com.example.musicplayer.utils.images.BitmapColorExtractor;
@@ -50,8 +51,6 @@ import java.util.Random;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
-import androidx.core.app.NotificationManagerCompat;
-import androidx.media.AudioManagerCompat;
 
 public class MusicService extends Service implements MediaPlayer.OnPreparedListener, MediaPlayer.OnErrorListener, MediaPlayer.OnCompletionListener {
     private final ArrayList<Track> songlist = new ArrayList<>();
@@ -619,6 +618,7 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
             Bundle bundle = new Bundle();
             bundle.putInt("ID", currSong.getTId());
             sendBroadcast(new Intent(this, SystemBroadcastReceiver.class).setAction(getString(R.string.musicservice_song_prepared)).putExtras(bundle));
+            sendBroadcast(new Intent().setAction(getString(R.string.musicservice_song_prepared)).putExtras(bundle));
         }
     }
 

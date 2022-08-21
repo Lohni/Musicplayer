@@ -29,4 +29,8 @@
         <item name="android:windowExitAnimation">@anim/popupwindow_dismiss</item>
     </style>
 
+    <style name="PopupMenu" parent="@android:style/Widget.PopupMenu">
+        <item name="android:popupBackground">@color/NewcolorSurfaceLevel2</item>
+    </style>
+
 </resources>
