@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.media.MediaMetadataRetriever;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -309,6 +310,7 @@ public class SongList extends Fragment implements SongListInterface {
                 int time = tracks.stream().map(TrackDTO::getTrack).map(Track::getTDuration).reduce(0, Integer::sum);
                 shuffle_size.setText(tracks.size() + " songs - " + GeneralUtils.convertTime(time));
                 firstLoad = false;
+                songListAdapter.getAllBackgroundImages(tracks);
             }
 
             if (listFilterType.equals(ListFilterType.ALPHABETICAL)) {

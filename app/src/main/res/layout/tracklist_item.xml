@@ -11,7 +11,7 @@
     android:background="@drawable/background_button_secondary"
     android:foreground="?android:attr/selectableItemBackground">
 
-        <ImageView
+        <View
             android:id="@+id/tracklist_cover"
             android:layout_width="50dp"
             android:layout_height="50dp"
