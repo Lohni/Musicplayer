@@ -8,7 +8,6 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.AnimatedVectorDrawable;
-import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.media.MediaMetadataRetriever;
 import android.net.Uri;
@@ -33,6 +32,7 @@ import com.example.musicplayer.ui.views.AudioVisualizerView;
 import com.example.musicplayer.utils.GeneralUtils;
 import com.example.musicplayer.utils.Permissions;
 import com.example.musicplayer.utils.enums.PlaybackBehaviour;
+import com.example.musicplayer.utils.images.ImageTransformUtil;
 
 import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
@@ -135,18 +135,26 @@ public class ExpandedPlaybackControl extends Fragment {
         cover = view1.findViewById(R.id.expanded_cover);
         expanded_add = view1.findViewById(R.id.expanded_add);
         expanded_queue_count = view1.findViewById(R.id.expanded_queue_count);
+        expanded_queue_count.setText("0/0");
 
         requireActivity().startPostponedEnterTransition();
+        parentContainer.setInteractionEnabled(false);
 
         expanded_play.setOnClickListener(view -> epcInterface.onStateChangeListener());
 
         expanded_skipforward.setOnClickListener(view -> {
-            AnimatedVectorDrawable animatedVectorDrawable = (AnimatedVectorDrawable) expanded_skipforward.getBackground();
-            animatedVectorDrawable.start();
-            epcInterface.onNextClickListener();
+            if (currTrack != null) {
+                AnimatedVectorDrawable animatedVectorDrawable = (AnimatedVectorDrawable) expanded_skipforward.getBackground();
+                animatedVectorDrawable.start();
+                epcInterface.onNextClickListener();
+            }
         });
 
-        expanded_skipback.setOnClickListener(view -> epcInterface.onPreviousClickListener());
+        expanded_skipback.setOnClickListener(view -> {
+            if (currTrack != null) {
+                epcInterface.onPreviousClickListener();
+            }
+        });
 
         collapse.setOnClickListener(view -> {
             parentContainer.setInteractionEnabled(true);
@@ -171,9 +179,11 @@ public class ExpandedPlaybackControl extends Fragment {
         });
 
         expanded_behaviourControl.setOnClickListener((imageview -> {
-            playbackBehaviour = PlaybackBehaviour.getNextState(playbackBehaviour);
-            epcInterface.onPlaybackBehaviourChangeListener(playbackBehaviour);
-            updateBehaviourImage();
+            if (currTrack != null) {
+                playbackBehaviour = PlaybackBehaviour.getNextState(playbackBehaviour);
+                epcInterface.onPlaybackBehaviourChangeListener(playbackBehaviour);
+                updateBehaviourDrawable();
+            }
         }));
 
         expanded_fav.setOnClickListener((imageView -> {
@@ -200,19 +210,16 @@ public class ExpandedPlaybackControl extends Fragment {
         if (audioVisualizerView != null) audioVisualizerView.setenableVisualizer(false);
     }
 
-    private void updateBehaviourImage() {
+    private void updateBehaviourDrawable() {
         switch (playbackBehaviour) {
             case SHUFFLE:
-                expanded_behaviourControl.setBackground(ResourcesCompat.getDrawable(getResources(), R.drawable.ic_shuffle_black_24dp, null));
-                epcInterface.onPlaybackBehaviourChangeListener(SHUFFLE);
+                expanded_behaviourControl.setBackground(ResourcesCompat.getDrawable(getResources(), R.drawable.ic_round_shuffle_24, null));
                 break;
             case REPEAT_LIST:
-                expanded_behaviourControl.setBackground(ResourcesCompat.getDrawable(getResources(), R.drawable.ic_repeat_black_24dp, null));
-                epcInterface.onPlaybackBehaviourChangeListener(REPEAT_LIST);
+                expanded_behaviourControl.setBackground(ResourcesCompat.getDrawable(getResources(), R.drawable.ic_round_repeat_24, null));
                 break;
             case REPEAT_SONG:
-                expanded_behaviourControl.setBackground(ResourcesCompat.getDrawable(getResources(), R.drawable.ic_baseline_repeat_one_24, null));
-                epcInterface.onPlaybackBehaviourChangeListener(REPEAT_SONG);
+                expanded_behaviourControl.setBackground(ResourcesCompat.getDrawable(getResources(), R.drawable.ic_round_repeat_one_24, null));
                 break;
         }
     }
@@ -236,8 +243,8 @@ public class ExpandedPlaybackControl extends Fragment {
     private void setIsFavouriteBackground() {
         if (currTrack != null) {
             int favResId = (currTrack.getTIsFavourite().equals(0))
-                    ? R.drawable.ic_outline_favorite_border_24
-                    : R.drawable.ic_baseline_favorite_24;
+                    ? R.drawable.ic_round_favorite_border_24
+                    : R.drawable.ic_round_favorite_24;
 
             expanded_fav.setBackground(ResourcesCompat.getDrawable(getResources(), favResId, null));
         }
@@ -250,14 +257,14 @@ public class ExpandedPlaybackControl extends Fragment {
         byte[] thumbnail = mmr.getEmbeddedPicture();
         mmr.release();
         if (thumbnail != null) {
-            setCoverImage(new BitmapDrawable(getResources(), BitmapFactory.decodeByteArray(thumbnail, 0, thumbnail.length)), false);
+            setCoverImage(ImageTransformUtil.roundCorners(BitmapFactory.decodeByteArray(thumbnail, 0, thumbnail.length), getResources()), false);
         } else {
             setCoverImage(ResourcesCompat.getDrawable(getResources(), R.drawable.ic_baseline_music_note_24, null), true);
         }
     }
 
     private void setCoverImage(Drawable coverImage, boolean custom) {
-        if (custom) cover.setImageTintList(AppCompatResources.getColorStateList(requireContext(), R.color.colorPrimaryNight));
+        if (custom) cover.setImageTintList(AppCompatResources.getColorStateList(requireContext(), R.color.NewcolorSecondaryContainer));
         else cover.setImageTintList(null);
         this.cover.setImageDrawable(coverImage);
     }
@@ -278,6 +285,7 @@ public class ExpandedPlaybackControl extends Fragment {
 
 
             playbackBehaviour = PlaybackBehaviour.getStateFromInteger(bundle.getInt("BEHAVIOUR_STATE"));
+            updateBehaviourDrawable();
             setAudioSessionID(bundle.getInt("SESSION_ID"));
             setControlButton(bundle.getBoolean("ISONPAUSE"));
 
@@ -296,7 +304,7 @@ public class ExpandedPlaybackControl extends Fragment {
     }
 
     public void setControlButton(boolean isOnPause) {
-        Integer resId = (isOnPause) ? R.drawable.ic_play_arrow_black_24dp : R.drawable.ic_pause_black_24dp;
+        Integer resId = (isOnPause) ? R.drawable.ic_round_play_arrow_24 : R.drawable.ic_round_pause_24;
         expanded_play.setBackground(ContextCompat.getDrawable(requireContext(), resId));
     }
 }
