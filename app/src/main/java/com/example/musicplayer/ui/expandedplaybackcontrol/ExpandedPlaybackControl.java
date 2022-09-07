@@ -8,12 +8,12 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.AnimatedVectorDrawable;
-import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.media.MediaMetadataRetriever;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -23,6 +23,7 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 
 import com.example.musicplayer.R;
+import com.example.musicplayer.adapter.PlaybackControlViewPagerAdapter;
 import com.example.musicplayer.database.MusicplayerApplication;
 import com.example.musicplayer.database.dao.MusicplayerDataAccess;
 import com.example.musicplayer.database.entity.Track;
@@ -33,6 +34,7 @@ import com.example.musicplayer.ui.views.AudioVisualizerView;
 import com.example.musicplayer.utils.GeneralUtils;
 import com.example.musicplayer.utils.Permissions;
 import com.example.musicplayer.utils.enums.PlaybackBehaviour;
+import com.example.musicplayer.utils.images.ImageTransformUtil;
 
 import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
@@ -43,6 +45,7 @@ import androidx.core.content.ContextCompat;
 import androidx.core.content.res.ResourcesCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.viewpager2.widget.ViewPager2;
 
 import static com.example.musicplayer.utils.enums.PlaybackBehaviour.PlaybackBehaviourState.REPEAT_LIST;
 import static com.example.musicplayer.utils.enums.PlaybackBehaviour.PlaybackBehaviourState.REPEAT_SONG;
@@ -62,6 +65,9 @@ public class ExpandedPlaybackControl extends Fragment {
     private SeekBar expanded_seekbar;
     private PlaybackBehaviour.PlaybackBehaviourState playbackBehaviour;
     private MotionLayout parentContainer;
+    private ViewPager2 viewPager;
+    private PlaybackControlViewPagerAdapter viewPagerAdapter;
+    private View indicatorLeft, indicatorMiddle, indicatorRight;
 
     private PlaybackControlInterface epcInterface;
     private ServiceTriggerInterface serviceTriggerInterface;
@@ -131,22 +137,68 @@ public class ExpandedPlaybackControl extends Fragment {
         expanded_seekbar = view1.findViewById(R.id.expanded_seekbar);
         expanded_more = view1.findViewById(R.id.expanded_more);
         audioVisualizerView = view1.findViewById(R.id.audioView);
-        ImageButton collapse = view1.findViewById(R.id.expanded_control_collapse);
-        cover = view1.findViewById(R.id.expanded_cover);
+        viewPager = view1.findViewById(R.id.expanded_control_viewpager);
         expanded_add = view1.findViewById(R.id.expanded_add);
         expanded_queue_count = view1.findViewById(R.id.expanded_queue_count);
+        indicatorLeft = view1.findViewById(R.id.playbackcontrol_viewpager_indicator_left);
+        indicatorMiddle = view1.findViewById(R.id.playbackcontrol_viewpager_indicator_middle);
+        indicatorRight = view1.findViewById(R.id.playbackcontrol_viewpager_indicator_right);
+        ImageButton collapse = view1.findViewById(R.id.expanded_control_collapse);
+
+        expanded_queue_count.setText("0/0");
+
+        viewPagerAdapter = new PlaybackControlViewPagerAdapter(this);
+        viewPager.setAdapter(viewPagerAdapter);
+        viewPager.setCurrentItem(1);
+
+        viewPager.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
+            @Override
+            public void onPageSelected(int position) {
+                super.onPageSelected(position);
+
+                if (position == 0) {
+                    indicatorLeft.setLayoutParams(getLayoutParamsWithSize(8, indicatorLeft.getLayoutParams()));
+                    indicatorMiddle.setLayoutParams(getLayoutParamsWithSize(5, indicatorMiddle.getLayoutParams()));
+                    indicatorRight.setLayoutParams(getLayoutParamsWithSize(5, indicatorRight.getLayoutParams()));
+                    indicatorLeft.setBackgroundTintList(ContextCompat.getColorStateList(requireContext(), R.color.NewcolorPrimary));
+                    indicatorMiddle.setBackgroundTintList(ContextCompat.getColorStateList(requireContext(), R.color.NewcolorBackgroundSecondard));
+                    indicatorRight.setBackgroundTintList(ContextCompat.getColorStateList(requireContext(), R.color.NewcolorBackgroundSecondard));
+                } else if (position == 1) {
+                    indicatorLeft.setLayoutParams(getLayoutParamsWithSize(5, indicatorLeft.getLayoutParams()));
+                    indicatorMiddle.setLayoutParams(getLayoutParamsWithSize(8, indicatorMiddle.getLayoutParams()));
+                    indicatorRight.setLayoutParams(getLayoutParamsWithSize(5, indicatorRight.getLayoutParams()));
+                    indicatorLeft.setBackgroundTintList(ContextCompat.getColorStateList(requireContext(), R.color.NewcolorBackgroundSecondard));
+                    indicatorMiddle.setBackgroundTintList(ContextCompat.getColorStateList(requireContext(), R.color.NewcolorPrimary));
+                    indicatorRight.setBackgroundTintList(ContextCompat.getColorStateList(requireContext(), R.color.NewcolorBackgroundSecondard));
+                } else if (position == 2) {
+                    indicatorLeft.setLayoutParams(getLayoutParamsWithSize(5, indicatorLeft.getLayoutParams()));
+                    indicatorMiddle.setLayoutParams(getLayoutParamsWithSize(5, indicatorMiddle.getLayoutParams()));
+                    indicatorRight.setLayoutParams(getLayoutParamsWithSize(8, indicatorRight.getLayoutParams()));
+                    indicatorLeft.setBackgroundTintList(ContextCompat.getColorStateList(requireContext(), R.color.NewcolorBackgroundSecondard));
+                    indicatorMiddle.setBackgroundTintList(ContextCompat.getColorStateList(requireContext(), R.color.NewcolorBackgroundSecondard));
+                    indicatorRight.setBackgroundTintList(ContextCompat.getColorStateList(requireContext(), R.color.NewcolorPrimary));
+                }
+            }
+        });
 
         requireActivity().startPostponedEnterTransition();
+        parentContainer.setInteractionEnabled(false);
 
         expanded_play.setOnClickListener(view -> epcInterface.onStateChangeListener());
 
         expanded_skipforward.setOnClickListener(view -> {
-            AnimatedVectorDrawable animatedVectorDrawable = (AnimatedVectorDrawable) expanded_skipforward.getBackground();
-            animatedVectorDrawable.start();
-            epcInterface.onNextClickListener();
+            if (currTrack != null) {
+                AnimatedVectorDrawable animatedVectorDrawable = (AnimatedVectorDrawable) expanded_skipforward.getBackground();
+                animatedVectorDrawable.start();
+                epcInterface.onNextClickListener();
+            }
         });
 
-        expanded_skipback.setOnClickListener(view -> epcInterface.onPreviousClickListener());
+        expanded_skipback.setOnClickListener(view -> {
+            if (currTrack != null) {
+                epcInterface.onPreviousClickListener();
+            }
+        });
 
         collapse.setOnClickListener(view -> {
             parentContainer.setInteractionEnabled(true);
@@ -171,9 +223,11 @@ public class ExpandedPlaybackControl extends Fragment {
         });
 
         expanded_behaviourControl.setOnClickListener((imageview -> {
-            playbackBehaviour = PlaybackBehaviour.getNextState(playbackBehaviour);
-            epcInterface.onPlaybackBehaviourChangeListener(playbackBehaviour);
-            updateBehaviourImage();
+            if (currTrack != null) {
+                playbackBehaviour = PlaybackBehaviour.getNextState(playbackBehaviour);
+                epcInterface.onPlaybackBehaviourChangeListener(playbackBehaviour);
+                updateBehaviourDrawable();
+            }
         }));
 
         expanded_fav.setOnClickListener((imageView -> {
@@ -200,31 +254,28 @@ public class ExpandedPlaybackControl extends Fragment {
         if (audioVisualizerView != null) audioVisualizerView.setenableVisualizer(false);
     }
 
-    private void updateBehaviourImage() {
+    private void updateBehaviourDrawable() {
         switch (playbackBehaviour) {
             case SHUFFLE:
-                expanded_behaviourControl.setBackground(ResourcesCompat.getDrawable(getResources(), R.drawable.ic_shuffle_black_24dp, null));
-                epcInterface.onPlaybackBehaviourChangeListener(SHUFFLE);
+                expanded_behaviourControl.setBackground(ResourcesCompat.getDrawable(getResources(), R.drawable.ic_round_shuffle_24, null));
                 break;
             case REPEAT_LIST:
-                expanded_behaviourControl.setBackground(ResourcesCompat.getDrawable(getResources(), R.drawable.ic_repeat_black_24dp, null));
-                epcInterface.onPlaybackBehaviourChangeListener(REPEAT_LIST);
+                expanded_behaviourControl.setBackground(ResourcesCompat.getDrawable(getResources(), R.drawable.ic_round_repeat_24, null));
                 break;
             case REPEAT_SONG:
-                expanded_behaviourControl.setBackground(ResourcesCompat.getDrawable(getResources(), R.drawable.ic_baseline_repeat_one_24, null));
-                epcInterface.onPlaybackBehaviourChangeListener(REPEAT_SONG);
+                expanded_behaviourControl.setBackground(ResourcesCompat.getDrawable(getResources(), R.drawable.ic_round_repeat_one_24, null));
                 break;
         }
     }
 
     public void setSongInfo(String title, String artist, int length, long id) {
         expanded_absolute_time.setText(GeneralUtils.convertTime(length));
-        loadCover(id);
 
         if (currTrack == null || !currTrack.getTId().equals((int) id)) {
             musicplayerViewModel.getTrackById((int) id).observe(getViewLifecycleOwner(), track -> {
                 this.currTrack = track;
                 setIsFavouriteBackground();
+                viewPagerAdapter.setCurrentTrack(track);
             });
         }
 
@@ -236,30 +287,11 @@ public class ExpandedPlaybackControl extends Fragment {
     private void setIsFavouriteBackground() {
         if (currTrack != null) {
             int favResId = (currTrack.getTIsFavourite().equals(0))
-                    ? R.drawable.ic_outline_favorite_border_24
-                    : R.drawable.ic_baseline_favorite_24;
+                    ? R.drawable.ic_round_favorite_border_24
+                    : R.drawable.ic_round_favorite_24;
 
             expanded_fav.setBackground(ResourcesCompat.getDrawable(getResources(), favResId, null));
         }
-    }
-
-    private void loadCover(long song) {
-        Uri trackUri = ContentUris.withAppendedId(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, song);
-        MediaMetadataRetriever mmr = new MediaMetadataRetriever();
-        mmr.setDataSource(requireContext(), trackUri);
-        byte[] thumbnail = mmr.getEmbeddedPicture();
-        mmr.release();
-        if (thumbnail != null) {
-            setCoverImage(new BitmapDrawable(getResources(), BitmapFactory.decodeByteArray(thumbnail, 0, thumbnail.length)), false);
-        } else {
-            setCoverImage(ResourcesCompat.getDrawable(getResources(), R.drawable.ic_baseline_music_note_24, null), true);
-        }
-    }
-
-    private void setCoverImage(Drawable coverImage, boolean custom) {
-        if (custom) cover.setImageTintList(AppCompatResources.getColorStateList(requireContext(), R.color.colorPrimaryNight));
-        else cover.setImageTintList(null);
-        this.cover.setImageDrawable(coverImage);
     }
 
     public void updateSeekbar(int time) {
@@ -278,6 +310,7 @@ public class ExpandedPlaybackControl extends Fragment {
 
 
             playbackBehaviour = PlaybackBehaviour.getStateFromInteger(bundle.getInt("BEHAVIOUR_STATE"));
+            updateBehaviourDrawable();
             setAudioSessionID(bundle.getInt("SESSION_ID"));
             setControlButton(bundle.getBoolean("ISONPAUSE"));
 
@@ -296,7 +329,17 @@ public class ExpandedPlaybackControl extends Fragment {
     }
 
     public void setControlButton(boolean isOnPause) {
-        Integer resId = (isOnPause) ? R.drawable.ic_play_arrow_black_24dp : R.drawable.ic_pause_black_24dp;
+        Integer resId = (isOnPause) ? R.drawable.ic_round_play_arrow_24 : R.drawable.ic_round_pause_24;
         expanded_play.setBackground(ContextCompat.getDrawable(requireContext(), resId));
+    }
+
+    private int convertDPtoPixel(int dp) {
+        return (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp, requireContext().getResources().getDisplayMetrics());
+    }
+
+    private ViewGroup.LayoutParams getLayoutParamsWithSize(int dp, ViewGroup.LayoutParams layoutParams) {
+        layoutParams.width = convertDPtoPixel(dp);
+        layoutParams.height = convertDPtoPixel(dp);
+        return layoutParams;
     }
 }

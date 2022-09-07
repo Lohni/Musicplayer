@@ -62,37 +62,39 @@
     <string name="transition_album_size">TRANSITION_ALBUM_SIZE</string>
     <string name="transition_album_layout">TRANSITION_ALBUM_LAYOUT</string>
 
+    <string name="transition_playback_layout">TRANSITION_PLAYBACK_LAYOUT</string>
+
+    <!-- PlaybackControl -->
+    <string name="transition_playback_title">TRANSITION_PLAYBACK_TITLE</string>
+    <string name="preference_reverb_isenabled">PREFERENCE_REVERB_ISENABLED</string>
+
+    <!-- SharedPreference Keys -->
+    <string name="preference_equalizer_isenabled">PREFERENCE_EQUALIZER_ISENABLED</string>
+    <string name="preference_bassboost_isenabled">PREFERENCE_BASSBOOST_ISENABLED</string>
+
+    <string name="preference_bassboost_strength">PREFERENCE_BASSBOOST_STRENGTH</string>
+    <string name="preference_virtualizer_isenabled">PREFERENCE_VIRTUALIZER_ISENABLED</string>
+
+    <string name="preference_virtualizer_strength">PREFERENCE_VIRTUALIZER_STRENGTH</string>
+    <string name="preference_loudnessenhancer_isenabled">PREFERENCE_LOUDNESSENHANCER_ISENABLED</string>
+
+    <string name="preference_loudnessenhancer_strength">PREFERENCE_LOUDNESSENHANCER_STRENGTH</string>
+    <string name="preference_dashboard_first_list_type">PREFERENCE_DASHBOARD_FIRST_LIST_TYPE</string>
+
+    <string name="preference_dashboard_second_list_type">PREFERENCE_DASHBOARD_SECOND_LIST_TYPE</string>
+    <string name="preference_dashboard_first_list_filter">PREFERENCE_DASHBOARD_FIRST_LIST_FILTER</string>
+
+    <string name="preference_dashboard_second_list_filter">PREFERENCE_DASHBOARD_SECOND_LIST_FILTER</string>
+    <string name="preference_dashboard_first_list_size">PREFERENCE_DASHBOARD_FIRST_LIST_SIZE</string>
+
+    <string name="preference_dashboard_second_list_size">PREFERENCE_DASHBOARD_SECOND_LIST_SIZE</string>
+    <string name="preference_songlist_filter_type">PREFERENCE_SONGLIST_FILTER_TYPE</string>
+
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <!-- TODO: Remove or change this placeholder text -->
     <string-array name="AlbumOption">
         <item>Play</item>
         <item>Shuffle</item>
         <item>Add to queue</item>
     </string-array>
-
-    <!-- PlaybackControl -->
-    <string name="transition_playback_layout">TRANSITION_PLAYBACK_LAYOUT</string>
-    <string name="transition_playback_title">TRANSITION_PLAYBACK_TITLE</string>
-
-    <!-- SharedPreference Keys -->
-    <string name="preference_reverb_isenabled">PREFERENCE_REVERB_ISENABLED</string>
-    <string name="preference_equalizer_isenabled">PREFERENCE_EQUALIZER_ISENABLED</string>
-
-    <string name="preference_bassboost_isenabled">PREFERENCE_BASSBOOST_ISENABLED</string>
-    <string name="preference_bassboost_strength">PREFERENCE_BASSBOOST_STRENGTH</string>
-
-    <string name="preference_virtualizer_isenabled">PREFERENCE_VIRTUALIZER_ISENABLED</string>
-    <string name="preference_virtualizer_strength">PREFERENCE_VIRTUALIZER_STRENGTH</string>
-
-    <string name="preference_loudnessenhancer_isenabled">PREFERENCE_LOUDNESSENHANCER_ISENABLED</string>
-    <string name="preference_loudnessenhancer_strength">PREFERENCE_LOUDNESSENHANCER_STRENGTH</string>
-
-    <string name="preference_dashboard_first_list_type">PREFERENCE_DASHBOARD_FIRST_LIST_TYPE</string>
-    <string name="preference_dashboard_second_list_type">PREFERENCE_DASHBOARD_SECOND_LIST_TYPE</string>
-
-    <string name="preference_dashboard_first_list_filter">PREFERENCE_DASHBOARD_FIRST_LIST_FILTER</string>
-    <string name="preference_dashboard_second_list_filter">PREFERENCE_DASHBOARD_SECOND_LIST_FILTER</string>
-
-    <string name="preference_dashboard_first_list_size">PREFERENCE_DASHBOARD_FIRST_LIST_SIZE</string>
-    <string name="preference_dashboard_second_list_size">PREFERENCE_DASHBOARD_SECOND_LIST_SIZE</string>
-
-    <string name="preference_songlist_filter_type">PREFERENCE_SONGLIST_FILTER_TYPE</string>
 </resources>

@@ -5,6 +5,7 @@ import com.example.musicplayer.database.dao.MusicplayerDataAccess
 import com.example.musicplayer.database.dto.StatisticDTO
 import com.example.musicplayer.database.dto.TrackDTO
 import com.example.musicplayer.database.entity.Album
+import com.example.musicplayer.database.entity.Tag
 import com.example.musicplayer.database.entity.Track
 import com.example.musicplayer.database.entity.TrackPlayed
 import com.example.musicplayer.utils.GeneralUtils
@@ -81,6 +82,22 @@ class MusicplayerViewModel(private val dao: MusicplayerDataAccess) : ViewModel()
 
     fun updateTrackPlayed(trackPlayed: TrackPlayed) = viewModelScope.launch(Dispatchers.IO) {
         dao.updateTrackPlayed(trackPlayed)
+    }
+
+    fun getTimesPlayedByTrackId(id: Int): LiveData<String> {
+        return dao.getTimesPlayed(id).asLiveData()
+    }
+
+    fun getTimePlayedByTrackId(id: Int): LiveData<String> {
+        return dao.getTimePlayed(id).asLiveData()
+    }
+
+    fun getLastPlayedByTrackId(id: Int): LiveData<String> {
+        return dao.getLastPlayed(id).asLiveData()
+    }
+
+    fun getTagsByTrackId(trackId: Int): LiveData<List<Tag>> {
+        return dao.getTagByTrackId(trackId).asLiveData()
     }
 
     class MusicplayerViewModelFactory(private val dataAccess: MusicplayerDataAccess) :

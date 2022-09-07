@@ -67,4 +67,9 @@ interface PlaylistDataAccess {
 
     @Update
     fun updatePlaylistPlayed(playlistPlayed: PlaylistPlayed)
+
+    @Query("SELECT p.* FROM Playlist p JOIN PlaylistItem on pi_p_id = p_id WHERE pi_t_id = :id")
+    fun getPlaylistsByTrackId(id: Int): Flow<List<Playlist>>
+
+
 }

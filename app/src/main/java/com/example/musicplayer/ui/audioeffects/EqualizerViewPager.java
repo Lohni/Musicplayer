@@ -64,7 +64,7 @@ public class EqualizerViewPager extends Fragment {
 
         if (Permissions.permission(requireActivity(), this, Manifest.permission.MODIFY_AUDIO_SETTINGS)) {
             mAdapter = new EqualizerViewPagerAdapter(this, settings, reverbEnabled, equalizerBandLevels,
-                    equalizerEnabled, equalizerProperties, bassBoostEnabled, bassBoostStrength, virtuaizerEnabled, virtualizerStrength, loudnessEnhancerEnabled, loudnessEnhancerStrength);
+                    equalizerEnabled, equalizerProperties);
             viewPager2.setAdapter(mAdapter);
         }
 
@@ -106,7 +106,7 @@ public class EqualizerViewPager extends Fragment {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED && permissions[0].equals(Manifest.permission.MODIFY_AUDIO_SETTINGS)) {
             mAdapter = new EqualizerViewPagerAdapter(this, settings, reverbEnabled, equalizerBandLevels,
-                    equalizerEnabled, equalizerProperties, bassBoostEnabled, bassBoostStrength, virtuaizerEnabled, virtualizerStrength, loudnessEnhancerEnabled, loudnessEnhancerStrength);
+                    equalizerEnabled, equalizerProperties);
             viewPager2.setAdapter(mAdapter);
         }
     }

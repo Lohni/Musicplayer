@@ -11,20 +11,16 @@ import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.viewpager2.adapter.FragmentStateAdapter;
 
-public class EqualizerViewPagerAdapter extends FragmentStateAdapter {
+public class  EqualizerViewPagerAdapter extends FragmentStateAdapter {
 
     private EnvironmentalReverb.Settings settings;
-    private boolean reverbEnabled, equalizerEnabled, bassBoostEnabled, virtualizerEnabled, loudnessEnhancerEnabled;
+    private boolean reverbEnabled, equalizerEnabled;
     private short[] equalizerBandLevels;
     private EqualizerProperties equalizerProperties;
-    private int bassBoostStrength, virtualizerStrength, loudnessEnhancerStrength;
 
     public EqualizerViewPagerAdapter(@NonNull Fragment fragment, EnvironmentalReverb.Settings settings,
                                      boolean reverbEnabled, short[] equalizerBandLevels,
-                                     boolean equalizerEnabled, EqualizerProperties equalizerProperties,
-                                     boolean bassBoostEnabled, int bassBoostStrength,
-                                     boolean virtualizerEnabled, int virtualizerStrength,
-                                     boolean loudnessEnhancerEnabled, int loudnessEnhancerStrength) {
+                                     boolean equalizerEnabled, EqualizerProperties equalizerProperties) {
         super(fragment);
         this.settings = settings;
         this.reverbEnabled = reverbEnabled;
@@ -43,7 +39,6 @@ public class EqualizerViewPagerAdapter extends FragmentStateAdapter {
                 return fragment; }
             case 1:{
                 EffectFragment fragment = new EffectFragment();
-                fragment.setEffectStartingValues(bassBoostStrength, bassBoostEnabled, virtualizerStrength, virtualizerEnabled, loudnessEnhancerStrength, loudnessEnhancerEnabled);
                 return fragment; }
             case 2:{
                 ReverbFragment fragment = new ReverbFragment();

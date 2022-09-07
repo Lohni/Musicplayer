@@ -5,6 +5,7 @@ import androidx.room.OnConflictStrategy.REPLACE
 import com.example.musicplayer.database.dto.StatisticDTO
 import com.example.musicplayer.database.dto.TrackDTO
 import com.example.musicplayer.database.entity.Album
+import com.example.musicplayer.database.entity.Tag
 import com.example.musicplayer.database.entity.Track
 import com.example.musicplayer.database.entity.TrackPlayed
 import kotlinx.coroutines.flow.Flow
@@ -85,4 +86,20 @@ interface MusicplayerDataAccess {
 
     @Query("SELECT *, null FROM Track ORDER BY t_created DESC")
     fun getAllTracksByCreated(): Flow<List<TrackDTO>>
+
+    @Transaction
+    @Query("SELECT count(tp_t_id) FROM TrackPlayed WHERE tp_t_id = :id")
+    fun getTimesPlayed(id: Int): Flow<String>
+
+    @Transaction
+    @Query("SELECT sum(tp_time_played) FROM TrackPlayed WHERE tp_t_id = :id")
+    fun getTimePlayed(id: Int): Flow<String>
+
+    @Transaction
+    @Query("SELECT tp_played FROM TrackPlayed WHERE tp_t_id = :id ORDER BY tp_played DESC")
+    fun getLastPlayed(id: Int): Flow<String>
+
+    @Transaction
+    @Query("SELECT t.* FROM Tag t JOIN TrackTagMtc ON t.tag_id = ttm_tag_id WHERE ttm_t_id = :id")
+    fun getTagByTrackId(id: Int): Flow<List<Tag>>
 }
