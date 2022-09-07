@@ -32,6 +32,8 @@
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent"/>
 
+
+
     <FrameLayout
         android:id="@+id/cover_layout"
         android:layout_width="match_parent"
@@ -50,20 +52,8 @@
         <androidx.viewpager2.widget.ViewPager2
             android:id="@+id/expanded_control_viewpager"
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
-
-            <FrameLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent">
-                <ImageView
-                    android:id="@+id/expanded_cover"
-                    android:layout_width="280dp"
-                    android:layout_height="280dp"
-                    android:layout_marginTop="4dp"
-                    android:layout_gravity="center" />
-            </FrameLayout>
-
-        </androidx.viewpager2.widget.ViewPager2>
+            android:layout_height="match_parent"
+            android:orientation="horizontal"/>
     </FrameLayout>
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -74,6 +64,42 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/cover_layout"
         tools:layout_editor_absoluteX="0dp">
+
+        <View
+            android:id="@+id/playbackcontrol_viewpager_indicator_left"
+            android:layout_width="5dp"
+            android:layout_height="5dp"
+            android:background="@drawable/round_dot"
+            android:backgroundTint="@color/NewcolorBackgroundSecondard"
+            android:elevation="8dp"
+            android:layout_marginEnd="8dp"
+            app:layout_constraintEnd_toStartOf="@id/playbackcontrol_viewpager_indicator_middle"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toTopOf="@id/expanded_control_holder"/>
+
+        <View
+            android:id="@+id/playbackcontrol_viewpager_indicator_middle"
+            android:layout_width="8dp"
+            android:layout_height="8dp"
+            android:background="@drawable/round_dot"
+            android:backgroundTint="@color/NewcolorPrimary"
+            android:elevation="8dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toTopOf="@id/expanded_control_holder"/>
+
+        <View
+            android:id="@+id/playbackcontrol_viewpager_indicator_right"
+            android:layout_width="5dp"
+            android:layout_height="5dp"
+            android:background="@drawable/round_dot"
+            android:backgroundTint="@color/NewcolorBackgroundSecondard"
+            android:elevation="8dp"
+            android:layout_marginStart="8dp"
+            app:layout_constraintStart_toEndOf="@id/playbackcontrol_viewpager_indicator_middle"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toTopOf="@id/expanded_control_holder"/>
 
         <ImageButton
             android:id="@+id/expanded_control_play"
@@ -202,6 +228,7 @@
             android:progressTint="@color/colorSecondaryLight"
             android:secondaryProgressTint="@color/colorPrimaryLight"
             android:thumbTint="@color/colorSecondary"
+            android:thumb="@drawable/round_dot"
             app:layout_constraintBottom_toTopOf="@id/expanded_control_play"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"

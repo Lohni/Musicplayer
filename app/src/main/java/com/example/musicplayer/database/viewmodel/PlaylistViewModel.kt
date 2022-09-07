@@ -71,6 +71,10 @@ class PlaylistViewModel(private val dao: PlaylistDataAccess) : ViewModel() {
         dao.updatePlaylistPlayed(playlistPlayed)
     }
 
+    fun getPlaylistsByTrackId(trackId: Int): LiveData<List<Playlist>> {
+        return dao.getPlaylistsByTrackId(trackId).asLiveData()
+    }
+
     class PlaylistViewModelFactory(private val dataAccess: PlaylistDataAccess) :
         ViewModelProvider.Factory {
         override fun <T : ViewModel> create(modelClass: Class<T>): T {

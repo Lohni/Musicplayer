@@ -13,6 +13,7 @@ import android.media.MediaMetadataRetriever;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -22,6 +23,7 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 
 import com.example.musicplayer.R;
+import com.example.musicplayer.adapter.PlaybackControlViewPagerAdapter;
 import com.example.musicplayer.database.MusicplayerApplication;
 import com.example.musicplayer.database.dao.MusicplayerDataAccess;
 import com.example.musicplayer.database.entity.Track;
@@ -43,6 +45,7 @@ import androidx.core.content.ContextCompat;
 import androidx.core.content.res.ResourcesCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.viewpager2.widget.ViewPager2;
 
 import static com.example.musicplayer.utils.enums.PlaybackBehaviour.PlaybackBehaviourState.REPEAT_LIST;
 import static com.example.musicplayer.utils.enums.PlaybackBehaviour.PlaybackBehaviourState.REPEAT_SONG;
@@ -62,6 +65,9 @@ public class ExpandedPlaybackControl extends Fragment {
     private SeekBar expanded_seekbar;
     private PlaybackBehaviour.PlaybackBehaviourState playbackBehaviour;
     private MotionLayout parentContainer;
+    private ViewPager2 viewPager;
+    private PlaybackControlViewPagerAdapter viewPagerAdapter;
+    private View indicatorLeft, indicatorMiddle, indicatorRight;
 
     private PlaybackControlInterface epcInterface;
     private ServiceTriggerInterface serviceTriggerInterface;
@@ -131,11 +137,49 @@ public class ExpandedPlaybackControl extends Fragment {
         expanded_seekbar = view1.findViewById(R.id.expanded_seekbar);
         expanded_more = view1.findViewById(R.id.expanded_more);
         audioVisualizerView = view1.findViewById(R.id.audioView);
-        ImageButton collapse = view1.findViewById(R.id.expanded_control_collapse);
-        cover = view1.findViewById(R.id.expanded_cover);
+        viewPager = view1.findViewById(R.id.expanded_control_viewpager);
         expanded_add = view1.findViewById(R.id.expanded_add);
         expanded_queue_count = view1.findViewById(R.id.expanded_queue_count);
+        indicatorLeft = view1.findViewById(R.id.playbackcontrol_viewpager_indicator_left);
+        indicatorMiddle = view1.findViewById(R.id.playbackcontrol_viewpager_indicator_middle);
+        indicatorRight = view1.findViewById(R.id.playbackcontrol_viewpager_indicator_right);
+        ImageButton collapse = view1.findViewById(R.id.expanded_control_collapse);
+
         expanded_queue_count.setText("0/0");
+
+        viewPagerAdapter = new PlaybackControlViewPagerAdapter(this);
+        viewPager.setAdapter(viewPagerAdapter);
+        viewPager.setCurrentItem(1);
+
+        viewPager.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
+            @Override
+            public void onPageSelected(int position) {
+                super.onPageSelected(position);
+
+                if (position == 0) {
+                    indicatorLeft.setLayoutParams(getLayoutParamsWithSize(8, indicatorLeft.getLayoutParams()));
+                    indicatorMiddle.setLayoutParams(getLayoutParamsWithSize(5, indicatorMiddle.getLayoutParams()));
+                    indicatorRight.setLayoutParams(getLayoutParamsWithSize(5, indicatorRight.getLayoutParams()));
+                    indicatorLeft.setBackgroundTintList(ContextCompat.getColorStateList(requireContext(), R.color.NewcolorPrimary));
+                    indicatorMiddle.setBackgroundTintList(ContextCompat.getColorStateList(requireContext(), R.color.NewcolorBackgroundSecondard));
+                    indicatorRight.setBackgroundTintList(ContextCompat.getColorStateList(requireContext(), R.color.NewcolorBackgroundSecondard));
+                } else if (position == 1) {
+                    indicatorLeft.setLayoutParams(getLayoutParamsWithSize(5, indicatorLeft.getLayoutParams()));
+                    indicatorMiddle.setLayoutParams(getLayoutParamsWithSize(8, indicatorMiddle.getLayoutParams()));
+                    indicatorRight.setLayoutParams(getLayoutParamsWithSize(5, indicatorRight.getLayoutParams()));
+                    indicatorLeft.setBackgroundTintList(ContextCompat.getColorStateList(requireContext(), R.color.NewcolorBackgroundSecondard));
+                    indicatorMiddle.setBackgroundTintList(ContextCompat.getColorStateList(requireContext(), R.color.NewcolorPrimary));
+                    indicatorRight.setBackgroundTintList(ContextCompat.getColorStateList(requireContext(), R.color.NewcolorBackgroundSecondard));
+                } else if (position == 2) {
+                    indicatorLeft.setLayoutParams(getLayoutParamsWithSize(5, indicatorLeft.getLayoutParams()));
+                    indicatorMiddle.setLayoutParams(getLayoutParamsWithSize(5, indicatorMiddle.getLayoutParams()));
+                    indicatorRight.setLayoutParams(getLayoutParamsWithSize(8, indicatorRight.getLayoutParams()));
+                    indicatorLeft.setBackgroundTintList(ContextCompat.getColorStateList(requireContext(), R.color.NewcolorBackgroundSecondard));
+                    indicatorMiddle.setBackgroundTintList(ContextCompat.getColorStateList(requireContext(), R.color.NewcolorBackgroundSecondard));
+                    indicatorRight.setBackgroundTintList(ContextCompat.getColorStateList(requireContext(), R.color.NewcolorPrimary));
+                }
+            }
+        });
 
         requireActivity().startPostponedEnterTransition();
         parentContainer.setInteractionEnabled(false);
@@ -226,12 +270,12 @@ public class ExpandedPlaybackControl extends Fragment {
 
     public void setSongInfo(String title, String artist, int length, long id) {
         expanded_absolute_time.setText(GeneralUtils.convertTime(length));
-        loadCover(id);
 
         if (currTrack == null || !currTrack.getTId().equals((int) id)) {
             musicplayerViewModel.getTrackById((int) id).observe(getViewLifecycleOwner(), track -> {
                 this.currTrack = track;
                 setIsFavouriteBackground();
+                viewPagerAdapter.setCurrentTrack(track);
             });
         }
 
@@ -248,25 +292,6 @@ public class ExpandedPlaybackControl extends Fragment {
 
             expanded_fav.setBackground(ResourcesCompat.getDrawable(getResources(), favResId, null));
         }
-    }
-
-    private void loadCover(long song) {
-        Uri trackUri = ContentUris.withAppendedId(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, song);
-        MediaMetadataRetriever mmr = new MediaMetadataRetriever();
-        mmr.setDataSource(requireContext(), trackUri);
-        byte[] thumbnail = mmr.getEmbeddedPicture();
-        mmr.release();
-        if (thumbnail != null) {
-            setCoverImage(ImageTransformUtil.roundCorners(BitmapFactory.decodeByteArray(thumbnail, 0, thumbnail.length), getResources()), false);
-        } else {
-            setCoverImage(ResourcesCompat.getDrawable(getResources(), R.drawable.ic_baseline_music_note_24, null), true);
-        }
-    }
-
-    private void setCoverImage(Drawable coverImage, boolean custom) {
-        if (custom) cover.setImageTintList(AppCompatResources.getColorStateList(requireContext(), R.color.NewcolorSecondaryContainer));
-        else cover.setImageTintList(null);
-        this.cover.setImageDrawable(coverImage);
     }
 
     public void updateSeekbar(int time) {
@@ -306,5 +331,15 @@ public class ExpandedPlaybackControl extends Fragment {
     public void setControlButton(boolean isOnPause) {
         Integer resId = (isOnPause) ? R.drawable.ic_round_play_arrow_24 : R.drawable.ic_round_pause_24;
         expanded_play.setBackground(ContextCompat.getDrawable(requireContext(), resId));
+    }
+
+    private int convertDPtoPixel(int dp) {
+        return (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp, requireContext().getResources().getDisplayMetrics());
+    }
+
+    private ViewGroup.LayoutParams getLayoutParamsWithSize(int dp, ViewGroup.LayoutParams layoutParams) {
+        layoutParams.width = convertDPtoPixel(dp);
+        layoutParams.height = convertDPtoPixel(dp);
+        return layoutParams;
     }
 }
