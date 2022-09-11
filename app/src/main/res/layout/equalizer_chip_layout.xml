@@ -6,8 +6,8 @@
     android:layout_height="wrap_content"
     android:background="@color/colorTransparent"
     android:textColor="@color/chip_text"
-    app:checkedIconTint="@color/colorSecondaryLight"
+    app:checkedIconTint="@color/colorOnPrimary"
     app:chipBackgroundColor="@color/chip_background"
-    app:chipStrokeColor="@color/colorSecondaryLight"
+    app:chipStrokeColor="@color/colorOutline"
     app:chipStrokeWidth="2dp"
     />

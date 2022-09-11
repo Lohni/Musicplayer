@@ -11,10 +11,10 @@
         android:id="@+id/equalizer_tablayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/colorTransparent"
-        app:tabIconTint="@color/colorTextLight"
-        app:tabIndicatorColor="@color/colorTextLight"
-        app:tabTextColor="@color/colorTextLight"
+        android:background="@color/colorBackground"
+        app:tabIconTint="@color/colorOnSurfaceVariant"
+        app:tabIndicatorColor="@color/colorOnSurfaceVariant"
+        app:tabTextColor="@color/colorOnSurfaceVariant"
         app:tabMode="fixed"
         app:tabInlineLabel="true"/>
 

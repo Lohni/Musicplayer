@@ -34,7 +34,7 @@
         android:layout_marginStart="8dp"
         android:layout_marginEnd="64dp"
         android:background="@drawable/ic_delete_black_24dp"
-        android:backgroundTint="@color/colorTextLight"
+        android:backgroundTint="@color/colorOnSurfaceVariant"
         app:layout_constraintTop_toTopOf="@id/equalizer_add"
         app:layout_constraintBottom_toBottomOf="@id/equalizer_add"
         app:layout_constraintLeft_toRightOf="@id/equalizer_add"
@@ -50,7 +50,7 @@
         android:layout_marginBottom="8dp"
         android:hint="@string/equalizer_presetSelectionHint"
         android:textColorHint="@color/equalizer_background"
-        app:boxBackgroundColor="@color/background_primarydark"
+        app:boxBackgroundColor="@color/autocomplete_textview_background"
         app:boxStrokeColor="@color/equalizer_background"
         app:endIconTint="@color/equalizer_background"
         app:hintTextColor="@color/equalizer_background"
@@ -65,6 +65,6 @@
             android:inputType="none"
             android:singleLine="true"
             android:focusable="false"
-            android:textColor="@color/colorTextLight"/>
+            android:textColor="@color/colorOnBackground"/>
     </com.google.android.material.textfield.TextInputLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

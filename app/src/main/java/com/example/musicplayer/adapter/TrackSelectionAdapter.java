@@ -69,16 +69,16 @@ public class TrackSelectionAdapter extends RecyclerView.Adapter<TrackSelectionAd
     }
 
     private void updateViewHolderSelected(TrackSelectionAdapter.ViewHolder viewHolder) {
-        viewHolder.itemView.setBackgroundResource(R.color.colorSecondaryLightTrans);
-        viewHolder.title.setTextColor(ContextCompat.getColor(context, R.color.colorPrimaryNight));
-        viewHolder.artist.setTextColor(ContextCompat.getColor(context, R.color.colorPrimaryNight));
-        viewHolder.checkBox.setButtonTintList(ContextCompat.getColorStateList(context, R.color.colorPrimaryNight));
+        viewHolder.itemView.setBackgroundResource(R.color.colorOnPrimaryContainer);
+        viewHolder.title.setTextColor(ContextCompat.getColor(context, R.color.colorPrimaryContainer));
+        viewHolder.artist.setTextColor(ContextCompat.getColor(context, R.color.colorPrimaryContainer));
+        viewHolder.checkBox.setButtonTintList(ContextCompat.getColorStateList(context, R.color.colorPrimaryContainer));
     }
 
     private void updateViewHolderNotSelected(TrackSelectionAdapter.ViewHolder viewHolder) {
         viewHolder.itemView.setBackgroundResource(R.color.colorTransparent);
-        viewHolder.title.setTextColor(ContextCompat.getColor(context, R.color.colorTextLight));
-        viewHolder.artist.setTextColor(ContextCompat.getColor(context, R.color.colorTextLight));
+        viewHolder.title.setTextColor(ContextCompat.getColor(context, R.color.colorOnBackground));
+        viewHolder.artist.setTextColor(ContextCompat.getColor(context, R.color.colorOnBackground));
         viewHolder.checkBox.setButtonTintList(ContextCompat.getColorStateList(context, R.color.colorPrimary));
     }
 

@@ -1,7 +1,0 @@
-
-”
-java:S1319?"rThe type of the "entries" object should be an interface such as "List" rather than the implementation "ArrayList".(ÂÇ¸×üÿÿÿÿ8æÖà­Ï.
-G
-java:S5411G"*Use the primitive boolean expression here.(‘›¦8æÖà­Ï.
-]	java:S125;"<This block of commented-out lines of code should be removed.(öÒÚşÿÿÿÿ8æÖà­Ï.
-]	java:S125T"<This block of commented-out lines of code should be removed.(–˜ŞÀıÿÿÿÿ8æÖà­Ï.

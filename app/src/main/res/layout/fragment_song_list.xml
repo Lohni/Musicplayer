@@ -13,7 +13,7 @@
         android:layout_marginEnd="16dp"
         android:alpha="1"
         android:background="@drawable/circular_background"
-        android:backgroundTint="@color/colorDarkTertiaryContainer"
+        android:backgroundTint="@color/colorTertiaryContainer"
         app:layout_constraintBottom_toBottomOf="@id/side_index"
         app:layout_constraintRight_toLeftOf="@id/side_index"
         app:layout_constraintTop_toTopOf="@id/side_index">
@@ -24,7 +24,7 @@
             android:layout_height="match_parent"
             android:gravity="center"
             android:text="A"
-            android:textColor="@color/colorDarkOnTertiaryContainer"
+            android:textColor="@color/colorOnTertiaryContainer"
             android:textSize="25sp" />
     </FrameLayout>
 
@@ -39,7 +39,7 @@
         android:id="@+id/side_index"
         android:layout_width="20dp"
         android:layout_height="0dp"
-        android:layout_marginTop="5dp"
+        android:layout_marginTop="8dp"
         android:orientation="vertical"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintRight_toRightOf="parent"
@@ -49,8 +49,9 @@
         android:id="@+id/songlist_shuffle_container"
         android:layout_width="0dp"
         android:layout_height="50sp"
-        android:layout_marginStart="8dp"
+        android:layout_marginStart="12dp"
         android:layout_marginEnd="4dp"
+        android:layout_marginTop="4dp"
         app:layout_constraintBottom_toTopOf="@id/songList"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -78,7 +79,7 @@
                 android:gravity="center"
                 android:lines="1"
                 android:text="Shuffle"
-                android:textColor="@color/NewcolorText"
+                android:textColor="@color/colorOnBackground"
                 android:textSize="18sp"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toEndOf="@id/songlist_shuffle_icon"
@@ -93,7 +94,7 @@
                 android:gravity="center"
                 android:lines="1"
                 android:text="Shuffle"
-                android:textColor="@color/NewcolorText"
+                android:textColor="@color/colorOnBackground"
                 android:textSize="16sp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toEndOf="@id/songlist_shuffle_title" />
@@ -106,7 +107,7 @@
                 android:layout_marginTop="8dp"
                 android:layout_marginBottom="8dp"
                 android:background="@drawable/ic_shuffle_black_24dp"
-                android:backgroundTint="@color/NewcolorText"
+                android:backgroundTint="@color/colorOnBackground"
                 app:layout_constraintDimensionRatio="1"
                 app:layout_constraintStart_toStartOf="parent" />
 
@@ -117,23 +118,22 @@
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:foregroundTint="@color/NewcolorText"
+            android:foregroundTint="@color/colorOnBackground"
             android:visibility="gone"
             app:boxStrokeColor="@color/chip_text"
-            app:boxStrokeWidth="2px"
             app:endIconDrawable="@drawable/ic_outline_cancel_24"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@id/songlist_shuffle"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             app:startIconDrawable="@drawable/ic_search_black_24dp"
-            app:startIconTint="@color/NewcolorText">
+            app:startIconTint="@color/colorOnBackground">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/songlist_search"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:textColor="@color/NewcolorText" />
+                android:textColor="@color/colorOnBackground" />
 
         </com.google.android.material.textfield.TextInputLayout>
     </androidx.constraintlayout.widget.ConstraintLayout>
@@ -144,15 +144,15 @@
         android:layout_height="0dp"
         app:layout_constraintDimensionRatio="1"
         app:layout_constraintBottom_toTopOf="@id/songList"
-        android:layout_marginBottom="0dp"
-        android:layout_marginTop="8dp"
+        android:layout_marginBottom="4dp"
+        android:layout_marginTop="10dp"
         android:layout_marginStart="4dp"
         android:layout_marginEnd="4dp"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         android:clickable="true"
         android:focusable="true"
-        android:foreground="@drawable/shuffle_ripple">
+        android:foreground="@drawable/circle_ripple">
 
         <TextView
             android:id="@+id/songlist_filter_title"
@@ -161,7 +161,8 @@
             app:layout_constraintTop_toTopOf="parent"
             android:textSize="10sp"
             android:text="A-Z"
-            android:textColor="@color/NewcolorText"
+            android:layout_marginTop="4dp"
+            android:textColor="@color/colorOnBackground"
             android:gravity="center"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"/>
@@ -170,11 +171,11 @@
             android:id="@+id/songlist_filter"
             android:layout_width="0dp"
             android:layout_height="0dp"
-            android:layout_marginTop="10dp"
+            android:layout_marginTop="12dp"
             android:background="@drawable/ic_baseline_filter_list_24"
-            android:layout_marginBottom="4dp"
+            android:layout_marginBottom="6dp"
             app:layout_constraintDimensionRatio="1"
-            android:backgroundTint="@color/NewcolorText"
+            android:backgroundTint="@color/colorOnBackground"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
@@ -185,8 +186,9 @@
         android:id="@+id/songList"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_marginTop="4dp"
+        android:layout_marginTop="8dp"
         android:layout_marginEnd="2dp"
+        android:layout_marginStart="4dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintLeft_toLeftOf="parent"

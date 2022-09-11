@@ -21,6 +21,7 @@ import com.example.musicplayer.R;
 import com.example.musicplayer.database.entity.Track;
 import com.example.musicplayer.ui.tagEditor.TagEditorInterface;
 
+import java.io.IOException;
 import java.util.ArrayList;
 
 import androidx.annotation.NonNull;
@@ -72,7 +73,11 @@ public class TagEditorAdapter extends RecyclerView.Adapter<TagEditorAdapter.View
                 } catch (IllegalArgumentException e) {
                     System.out.println("MediaMetadataRetriever IllegalArgument");
                 } finally {
-                    mmr.release();
+                    try {
+                        mmr.release();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
                     if (thumbnail != null) {
                         Bitmap cover = BitmapFactory.decodeByteArray(thumbnail, 0, thumbnail.length);
                         //ImageTransformUtil.getRoundedCornerBitmap(cover, context.getResources())

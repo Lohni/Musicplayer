@@ -27,10 +27,10 @@
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            android:background="@color/colorDarkSurface8Percent"
+            android:background="@color/colorSurface"
             android:elevation="0dp"
             android:theme="@style/Theme.MusicPlayer"
-            app:titleTextColor="@color/colorTextLight" />
+            app:titleTextColor="@color/colorOnSurface" />
     </com.google.android.material.appbar.AppBarLayout>
 
     <FrameLayout

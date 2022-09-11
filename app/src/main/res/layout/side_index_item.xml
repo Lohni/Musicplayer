@@ -4,4 +4,4 @@
     android:layout_width="wrap_content"
     android:layout_height="fill_parent"
     android:gravity="center"
-    android:textColor="@color/colorTextDark"/>
+    android:textColor="@color/colorBackground"/>

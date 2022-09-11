@@ -9,6 +9,7 @@ import android.media.MediaMetadataRetriever;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -39,6 +40,7 @@ import com.example.musicplayer.utils.enums.DashboardEnumDeserializer;
 import com.example.musicplayer.utils.enums.DashboardListType;
 import com.example.musicplayer.utils.enums.ListFilterType;
 import com.example.musicplayer.utils.enums.PlaybackBehaviour;
+import com.google.android.material.divider.MaterialDividerItemDecoration;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 
@@ -52,6 +54,7 @@ import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -128,8 +131,8 @@ public class SongList extends Fragment implements SongListInterface {
     public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
         inflater.inflate(R.menu.songlist_menu, menu);
-        menu.getItem(0).setIconTintList(ContextCompat.getColorStateList(requireContext(), R.color.NewcolorText));
-        menu.getItem(1).setIconTintList(ContextCompat.getColorStateList(requireContext(), R.color.NewcolorText));
+        menu.getItem(0).setIconTintList(ContextCompat.getColorStateList(requireContext(), R.color.colorOnSurface));
+        menu.getItem(1).setIconTintList(ContextCompat.getColorStateList(requireContext(), R.color.colorOnSurface));
     }
 
     @Override
@@ -137,15 +140,17 @@ public class SongList extends Fragment implements SongListInterface {
         if (item.getItemId() == R.id.action_songlist_search) {
             if (!isSearchModeActive) {
                 item.setIcon(R.drawable.ic_shuffle_black_24dp);
-                item.setIconTintList(ContextCompat.getColorStateList(requireContext(), R.color.NewcolorText));
+                item.setIconTintList(ContextCompat.getColorStateList(requireContext(), R.color.colorOnSurface));
                 shuffle.setVisibility(View.GONE);
                 search_layout.setVisibility(View.VISIBLE);
                 isSearchModeActive = true;
             } else {
+                if (!search.getText().toString().equals("")) {
+                    songListAdapter.getFilter().filter("");
+                }
                 search.setText("");
-                songListAdapter.getFilter().filter("");
                 item.setIcon(R.drawable.ic_search_black_24dp);
-                item.setIconTintList(ContextCompat.getColorStateList(requireContext(), R.color.NewcolorText));
+                item.setIconTintList(ContextCompat.getColorStateList(requireContext(), R.color.colorOnSurface));
                 shuffle.setVisibility(View.VISIBLE);
                 search_layout.setVisibility(View.GONE);
                 isSearchModeActive = false;
@@ -158,6 +163,12 @@ public class SongList extends Fragment implements SongListInterface {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        loadSonglist();
     }
 
     @Override

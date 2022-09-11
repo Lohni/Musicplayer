@@ -52,19 +52,19 @@ public class ControlKnob extends View {
         progressSecondary = new Paint();
         disabledPrimary = new Paint();
         disabledPrimaryStroke = new Paint();
-        primaryStroke.setColor(ContextCompat.getColor(context, R.color.colorSecondaryLight));
+        primaryStroke.setColor(ContextCompat.getColor(context, R.color.colorPrimary));
         primaryStroke.setStyle(Paint.Style.STROKE);
-        primary.setColor(ContextCompat.getColor(context, R.color.colorSecondaryLight));
-        secondary.setColor(ContextCompat.getColor(context, R.color.colorPrimaryNight));
+        primary.setColor(ContextCompat.getColor(context, R.color.colorPrimary));
+        secondary.setColor(ContextCompat.getColor(context, R.color.colorOnPrimary));
         secondary.setStyle(Paint.Style.STROKE);
-        disabledPrimary.setColor(ContextCompat.getColor(context, R.color.colorStateDisabledPrimary));
-        disabledPrimaryStroke.setColor(ContextCompat.getColor(context, R.color.colorPrimaryNight));
+        disabledPrimary.setColor(ContextCompat.getColor(context, R.color.colorSurface));
+        disabledPrimaryStroke.setColor(ContextCompat.getColor(context, R.color.colorSurface));
         disabledPrimaryStroke.setStyle(Paint.Style.STROKE);
         progressThickness = dipTOPx(2f,context);
         paddingKnobToProgress = dipTOPx(6f,context);
         primaryStroke.setStrokeWidth(progressThickness);
         secondary.setStrokeWidth(progressThickness);
-        progressSecondary.setColor(ContextCompat.getColor(context, R.color.colorPrimary));
+        progressSecondary.setColor(ContextCompat.getColor(context, R.color.colorSurfaceVariant));
         progressSecondary.setStyle(Paint.Style.STROKE);
         progressSecondary.setStrokeWidth(progressThickness);
         info = context.getResources().getDrawable(R.drawable.ic_baseline_info_24, null);
@@ -100,7 +100,7 @@ public class ControlKnob extends View {
 
         if (!isInfoDrawn){
             isInfoDrawn = true;
-            int width_info = (int) (Math.sqrt(2*Math.pow(width/2,2)) - (width/2) - paddingKnobToProgress*0.5);
+            int width_info = (int) (Math.sqrt(2*Math.pow(width/2,2)) - (width/2) - paddingKnobToProgress*1.2);
             info.setBounds((int) (width-width_info), clipBounds.top,(int) width, width_info);
 
         }
@@ -117,9 +117,7 @@ public class ControlKnob extends View {
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-
         switch (event.getAction()){
-
             case MotionEvent.ACTION_DOWN:
                 Rect infoBounds = info.getBounds();
                 if (event.getX() > infoBounds.left && event.getY() < infoBounds.bottom){

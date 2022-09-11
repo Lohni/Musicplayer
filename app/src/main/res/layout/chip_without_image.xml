@@ -8,6 +8,6 @@
     app:chipStrokeWidth="1dp"
     android:textColor="@color/chip_text"
     android:backgroundTint="@color/chip_background"
-    app:chipStrokeColor="@color/NewcolorSecondary"
+    app:chipStrokeColor="@color/colorOutline"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content" />

@@ -2,14 +2,14 @@
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
     <item>
         <shape android:shape="oval">
-            <solid android:color="@color/colorSecondaryLight"/>
+            <solid android:color="@color/colorPrimary"/>
             <size android:height="150dp" android:width="150dp"/>
         </shape>
 
     </item>
     <item android:gravity="center" android:left="75dp">
         <shape android:shape="rectangle">
-            <solid android:color="@color/colorPrimaryNight"/>
+            <solid android:color="@color/colorOnPrimary"/>
             <size android:width="76dp" android:height="1dp"/>
         </shape>
     </item>

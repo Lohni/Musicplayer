@@ -26,6 +26,7 @@ import com.example.musicplayer.utils.enums.DashboardListType;
 import com.example.musicplayer.utils.enums.ListFilterType;
 import com.example.musicplayer.utils.images.ImageTransformUtil;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -74,7 +75,7 @@ public class DashboardTrackAdapter extends RecyclerView.Adapter<DashboardTrackAd
         if (!holder.isRefresh) {
             holder.imageView.setBackground(backgroundDrawable);
             holder.imageView.setForeground(customCoverDrawable);
-            holder.imageView.setForegroundTintList(ContextCompat.getColorStateList(context, R.color.NewcolorOnTeritaryContainer));
+            holder.imageView.setForegroundTintList(ContextCompat.getColorStateList(context, R.color.colorOnSecondaryContainer));
         }
 
         holder.description.postDelayed(() -> notifyItemChanged(holder.position, ""), 10000);
@@ -92,7 +93,11 @@ public class DashboardTrackAdapter extends RecyclerView.Adapter<DashboardTrackAd
                     } catch (IllegalArgumentException e) {
                         System.out.println("MediaMetadataRetriever IllegalArgument");
                     } finally {
-                        mmr.release();
+                        try {
+                            mmr.release();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
                         if (thumbnail != null) {
                             Bitmap cover = BitmapFactory.decodeByteArray(thumbnail, 0, thumbnail.length);
                             holder.imageView.setClipToOutline(true);
