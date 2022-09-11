@@ -160,23 +160,23 @@ public class ExpandedPlaybackControl extends Fragment {
                     indicatorLeft.setLayoutParams(getLayoutParamsWithSize(8, indicatorLeft.getLayoutParams()));
                     indicatorMiddle.setLayoutParams(getLayoutParamsWithSize(5, indicatorMiddle.getLayoutParams()));
                     indicatorRight.setLayoutParams(getLayoutParamsWithSize(5, indicatorRight.getLayoutParams()));
-                    indicatorLeft.setBackgroundTintList(ContextCompat.getColorStateList(requireContext(), R.color.NewcolorPrimary));
-                    indicatorMiddle.setBackgroundTintList(ContextCompat.getColorStateList(requireContext(), R.color.NewcolorBackgroundSecondard));
-                    indicatorRight.setBackgroundTintList(ContextCompat.getColorStateList(requireContext(), R.color.NewcolorBackgroundSecondard));
+                    indicatorLeft.setBackgroundTintList(ContextCompat.getColorStateList(requireContext(), R.color.colorPrimary));
+                    indicatorMiddle.setBackgroundTintList(ContextCompat.getColorStateList(requireContext(), R.color.colorSurfaceVariant));
+                    indicatorRight.setBackgroundTintList(ContextCompat.getColorStateList(requireContext(), R.color.colorSurfaceVariant));
                 } else if (position == 1) {
                     indicatorLeft.setLayoutParams(getLayoutParamsWithSize(5, indicatorLeft.getLayoutParams()));
                     indicatorMiddle.setLayoutParams(getLayoutParamsWithSize(8, indicatorMiddle.getLayoutParams()));
                     indicatorRight.setLayoutParams(getLayoutParamsWithSize(5, indicatorRight.getLayoutParams()));
-                    indicatorLeft.setBackgroundTintList(ContextCompat.getColorStateList(requireContext(), R.color.NewcolorBackgroundSecondard));
-                    indicatorMiddle.setBackgroundTintList(ContextCompat.getColorStateList(requireContext(), R.color.NewcolorPrimary));
-                    indicatorRight.setBackgroundTintList(ContextCompat.getColorStateList(requireContext(), R.color.NewcolorBackgroundSecondard));
+                    indicatorLeft.setBackgroundTintList(ContextCompat.getColorStateList(requireContext(), R.color.colorSurfaceVariant));
+                    indicatorMiddle.setBackgroundTintList(ContextCompat.getColorStateList(requireContext(), R.color.colorPrimary));
+                    indicatorRight.setBackgroundTintList(ContextCompat.getColorStateList(requireContext(), R.color.colorSurfaceVariant));
                 } else if (position == 2) {
                     indicatorLeft.setLayoutParams(getLayoutParamsWithSize(5, indicatorLeft.getLayoutParams()));
                     indicatorMiddle.setLayoutParams(getLayoutParamsWithSize(5, indicatorMiddle.getLayoutParams()));
                     indicatorRight.setLayoutParams(getLayoutParamsWithSize(8, indicatorRight.getLayoutParams()));
-                    indicatorLeft.setBackgroundTintList(ContextCompat.getColorStateList(requireContext(), R.color.NewcolorBackgroundSecondard));
-                    indicatorMiddle.setBackgroundTintList(ContextCompat.getColorStateList(requireContext(), R.color.NewcolorBackgroundSecondard));
-                    indicatorRight.setBackgroundTintList(ContextCompat.getColorStateList(requireContext(), R.color.NewcolorPrimary));
+                    indicatorLeft.setBackgroundTintList(ContextCompat.getColorStateList(requireContext(), R.color.colorSurfaceVariant));
+                    indicatorMiddle.setBackgroundTintList(ContextCompat.getColorStateList(requireContext(), R.color.colorSurfaceVariant));
+                    indicatorRight.setBackgroundTintList(ContextCompat.getColorStateList(requireContext(), R.color.colorPrimary));
                 }
             }
         });

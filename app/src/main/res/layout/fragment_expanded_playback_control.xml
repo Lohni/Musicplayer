@@ -15,7 +15,8 @@
         android:layout_marginTop="8dp"
         android:layout_marginStart="8dp"
         android:background="@drawable/ic_baseline_keyboard_arrow_down_24"
-        android:backgroundTint="@color/colorSecondaryLight"
+        android:backgroundTint="@color/colorSecondary"
+        android:foreground="@drawable/circle_ripple"
         android:elevation="8dp"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
@@ -27,12 +28,11 @@
         android:layout_marginTop="10dp"
         android:layout_marginEnd="10dp"
         android:background="@drawable/ic_baseline_more_vert_24"
-        android:backgroundTint="@color/colorTextLight"
+        android:backgroundTint="@color/colorOnBackground"
+        android:foreground="@drawable/circle_ripple"
         android:elevation="8dp"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent"/>
-
-
 
     <FrameLayout
         android:id="@+id/cover_layout"
@@ -40,13 +40,13 @@
         android:layout_height="0dp"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toTopOf="@+id/control_layout"
-        android:background="@color/NewcolorSurfaceLevel2">
+        android:background="@color/colorSurface">
 
         <com.example.musicplayer.ui.views.AudioVisualizerView
             android:id="@+id/audioView"
             android:layout_width="match_parent"
             android:layout_height="100dp"
-            app:visualizerColor="@color/NewcolorBackgroundPrimary"
+            app:visualizerColor="@color/colorBackground"
             android:layout_gravity="bottom"/>
 
         <androidx.viewpager2.widget.ViewPager2
@@ -60,7 +60,7 @@
         android:id="@+id/control_layout"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:background="@color/NewcolorBackgroundPrimary"
+        android:background="@color/colorBackground"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/cover_layout"
         tools:layout_editor_absoluteX="0dp">
@@ -70,7 +70,7 @@
             android:layout_width="5dp"
             android:layout_height="5dp"
             android:background="@drawable/round_dot"
-            android:backgroundTint="@color/NewcolorBackgroundSecondard"
+            android:backgroundTint="@color/colorSurfaceVariant"
             android:elevation="8dp"
             android:layout_marginEnd="8dp"
             app:layout_constraintEnd_toStartOf="@id/playbackcontrol_viewpager_indicator_middle"
@@ -82,7 +82,7 @@
             android:layout_width="8dp"
             android:layout_height="8dp"
             android:background="@drawable/round_dot"
-            android:backgroundTint="@color/NewcolorPrimary"
+            android:backgroundTint="@color/colorPrimary"
             android:elevation="8dp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
@@ -94,7 +94,7 @@
             android:layout_width="5dp"
             android:layout_height="5dp"
             android:background="@drawable/round_dot"
-            android:backgroundTint="@color/NewcolorBackgroundSecondard"
+            android:backgroundTint="@color/colorSurfaceVariant"
             android:elevation="8dp"
             android:layout_marginStart="8dp"
             app:layout_constraintStart_toEndOf="@id/playbackcontrol_viewpager_indicator_middle"
@@ -108,7 +108,7 @@
             android:layout_marginTop="12dp"
             android:layout_marginBottom="8dp"
             android:background="@drawable/ic_round_play_arrow_24"
-            android:backgroundTint="@color/NewcolorText"
+            android:backgroundTint="@color/colorOnBackground"
             app:layout_constraintBottom_toTopOf="@id/expanded_queue_count"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"
@@ -121,7 +121,7 @@
             android:layout_height="52dp"
             android:layout_marginStart="8dp"
             android:background="@drawable/ic_round_skip_previous_24"
-            android:backgroundTint="@color/colorTextLight"
+            android:backgroundTint="@color/colorOnBackground"
             app:layout_constraintBottom_toBottomOf="@id/expanded_control_play"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toLeftOf="@id/expanded_control_play"
@@ -133,7 +133,7 @@
             android:layout_height="52dp"
             android:layout_marginEnd="8dp"
             android:background="@drawable/ic_round_skip_next_24"
-            android:backgroundTint="@color/colorTextLight"
+            android:backgroundTint="@color/colorOnBackground"
             app:layout_constraintBottom_toBottomOf="@id/expanded_control_play"
             app:layout_constraintLeft_toRightOf="@id/expanded_control_play"
             app:layout_constraintRight_toRightOf="parent"
@@ -144,8 +144,8 @@
             android:layout_width="32dp"
             android:layout_height="32dp"
             android:background="@drawable/ic_round_repeat_24"
-            android:backgroundTint="@color/colorTextLight"
-            android:foreground="@drawable/shuffle_ripple"
+            android:backgroundTint="@color/colorOnBackground"
+            android:foreground="@drawable/circle_ripple"
             app:layout_constraintBottom_toBottomOf="@id/expanded_favourite"
             app:layout_constraintLeft_toRightOf="@id/expanded_control_skipback"
             app:layout_constraintRight_toLeftOf="@id/expanded_control_play"
@@ -156,9 +156,9 @@
             android:layout_width="32dp"
             android:layout_height="32dp"
             android:layout_marginTop="8dp"
-            android:foreground="@drawable/shuffle_ripple"
+            android:foreground="@drawable/circle_ripple"
             android:background="@drawable/ic_round_favorite_border_24"
-            android:backgroundTint="@color/colorTextLight"
+            android:backgroundTint="@color/colorOnBackground"
             app:layout_constraintBottom_toTopOf="@id/expanded_seekbar"
             app:layout_constraintLeft_toRightOf="@id/expanded_control_play"
             app:layout_constraintRight_toLeftOf="@id/expanded_control_skipforward"
@@ -169,8 +169,8 @@
             android:layout_width="32dp"
             android:layout_height="32dp"
             android:background="@drawable/ic_round_add_24"
-            android:backgroundTint="@color/colorTextLight"
-            android:foreground="@drawable/shuffle_ripple"
+            android:backgroundTint="@color/colorOnBackground"
+            android:foreground="@drawable/circle_ripple"
             app:layout_constraintBottom_toBottomOf="@id/expanded_favourite"
             app:layout_constraintLeft_toRightOf="@id/expanded_control_behaviour"
             app:layout_constraintRight_toLeftOf="@id/expanded_favourite"
@@ -201,7 +201,7 @@
                 android:scrollHorizontally="true"
                 android:singleLine="true"
                 android:textAlignment="center"
-                android:textColor="@color/NewcolorText"
+                android:textColor="@color/colorOnBackground"
                 android:textSize="20sp"
                 android:transitionName="transition_playback_title" />
 
@@ -212,7 +212,7 @@
                 android:layout_gravity="center"
                 android:layout_marginTop="6dp"
                 android:textAlignment="center"
-                android:textColor="@color/NewcolorText"
+                android:textColor="@color/colorOnBackground"
                 android:alpha="0.8"
                 android:textSize="18sp" />
         </LinearLayout>
@@ -225,8 +225,8 @@
             android:layout_marginStart="8dp"
             android:layout_marginEnd="8dp"
             android:progressBackgroundTintMode="src_in"
-            android:progressTint="@color/colorSecondaryLight"
-            android:secondaryProgressTint="@color/colorPrimaryLight"
+            android:progressTint="@color/colorSecondary"
+            android:secondaryProgressTint="@color/colorSecondary"
             android:thumbTint="@color/colorSecondary"
             android:thumb="@drawable/round_dot"
             app:layout_constraintBottom_toTopOf="@id/expanded_control_play"
@@ -239,7 +239,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginBottom="10dp"
-            android:textColor="@color/colorTextLight"
+            android:textColor="@color/colorOnBackground"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent" />
@@ -252,7 +252,7 @@
             android:gravity="center"
             android:text="00:00"
             android:textAllCaps="false"
-            android:textColor="@color/colorSecondaryLight"
+            android:textColor="@color/colorSecondary"
             android:textSize="16sp"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintTop_toBottomOf="@id/expanded_seekbar" />
@@ -265,7 +265,7 @@
             android:gravity="center"
             android:text="00:00"
             android:textAllCaps="false"
-            android:textColor="@color/colorSecondaryLight"
+            android:textColor="@color/colorSecondary"
             android:textSize="16sp"
             app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintTop_toBottomOf="@id/expanded_seekbar" />

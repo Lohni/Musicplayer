@@ -83,7 +83,7 @@ public class PlaybackControl extends Fragment {
         queue_count.setVisibility(View.GONE);
 
         playbackControlSeekbar = view.findViewById(R.id.new_seekbar);
-        playbackControlSeekbar.init(R.color.colorSecondaryLight, R.color.colorPrimaryNight);
+        playbackControlSeekbar.init(R.color.colorSecondary, R.color.colorSurface);
 
         play.setOnClickListener(view -> playbackControlInterface.onStateChangeListener());
         skip_forward.setOnClickListener(view -> {

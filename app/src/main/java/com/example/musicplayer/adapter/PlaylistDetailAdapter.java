@@ -19,6 +19,7 @@ import com.example.musicplayer.interfaces.SongInterface;
 import com.example.musicplayer.ui.playlistdetail.OnStartDragListener;
 import com.example.musicplayer.ui.playlistdetail.PlaylistDetail;
 
+import java.io.IOException;
 import java.util.ArrayList;
 
 import androidx.annotation.NonNull;
@@ -71,7 +72,11 @@ public class PlaylistDetailAdapter extends RecyclerView.Adapter<PlaylistDetailAd
             MediaMetadataRetriever mmr = new MediaMetadataRetriever();
             mmr.setDataSource(context, trackUri);
             byte[] thumbnail = mmr.getEmbeddedPicture();
-            mmr.release();
+            try {
+                mmr.release();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
             if (thumbnail != null) {
                 holder.cover.setImageBitmap(BitmapFactory.decodeByteArray(thumbnail, 0, thumbnail.length));
             }

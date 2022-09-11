@@ -27,6 +27,7 @@ import com.example.musicplayer.utils.GeneralUtils;
 import com.example.musicplayer.utils.images.ImageTransformUtil;
 import com.google.android.material.button.MaterialButton;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 
 import androidx.annotation.NonNull;
@@ -88,7 +89,11 @@ public class PlaybackControlInfoFragment extends PlaybackControlDetailFragment {
             } catch (IllegalArgumentException e) {
                 System.out.println("MediaMetadataRetriever IllegalArgument");
             } finally {
-                mmr.release();
+                try {
+                    mmr.release();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
                 if (thumbnail != null) {
                     Bitmap coverImage = BitmapFactory.decodeByteArray(thumbnail, 0, thumbnail.length);
                     cover.setBackground(ImageTransformUtil.roundCorners(coverImage, requireContext().getResources()));
@@ -99,7 +104,7 @@ public class PlaybackControlInfoFragment extends PlaybackControlDetailFragment {
                     cover.setAnimation(fadeIn);
                 } else {
                     cover.setBackground(customCoverImage);
-                    cover.setBackgroundTintList(ContextCompat.getColorStateList(requireContext(), R.color.NewcolorSecondaryContainer));
+                    cover.setBackgroundTintList(ContextCompat.getColorStateList(requireContext(), R.color.colorOnSecondaryContainer));
                 }
             }
         }

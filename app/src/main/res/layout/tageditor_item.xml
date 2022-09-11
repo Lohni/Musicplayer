@@ -28,7 +28,7 @@
             android:layout_marginTop="8dp"
             android:gravity="bottom"
             android:singleLine="true"
-            android:textColor="@color/colorTextLight"
+            android:textColor="@color/colorOnBackground"
             android:textSize="18sp" />
 
     <com.google.android.material.textview.MaterialTextView
@@ -36,7 +36,7 @@
         android:layout_width="fill_parent"
         android:layout_height="20dp"
         android:gravity="bottom"
-        android:textColor="@color/colorTextLight"
+        android:textColor="@color/colorOnBackground"
         android:textSize="15sp" />
     </LinearLayout>
 </LinearLayout>

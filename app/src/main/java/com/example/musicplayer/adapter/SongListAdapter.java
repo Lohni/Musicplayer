@@ -87,6 +87,7 @@ public class SongListAdapter extends RecyclerView.Adapter<SongListAdapter.ViewHo
         View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.tracklist_item, parent, false);
         ViewHolder viewHolder = new SongListAdapter.ViewHolder(v);
         setDefaultBackground(viewHolder);
+        viewHolder.setIsRecyclable(false);
         return viewHolder;
     }
 
@@ -99,9 +100,9 @@ public class SongListAdapter extends RecyclerView.Adapter<SongListAdapter.ViewHo
 
     private void setDefaultBackground(ViewHolder holder) {
         holder.coverImage.setBackground(customCoverBackground);
-        holder.coverImage.setBackgroundTintList(ContextCompat.getColorStateList(context, R.color.NewcolorSecondary));
+        holder.coverImage.setBackgroundTintList(ContextCompat.getColorStateList(context, R.color.colorOnSecondaryContainer));
         holder.coverImage.setForeground(customCoverImage);
-        holder.coverImage.setForegroundTintList(ContextCompat.getColorStateList(context, R.color.NewcolorSurfaceVariant));
+        holder.coverImage.setForegroundTintList(ContextCompat.getColorStateList(context, R.color.colorOnSecondary));
     }
 
     @Override
@@ -141,15 +142,15 @@ public class SongListAdapter extends RecyclerView.Adapter<SongListAdapter.ViewHo
         }
 
         if (currPlayingSongIndex >= 0 && track.getTId().equals(currPlayingSongIndex)) {
-            holder.itemView.setBackgroundTintList(ContextCompat.getColorStateList(context, R.color.NewcolorTeritaryContainer));
-            holder.title.setTextColor(ContextCompat.getColorStateList(context, R.color.NewcolorOnTeritaryContainer));
-            holder.artist.setTextColor(ContextCompat.getColorStateList(context, R.color.NewcolorOnTeritaryContainer));
-            holder.more.setBackgroundTintList(ContextCompat.getColorStateList(context, R.color.NewcolorOnTeritaryContainer));
+            holder.itemView.setBackgroundTintList(ContextCompat.getColorStateList(context, R.color.colorTertiaryContainer));
+            holder.title.setTextColor(ContextCompat.getColorStateList(context, R.color.colorOnTertiaryContainer));
+            holder.artist.setTextColor(ContextCompat.getColorStateList(context, R.color.colorOnTertiaryContainer));
+            holder.more.setBackgroundTintList(ContextCompat.getColorStateList(context, R.color.colorOnTertiaryContainer));
         } else {
-            holder.itemView.setBackgroundTintList(ContextCompat.getColorStateList(context, R.color.NewcolorSurfaceVariant));
-            holder.title.setTextColor(ContextCompat.getColorStateList(context, R.color.NewcolorText));
-            holder.artist.setTextColor(ContextCompat.getColorStateList(context, R.color.NewcolorText));
-            holder.more.setBackgroundTintList(ContextCompat.getColorStateList(context, R.color.NewcolorText));
+            holder.itemView.setBackgroundTintList(ContextCompat.getColorStateList(context, R.color.colorBackground));
+            holder.title.setTextColor(ContextCompat.getColorStateList(context, R.color.colorOnSurface));
+            holder.artist.setTextColor(ContextCompat.getColorStateList(context, R.color.colorOnSurface));
+            holder.more.setBackgroundTintList(ContextCompat.getColorStateList(context, R.color.colorOnSurface));
         }
     }
 

@@ -75,7 +75,7 @@ public class SideIndex {
         for (String index : indexList) {
             textView = new MaterialTextView(context);
             textView.setTextSize(textsize);
-            textView.setTextColor(ContextCompat.getColor(context, R.color.colorDarkOnBackground));
+            textView.setTextColor(ContextCompat.getColor(context, R.color.colorOnBackground));
             textView.setText(index);
             textView.setFocusable(false);
             textView.setGravity(Gravity.CENTER);

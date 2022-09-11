@@ -182,7 +182,11 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
             MediaMetadataRetriever mmr = new MediaMetadataRetriever();
             mmr.setDataSource(this, trackUri);
             byte[] thumbnail = mmr.getEmbeddedPicture();
-            mmr.release();
+            try {
+                mmr.release();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
 
             if (thumbnail != null) {
                 currentBitmap = Bitmap.createScaledBitmap(BitmapFactory.decodeByteArray(thumbnail, 0, thumbnail.length), bitmapWidth, bitmapHeight, false);

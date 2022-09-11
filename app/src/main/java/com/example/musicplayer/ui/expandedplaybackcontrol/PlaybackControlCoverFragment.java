@@ -19,6 +19,8 @@ import com.example.musicplayer.R;
 import com.example.musicplayer.database.entity.Track;
 import com.example.musicplayer.utils.images.ImageTransformUtil;
 
+import java.io.IOException;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
@@ -54,7 +56,11 @@ public class PlaybackControlCoverFragment extends PlaybackControlDetailFragment{
             } catch (IllegalArgumentException e) {
                 System.out.println("MediaMetadataRetriever IllegalArgument");
             } finally {
-                mmr.release();
+                try {
+                    mmr.release();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
                 if (thumbnail != null) {
                     Bitmap coverImage = BitmapFactory.decodeByteArray(thumbnail, 0, thumbnail.length);
                     cover.setBackground(ImageTransformUtil.roundCorners(coverImage, requireContext().getResources()));
@@ -65,7 +71,7 @@ public class PlaybackControlCoverFragment extends PlaybackControlDetailFragment{
                     cover.setAnimation(fadeIn);
                 } else {
                     cover.setBackground(customCoverImage);
-                    cover.setBackgroundTintList(ContextCompat.getColorStateList(requireContext(), R.color.NewcolorSecondaryContainer));
+                    cover.setBackgroundTintList(ContextCompat.getColorStateList(requireContext(), R.color.colorOnSecondaryContainer));
                 }
             }
         }

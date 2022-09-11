@@ -2,7 +2,8 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="@color/colorBackground">
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/reverb_guideline"
@@ -29,11 +30,8 @@
         android:id="@+id/reverb_background"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:background="#465D69"
         app:layout_constraintBottom_toTopOf="@+id/reverb_guideline"
         app:layout_constraintTop_toTopOf="parent" />
-
-
 
     <TextView
         android:id="@+id/reverb_title"
@@ -42,7 +40,7 @@
         android:text="Reverb"
         android:layout_marginStart="16dp"
         android:textSize="18sp"
-        android:textColor="@color/colorTextLight"
+        android:textColor="@color/colorOnBackground"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintTop_toTopOf="parent"/>
 
@@ -52,7 +50,7 @@
         android:layout_height="wrap_content"
         android:text="Delay"
         android:textAlignment="center"
-        android:textColor="@color/colorTextLight"
+        android:textColor="@color/colorOnBackground"
         android:textSize="16sp"
         android:singleLine="true"
         app:layout_constraintTop_toBottomOf="@+id/reverb_title"
@@ -66,7 +64,7 @@
         android:layout_height="wrap_content"
         android:text="HF Level"
         android:textAlignment="center"
-        android:textColor="@color/colorTextLight"
+        android:textColor="@color/colorOnBackground"
         android:textSize="16sp"
         android:singleLine="true"
         app:layout_constraintTop_toBottomOf="@+id/reverb_title"
@@ -80,7 +78,7 @@
         android:layout_height="wrap_content"
         android:text="Level"
         android:textAlignment="center"
-        android:textColor="@color/colorTextLight"
+        android:textColor="@color/colorOnBackground"
         android:textSize="16sp"
         android:singleLine="true"
         app:layout_constraintTop_toBottomOf="@+id/reverb_title"
@@ -93,7 +91,7 @@
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_marginStart="8dp"
-        android:layout_marginEnd="8dp"
+        android:layout_marginEnd="14dp"
         app:layout_constraintDimensionRatio="1"
         app:layout_constraintLeft_toRightOf="@id/reverb_guideline3"
         app:layout_constraintRight_toRightOf="parent"
@@ -104,7 +102,7 @@
         android:id="@+id/reverb_delay"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_marginStart="8dp"
+        android:layout_marginStart="16dp"
         android:layout_marginEnd="8dp"
         app:layout_constraintDimensionRatio="1"
         app:layout_constraintLeft_toLeftOf="parent"
@@ -128,7 +126,6 @@
         android:id="@+id/reverb_reflection_background"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:background="#34515E"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintTop_toBottomOf="@id/reverb_background"
         app:layout_constraintRight_toLeftOf="@id/reverb_guideline3"
@@ -138,7 +135,6 @@
         android:id="@+id/reverb_decay_background"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:background="#1C313A"
         app:layout_constraintLeft_toRightOf="@id/reverb_guideline3"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toBottomOf="@id/reverb_background"
@@ -151,7 +147,7 @@
         android:text="Reflections"
         android:layout_marginStart="16dp"
         android:textSize="18sp"
-        android:textColor="@color/colorTextLight"
+        android:textColor="@color/colorOnBackground"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintTop_toBottomOf="@id/reverb_background"/>
 
@@ -162,7 +158,7 @@
         android:text="Decay"
         android:layout_marginStart="16dp"
         android:textSize="18sp"
-        android:textColor="@color/colorTextLight"
+        android:textColor="@color/colorOnBackground"
         app:layout_constraintLeft_toLeftOf="@id/reverb_decay_background"
         app:layout_constraintTop_toBottomOf="@id/reverb_background"/>
 
@@ -172,7 +168,7 @@
         android:layout_height="wrap_content"
         android:text="Level"
         android:textAlignment="center"
-        android:textColor="@color/colorTextLight"
+        android:textColor="@color/colorOnBackground"
         android:textSize="16sp"
         app:layout_constraintTop_toBottomOf="@id/reverb_reflection_title"
         app:layout_constraintBottom_toTopOf="@id/reverb_reflection_level"
@@ -185,7 +181,7 @@
         android:layout_height="wrap_content"
         android:text="Delay"
         android:textAlignment="center"
-        android:textColor="@color/colorTextLight"
+        android:textColor="@color/colorOnBackground"
         android:textSize="16sp"
         app:layout_constraintTop_toBottomOf="@id/reverb_reflection_title"
         app:layout_constraintBottom_toTopOf="@id/reverb_reflection_delay"
@@ -198,7 +194,7 @@
         android:layout_height="wrap_content"
         android:text="Density"
         android:textAlignment="center"
-        android:textColor="@color/colorTextLight"
+        android:textColor="@color/colorOnBackground"
         android:textSize="16sp"
         app:layout_constraintTop_toBottomOf="@id/reverb_reflection_level"
         app:layout_constraintBottom_toTopOf="@id/reverb_reflection_density"
@@ -211,7 +207,7 @@
         android:layout_height="wrap_content"
         android:text="Diffusion"
         android:textAlignment="center"
-        android:textColor="@color/colorTextLight"
+        android:textColor="@color/colorOnBackground"
         android:textSize="16sp"
         android:singleLine="true"
         app:layout_constraintTop_toBottomOf="@id/reverb_reflection_delay"
@@ -225,7 +221,7 @@
         android:layout_height="wrap_content"
         android:text="Time"
         android:textAlignment="center"
-        android:textColor="@color/colorTextLight"
+        android:textColor="@color/colorOnBackground"
         android:textSize="16sp"
         app:layout_constraintTop_toBottomOf="@id/reverb_delay_title"
         app:layout_constraintBottom_toTopOf="@id/reverb_delay_time"
@@ -238,7 +234,7 @@
         android:layout_height="wrap_content"
         android:text="HF Ratio"
         android:textAlignment="center"
-        android:textColor="@color/colorTextLight"
+        android:textColor="@color/colorOnBackground"
         android:textSize="16sp"
         android:singleLine="true"
         app:layout_constraintTop_toBottomOf="@id/reverb_delay_time"
@@ -250,7 +246,7 @@
         android:id="@+id/reverb_reflection_level"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_marginStart="8dp"
+        android:layout_marginStart="16dp"
         android:layout_marginEnd="8dp"
         app:layout_constraintDimensionRatio="1"
         app:layout_constraintBottom_toTopOf="@id/reverb_reflection_density_text"
@@ -275,7 +271,7 @@
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_marginStart="8dp"
-        android:layout_marginEnd="8dp"
+        android:layout_marginEnd="12dp"
         app:layout_constraintDimensionRatio="1"
         app:layout_constraintBottom_toTopOf="@id/reverb_delay_hfratio_text"
         app:layout_constraintLeft_toLeftOf="@id/reverb_decay_background"
@@ -312,7 +308,7 @@
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_marginStart="8dp"
-        android:layout_marginEnd="8dp"
+        android:layout_marginEnd="12dp"
         app:layout_constraintDimensionRatio="1"
         app:layout_constraintBottom_toBottomOf="@id/reverb_decay_background"
         app:layout_constraintLeft_toLeftOf="@id/reverb_decay_background"
@@ -323,8 +319,6 @@
         android:id="@+id/reverb_master_background"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:background="#29434E"
-
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toBottomOf="@id/reverb_reflection_background"
@@ -338,7 +332,7 @@
         android:singleLine="true"
         android:text="Master"
         android:textAlignment="center"
-        android:textColor="@color/colorTextLight"
+        android:textColor="@color/colorOnBackground"
         android:textSize="16sp"
         app:layout_constraintBottom_toTopOf="@id/reverb_master"
         app:layout_constraintLeft_toLeftOf="@id/reverb_master"
@@ -376,7 +370,7 @@
         android:layout_marginStart="8dp"
         android:layout_marginEnd="12dp"
         android:background="@drawable/ic_delete_black_24dp"
-        android:backgroundTint="@color/colorTextLight"
+        android:backgroundTint="@color/colorOnBackground"
         app:layout_constraintTop_toTopOf="@id/reverb_add"
         app:layout_constraintBottom_toBottomOf="@id/reverb_add"
         app:layout_constraintLeft_toRightOf="@id/reverb_add"
@@ -392,7 +386,7 @@
         android:layout_marginBottom="16dp"
         android:hint="Preset"
         android:textColorHint="@color/equalizer_background"
-        app:boxBackgroundColor="@color/background_primarydark"
+        app:boxBackgroundColor="@color/autocomplete_textview_background"
         app:boxStrokeColor="@color/equalizer_background"
         app:endIconTint="@color/equalizer_background"
         app:hintTextColor="@color/equalizer_background"
@@ -408,7 +402,7 @@
             android:inputType="none"
             android:singleLine="true"
             android:focusable="false"
-            android:textColor="@color/colorTextLight"/>
+            android:textColor="@color/colorOnBackground"/>
 
     </com.google.android.material.textfield.TextInputLayout>
 

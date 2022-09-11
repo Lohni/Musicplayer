@@ -1,31 +1,0 @@
-
-E
-java:S1604>"(Make this anonymous inner class a lambda(Ë¼œª8Ä‡ùÒĞ.
-T
-java:S1068"2Remove this unused "audioSessionID" private field.(ôœåÔıÿÿÿÿ8°ÒäğĞ.
-J
-java:S1604\"(Make this anonymous inner class a lambda(ÃŞ›Çşÿÿÿÿ8­ªÁ Ñ.
-p
-java:S1450"SRemove the "bass" field and declare it as a local variable in the relevant methods.(ÄÿŠ—8÷õµÒĞ.
-{
-java:S1450"^Remove the "virtualizerView" field and declare it as a local variable in the relevant methods.(ÄÿŠ—8†õäğĞ.
-J
-java:S1604l"(Make this anonymous inner class a lambda(¾ÖïŒüÿÿÿÿ8Î³› Ñ.
-Q
-java:S1481D"/Remove this unused "descriptor" local variable.(¾ÚØëúÿÿÿÿ8°ÒäğĞ.
-M
-java:S1128"0Remove this unused import 'java.util.ArrayList'.(÷‰îƒ8Ô¬ Ñ.
-p
-java:S1450"SRemove the "view" field and declare it as a local variable in the relevant methods.(ØÊ»¶8£³‚¨Ğ.
-^
-java:S1128"<Remove this unused import 'android.media.audiofx.Equalizer'.(Àòã¾ıÿÿÿÿ8ˆÒ‡¨Ğ.
-J
-java:S1604G"(Make this anonymous inner class a lambda(œïÑ©ùÿÿÿÿ8 ±îğĞ.
-
-java:S1450"]Remove the "audioSessionID" field and declare it as a local variable in the relevant methods.(ôœåÔıÿÿÿÿ8†ë¨ÒĞ.
-J
-java:S1659"-Declare "virtualizerView" on a separate line.(ÄÿŠ—8°ÒäğĞ.
-t
-java:S1128"RRemove this unused import 'com.example.musicplayer.ui.playlist.PlaylistInterface'.(×ıùşÿÿÿÿ8Ê¾ Ñ.
-`
-java:S1854D">Remove this useless assignment to local variable "descriptor".(¾ÚØëúÿÿÿÿ8°ÒäğĞ.

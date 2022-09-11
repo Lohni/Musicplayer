@@ -256,7 +256,7 @@ public class EqualizerFragment extends Fragment {
             freq.setGravity(Gravity.CENTER);
             freq.setText((equalizerProperties.getCenterFreqAtIndex(i)) / 1000 + "Hz");
             freq.setTextSize(TypedValue.COMPLEX_UNIT_SP, 16f);
-            freq.setTextColor(ContextCompat.getColor(requireContext(), R.color.colorTextLight));
+            freq.setTextColor(ContextCompat.getColor(requireContext(), R.color.colorOnBackground));
 
             LinearLayout rowLayout = new LinearLayout(requireContext());
             rowLayout.setOrientation(LinearLayout.VERTICAL);

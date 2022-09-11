@@ -34,7 +34,7 @@ public class AudioVisualizerView extends View {
         super(context, attrs);
         TypedArray attrib = context.getTheme().obtainStyledAttributes(attrs, R.styleable.AudioVisualizerView,0,0);
         try {
-            colorResource = attrib.getColor(R.styleable.AudioVisualizerView_visualizerColor,context.getResources().getColor(R.color.colorPrimaryDark));
+            colorResource = attrib.getColor(R.styleable.AudioVisualizerView_visualizerColor,context.getResources().getColor(R.color.colorBackground));
         } finally {
             attrib.recycle();
         }

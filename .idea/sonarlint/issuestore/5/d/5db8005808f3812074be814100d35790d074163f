@@ -1,10 +1,0 @@
-
-f	java:S117	"QRename this local variable to match the regular expression '^[a-z][a-zA-Z0-9]*$'.(¾‘Ä³
-k	java:S117"QRename this local variable to match the regular expression '^[a-z][a-zA-Z0-9]*$'.(õÓÉùÿÿÿÿ
-<
-java:S1659"&Declare "album_id" on a separate line.(Ô‘Ú
->
-java:S1659"#Declare "title" on a separate line.(ø»şÿÿÿÿ
-h	java:S116"SRename this field "album_id" to match the regular expression '^[a-z][a-zA-Z0-9]*$'.(Ô‘Ú
-h	java:S100"NRename this method name to match the regular expression '^[a-z][a-zA-Z0-9]*$'.(Œôî¼úÿÿÿÿ
-h	java:S100"NRename this method name to match the regular expression '^[a-z][a-zA-Z0-9]*$'.(õÓÉùÿÿÿÿ

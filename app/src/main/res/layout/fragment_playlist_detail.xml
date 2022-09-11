@@ -15,7 +15,7 @@
         app:layout_constraintBottom_toTopOf="@id/playlistdetail_list"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:background="@color/colorPrimaryNight">
+        android:background="@color/colorBackground">
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/playlistdetail_shuffle"
@@ -36,7 +36,7 @@
                 app:layout_constraintEnd_toStartOf="@id/playlistdetail_shuffle_text"
                 app:layout_constraintTop_toTopOf="parent"
                 app:srcCompat="@drawable/ic_shuffle_black_24dp"
-                app:tint="@color/colorTextLight" />
+                app:tint="@color/colorOnBackground" />
 
             <TextView
                 android:id="@+id/playlistdetail_shuffle_text"
@@ -44,7 +44,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="32dp"
                 android:text="Shuffle"
-                android:textColor="@color/colorTextLight"
+                android:textColor="@color/colorOnBackground"
                 android:textSize="20sp"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
@@ -59,7 +59,7 @@
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintBottom_toBottomOf="parent"
                 android:layout_marginStart="16dp"
-                app:tint="@color/colorSecondaryLight" />
+                app:tint="@color/colorOnBackground" />
 
             <TextView
                 android:id="@+id/playlistdetail_duration"
@@ -68,7 +68,7 @@
                 android:layout_marginStart="8dp"
                 android:layout_marginEnd="8dp"
                 android:text="0 songs - 00:00"
-                android:textColor="@color/colorSecondaryLight"
+                android:textColor="@color/colorOnBackground"
                 android:textSize="18sp"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintRight_toLeftOf="@id/playlistdetail_shuffle_image"

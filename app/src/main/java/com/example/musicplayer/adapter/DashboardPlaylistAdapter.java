@@ -40,9 +40,9 @@ public class DashboardPlaylistAdapter extends RecyclerView.Adapter<DashboardPlay
     public DashboardPlaylistAdapter.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.dashboard_list_item, parent, false);
         DashboardPlaylistAdapter.ViewHolder holder = new DashboardPlaylistAdapter.ViewHolder(v);
-        holder.imageHolder.setBackgroundTintList(ContextCompat.getColorStateList(parent.getContext(), R.color.NewcolorSecondaryContainer));
+        holder.imageHolder.setBackgroundTintList(ContextCompat.getColorStateList(parent.getContext(), R.color.colorSecondaryContainer));
         holder.imageView.setImageDrawable(customCoverDrawable);
-        holder.imageView.setImageTintList(ContextCompat.getColorStateList(parent.getContext(), R.color.NewcolorOnSecondaryContainer));
+        holder.imageView.setImageTintList(ContextCompat.getColorStateList(parent.getContext(), R.color.colorOnSecondaryContainer));
         return holder;
     }
 

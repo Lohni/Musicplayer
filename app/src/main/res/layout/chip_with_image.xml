@@ -10,7 +10,7 @@
     android:backgroundTint="@color/chip_background"
     app:chipIconEnabled="true"
     app:chipIconTint="@color/chip_text"
-    app:chipStrokeColor="@color/NewcolorSecondary"
+    app:chipStrokeColor="@color/colorOutline"
     app:chipStartPadding="10dp"
     app:chipStrokeWidth="1dp"
     android:layout_width="wrap_content"

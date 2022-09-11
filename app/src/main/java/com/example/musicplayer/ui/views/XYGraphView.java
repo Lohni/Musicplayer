@@ -34,14 +34,14 @@ public class XYGraphView extends View {
 
     public XYGraphView(Context context) {
         super(context);
-        paint.setColor(context.getResources().getColor(R.color.NewcolorPrimary, null));
+        paint.setColor(context.getResources().getColor(R.color.colorPrimary, null));
     }
 
     public XYGraphView(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
         textHeight = convertSpToPixel(14, context);
         padding = convertDpToPixel(16, context);
-        paint.setColor(context.getResources().getColor(R.color.NewcolorPrimary, null));
+        paint.setColor(context.getResources().getColor(R.color.colorPrimary, null));
         paint.setStrokeWidth(5f);
         paint.setAntiAlias(true);
         paint.setTextSize(textHeight);

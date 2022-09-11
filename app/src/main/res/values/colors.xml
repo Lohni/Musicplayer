@@ -1,71 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#78909c</color>
-    <color name="colorPrimaryDark">#4b636e</color>
-    <color name="colorPrimaryNight">#2E4753</color>
-    <color name="colorPrimaryInfinite">#1C313A</color>
-    <color name="colorPrimaryLight">#a7c0cd</color>
-    <color name="colorSecondary">#ff7043</color>
-    <color name="colorSecondaryDark">#c63f17</color>
-    <color name="colorSecondaryLight">#ffa270</color>
-    <color name="colorStateDisabledPrimary">#AAAAAA</color>
-    <color name="colorStateDisabledSecondary">#5B4B43</color>
-    <color name="colorTextLight">#D5D5D5</color>
-    <color name="colorTextDark">#000000</color>
-    <color name="colorBackgroundOne">#E2F1F8</color>
-    <color name="colorBackgroundTwo">#C1D5E0</color>
+
+    <color name="colorPrimary">#ffb4a8</color>
+    <color name="colorOnPrimary">#640d06</color>
+    <color name="colorPrimaryContainer">#832519</color>
+    <color name="colorOnPrimaryContainer">#ffdad4</color>
+
+    <color name="colorSecondary">#C49C26</color>
+    <color name="colorOnSecondary">#422d00</color>
+    <color name="colorSecondaryContainer">#5e4200</color>
+    <color name="colorOnSecondaryContainer">#ffdea9</color>
+
+    <color name="colorTertiary">#59d5f8</color>
+    <color name="colorOnTertiary">#003642</color>
+    <color name="colorTertiaryContainer">#004e5f</color>
+    <color name="colorOnTertiaryContainer">#b3ebff</color>
+
+    <color name="colorBackground">#201a19</color>
+    <color name="colorOnBackground">#ede0dd</color>
+    <color name="colorSurface">#2C2524</color>
+    <color name="colorOnSurface">#ede0dd</color>
+
+    <color name="colorOutline">#a08c89</color>
+    <color name="colorSurfaceVariant">#534746</color>
+    <color name="colorOnSurfaceVariant">#d8c2be</color>
+
     <color name="colorTransparent">#004B636E</color>
-    <color name="colorSecondaryLightTrans">#ADFFA270</color>
-
-    <!-- new Theme -->
-
-    <color name="colorDarkPrimary">#4DD8E5</color>
-    <color name="colorDarkOnPrimary">#00363B</color>
-    <color name="colorDarkPrimaryContainer">#004F56</color>
-    <color name="colorDarkOnPrimaryContainer">#78F4FF</color>
-
-    <color name="colorDarkSecondary">#B1CBCE</color>
-    <color name="colorDarkOnSecondary">#1C3437</color>
-    <color name="colorDarkSecondaryContainer">#334B4E</color>
-    <color name="colorDarkOnSecondaryContainer">#CCE7EA</color>
-
-    <color name="colorDarkTertiary">#B8C7EB</color>
-    <color name="colorDarkOnTertiary">#21304C</color>
-    <color name="colorDarkTertiaryContainer">#394765</color>
-    <color name="colorDarkOnTertiaryContainer">#D6E2FF</color>
-
-    <!-- Error colors -->
-    <color name="colorDarkBackground">#191C1C</color>
-    <color name="colorDarkOnBackground">#E0E3E3</color>
-    <color name="colorDarkSurface">#191C1C</color>
-    <color name="colorDarkOnSurface">#E0E3E3</color>
-    <color name="colorDarkSurfaceVariant">#3F4849</color>
-    <color name="colorDarkOnSurfaceVariant">#BFC8C9</color>
-    <color name="colorDarkOutline">#899394</color>
-
-    <color name="colorDarkSurface8Percent">#1D2B2C</color>
-    
-    <!-- New scheme -->
-    <color name="NewcolorBackgroundSecondard">#49454F</color>
-    <color name="NewcolorBackgroundPrimary">#1C1B1F</color>
-    <color name="NewcolorText">#CAC4D0</color>
-    <color name="NewcolorStroke">#938F99</color>
-
-    <color name="NewcolorSecondaryContainer">#4A4458</color>
-    <color name="NewcolorOnSecondaryContainer">#E8DEF8</color>
-
-    <color name="NewcolorSecondary">#CCC2DC</color>
-    <color name="NewcolorOnSecondary">#332D41</color>
-^
-    <color name="NewcolorTeritaryContainer">#492532</color>
-    <color name="NewcolorOnTeritaryContainer">#FFD8E4</color>
-
-    <color name="NewcolorPrimary">#D0BCFF</color>
-    <color name="NewcolorSurface">#1C1B1F</color>
-    <color name="NewcolorSurfaceVariant">#49454F</color>
-    <color name="NewcolorOnSurfaceVariant">#CAC4D0</color>
-
-    <color name="NewcolorSurfaceLevel2">#312E39</color>
 </resources>
 
 
