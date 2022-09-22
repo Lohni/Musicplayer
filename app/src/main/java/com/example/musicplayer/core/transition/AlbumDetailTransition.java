@@ -1,4 +1,4 @@
-package com.example.musicplayer.transition;
+package com.example.musicplayer.core.transition;
 
 import android.transition.ChangeBounds;
 import android.transition.ChangeClipBounds;

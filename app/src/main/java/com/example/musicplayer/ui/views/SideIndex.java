@@ -13,6 +13,7 @@ import android.widget.TextView;
 import com.example.musicplayer.R;
 import com.example.musicplayer.database.dto.TrackDTO;
 import com.example.musicplayer.database.entity.Track;
+import com.example.musicplayer.utils.images.ImageTransformUtil;
 import com.google.android.material.textview.MaterialTextView;
 
 import java.util.ArrayList;
@@ -67,8 +68,11 @@ public class SideIndex {
         };
         indexLayout.setOrientation(LinearLayout.VERTICAL);
 
-        int div = (int) (27 * 1.8);
-        int textsize = (sideIndex.getHeight() / (div)) / ((int) context.getResources().getDisplayMetrics().scaledDensity);
+        int div = (int) (27);
+        float width = ImageTransformUtil.convertPixelToSp(sideIndex.getWidth() - 8, context.getResources());
+
+        float textsize = ImageTransformUtil.convertPixelToSp(sideIndex.getHeight() / (div), context.getResources());
+        textsize = Math.min(textsize, width);
 
         MaterialTextView textView;
         List<String> indexList = new ArrayList<>(mapIndex.keySet());
@@ -79,6 +83,7 @@ public class SideIndex {
             textView.setText(index);
             textView.setFocusable(false);
             textView.setGravity(Gravity.CENTER);
+            textView.setPadding(0, 0, 8, 0);
             textView.setOnClickListener(view -> {
                 indexZoomHolder.setVisibility(View.VISIBLE);
                 TextView selectedIndex = (TextView) view;

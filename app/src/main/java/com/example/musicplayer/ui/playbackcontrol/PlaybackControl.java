@@ -9,6 +9,7 @@ import android.content.pm.PackageManager;
 import android.graphics.drawable.AnimatedVectorDrawable;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,30 +19,38 @@ import android.widget.TextView;
 import com.example.musicplayer.R;
 import com.example.musicplayer.interfaces.PlaybackControlInterface;
 import com.example.musicplayer.interfaces.ServiceTriggerInterface;
+import com.example.musicplayer.interfaces.SongInterface;
+import com.example.musicplayer.ui.queue.QueueFragment;
 import com.example.musicplayer.ui.views.AudioVisualizerView;
 import com.example.musicplayer.ui.views.PlaybackControlSeekbar;
+import com.example.musicplayer.utils.enums.PlaybackBehaviour;
+import com.example.musicplayer.utils.images.ImageTransformUtil;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.widget.PopupMenu;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
+import androidx.transition.Slide;
 
 
 public class PlaybackControl extends Fragment {
     private static final int PERMISSION_REQUEST_CODE = 0x03;
     private PlaybackControlSeekbar playbackControlSeekbar;
     private TextView control_title, control_artist, queue_count;
-    private ImageButton play, skip_forward, queue;
-    private View view;
+    private ImageButton play, skip_forward;
+    private View view, queue;
     private AudioVisualizerView audioVisualizerView;
     private ConstraintLayout parentLayout;
 
-    private int newProgress, queueCount = 0;
-    private boolean seekbarUserAction = false;
+    private PlaybackBehaviour.PlaybackBehaviourState pLaybackbehaviourState = PlaybackBehaviour.PlaybackBehaviourState.REPEAT_LIST;
+    private int newProgress, queueCount = 0, queueIndex = 0;
+    private boolean seekbarUserAction = false, queueFragmentCommited = false, isPause = true, isPopupShown = false;
 
     private PlaybackControlInterface playbackControlInterface;
     private ServiceTriggerInterface serviceTriggerInterface;
+    private SongInterface songInterface;
 
     public PlaybackControl() {
     }
@@ -61,6 +70,7 @@ public class PlaybackControl extends Fragment {
         try {
             playbackControlInterface = (PlaybackControlInterface) context;
             serviceTriggerInterface = (ServiceTriggerInterface) context;
+            songInterface = (SongInterface) context;
         } catch (ClassCastException e) {
             throw new ClassCastException(context + "must implement PlaybackControlInterface");
         }
@@ -110,6 +120,57 @@ public class PlaybackControl extends Fragment {
             }
         });
 
+        queue.setOnClickListener((queueView) -> {
+            if (!queueFragmentCommited && getParentFragmentManager().findFragmentByTag(getString(R.string.fragment_queue)) == null) {
+                queueFragmentCommited = true;
+                QueueFragment queueFragment = new QueueFragment();
+                Bundle bundle = new Bundle();
+                bundle.putInt("QUEUE_POS", queueIndex);
+                bundle.putInt("BEHAVIOUR_STATE", PlaybackBehaviour.getStateAsInteger(pLaybackbehaviourState));
+                queueFragment.setArguments(bundle);
+
+                Slide anim = new Slide();
+                anim.setSlideEdge(Gravity.BOTTOM);
+                anim.setDuration(300);
+
+                queueFragment.setEnterTransition(anim);
+                getParentFragmentManager().beginTransaction()
+                        .replace(R.id.nav_host_fragment, queueFragment, getString(R.string.fragment_queue))
+                        .addToBackStack(null).commit();
+
+                //OnClickListener gets called twice somehow - Quickfix to avoid multiple QueueFragment layers
+                queue.postDelayed(() -> queueFragmentCommited = false, 500);
+            }
+        });
+
+        queue.setOnLongClickListener((queueView) -> {
+            if (!isPopupShown) {
+                isPopupShown = true;
+                PopupMenu popupMenu = new PopupMenu(requireContext(), queueView);
+                popupMenu.getMenuInflater().inflate(R.menu.queue_quick_delete, popupMenu.getMenu());
+                queue.setBackground(ImageTransformUtil.getDrawableFromVectorDrawable(requireContext(), R.drawable.ic_delete_sweep_black_24dp));
+
+                popupMenu.setOnMenuItemClickListener(item -> {
+                    if (item.getItemId() == R.id.action_queue_quick_delete) {
+                        songInterface.onRemoveAllSongsListener();
+                        queue.setBackground(ImageTransformUtil.getDrawableFromVectorDrawable(requireContext(), R.drawable.ic_baseline_queue_music_24));
+                        popupMenu.dismiss();
+                        isPopupShown =false;
+                    }
+                    return true;
+                });
+
+                popupMenu.setOnDismissListener(menu -> {
+                    queue.setBackground(ImageTransformUtil.getDrawableFromVectorDrawable(requireContext(), R.drawable.ic_baseline_queue_music_24));
+                    popupMenu.dismiss();
+                    isPopupShown = false;
+                });
+
+                popupMenu.show();
+            }
+            return false;
+        });
+
         return view;
     }
 
@@ -151,13 +212,13 @@ public class PlaybackControl extends Fragment {
     }
 
     private void animateCount(int old, int newCount) {
-        int dur = 500 / Math.abs(old - newCount);
+        int dur = 10;
         if (old < newCount) {
             new Thread(() -> {
                 int i = old;
                 while (i <= newCount) {
                     try {
-                        Thread.sleep(dur);
+                        Thread.sleep(10);
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
@@ -170,23 +231,27 @@ public class PlaybackControl extends Fragment {
                 }
             }).start();
         } else {
-            new Thread(() -> {
-                int i = old;
-                while (i >= newCount) {
-                    try {
-                        Thread.sleep(dur);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                    int finalI = i;
-                    queue_count.post(() -> queue_count.setText(String.valueOf(finalI)));
-                    i--;
-                }
-                if (newCount == 0) {
-                    queue_count.setText("");
-                }
-            }).start();
+            countDown(old, newCount);
         }
+    }
+
+    public void countDown(int old, int newCount) {
+        queue_count.post(() -> {
+            int i = old;
+            while (i >= newCount) {
+                try {
+                    Thread.sleep(10);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                int finalI = i;
+                queue_count.setText(String.valueOf(finalI));
+                i--;
+            }
+            if (newCount == 0) {
+                queue_count.setText("");
+            }
+        });
     }
 
     public void updateSeekbar(int time) {
@@ -201,14 +266,17 @@ public class PlaybackControl extends Fragment {
     }
 
     public void setControlButton(boolean isOnPause) {
-        if (!isOnPause) {
-            play.setBackground(ContextCompat.getDrawable(requireContext(), R.drawable.play_to_pause_anim));
-            AnimatedVectorDrawable animatedVectorDrawable = (AnimatedVectorDrawable) play.getBackground();
-            animatedVectorDrawable.start();
-        } else {
-            play.setBackground(ContextCompat.getDrawable(requireContext(), R.drawable.pause_to_play_anim));
-            AnimatedVectorDrawable animatedVectorDrawable = (AnimatedVectorDrawable) play.getBackground();
-            animatedVectorDrawable.start();
+        if (isOnPause != isPause) {
+            if (!isOnPause) {
+                play.setBackground(ContextCompat.getDrawable(requireContext(), R.drawable.play_to_pause_anim));
+                AnimatedVectorDrawable animatedVectorDrawable = (AnimatedVectorDrawable) play.getBackground();
+                animatedVectorDrawable.start();
+            } else {
+                play.setBackground(ContextCompat.getDrawable(requireContext(), R.drawable.pause_to_play_anim));
+                AnimatedVectorDrawable animatedVectorDrawable = (AnimatedVectorDrawable) play.getBackground();
+                animatedVectorDrawable.start();
+            }
+            isPause = isOnPause;
         }
     }
 
@@ -239,8 +307,9 @@ public class PlaybackControl extends Fragment {
 
             setAudioSessionID(bundle.getInt("SESSION_ID"));
             setControlButton(bundle.getBoolean("ISONPAUSE"));
-
             updateQueueCount(bundle.getInt("QUEUE_SIZE"));
+            queueIndex = bundle.getInt("QUEUE_INDEX");
+            pLaybackbehaviourState = PlaybackBehaviour.getStateFromInteger(bundle.getInt("BEHAVIOUR_STATE", 3));
         }
     };
 }

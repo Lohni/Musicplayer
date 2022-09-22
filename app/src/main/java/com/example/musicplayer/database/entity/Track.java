@@ -1,12 +1,19 @@
 package com.example.musicplayer.database.entity;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
+import java.util.Objects;
+
 import androidx.annotation.NonNull;
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
 
 @Entity
-public class Track {
+public class Track implements Parcelable {
+
+    public Track(){}
 
     @NonNull
     @ColumnInfo(name = "t_id")
@@ -96,5 +103,96 @@ public class Track {
 
     public void setTTrackNr(Integer tTrackNr) {
         this.tTrackNr = tTrackNr;
+    }
+
+    protected Track(Parcel in) {
+        in.readByte();
+        tId = in.readInt();
+
+        in.readByte();
+        tTitle = in.readString();
+
+        in.readByte();
+        tArtist = in.readString();
+
+        tCreated = (in.readByte() == 0) ? "" : in.readString();
+
+        tIsFavourite = (in.readByte() == 0) ? 0 : in.readInt();
+        tAlbumId = (in.readByte() == 0) ? null : in.readInt();
+        tDuration = (in.readByte() == 0) ? null : in.readInt();
+        tTrackNr = (in.readByte() == 0) ? null : in.readInt();
+    }
+
+    public static final Creator<Track> CREATOR = new Creator<Track>() {
+        @Override
+        public Track createFromParcel(Parcel in) {
+            return new Track(in);
+        }
+
+        @Override
+        public Track[] newArray(int size) {
+            return new Track[size];
+        }
+    };
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+  
+    @Override
+    public void writeToParcel(@NonNull Parcel parcel, int i) {
+        parcel.writeByte((byte) 1);
+        parcel.writeInt(tId);
+
+        parcel.writeByte((byte) 1);
+        parcel.writeString(tTitle);
+
+        parcel.writeByte((byte) 1);
+        parcel.writeString(tArtist);
+
+        if (tCreated == null) {
+            parcel.writeByte((byte) 0);
+        } else {
+            parcel.writeByte((byte) 1);
+            parcel.writeString(tCreated);
+        }
+        if (tIsFavourite == null) {
+            parcel.writeByte((byte) 0);
+        } else {
+            parcel.writeByte((byte) 1);
+            parcel.writeInt(tIsFavourite);
+        }
+        if (tAlbumId == null) {
+            parcel.writeByte((byte) 0);
+        } else {
+            parcel.writeByte((byte) 1);
+            parcel.writeInt(tAlbumId);
+        }
+        if (tDuration == null) {
+            parcel.writeByte((byte) 0);
+        } else {
+            parcel.writeByte((byte) 1);
+            parcel.writeInt(tDuration);
+        }
+        if (tTrackNr == null) {
+            parcel.writeByte((byte) 0);
+        } else {
+            parcel.writeByte((byte) 1);
+            parcel.writeInt(tTrackNr);
+        }
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Track track = (Track) o;
+        return tId.equals(track.tId);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(tId);
     }
 }

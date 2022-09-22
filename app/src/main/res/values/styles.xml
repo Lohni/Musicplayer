@@ -1,7 +1,7 @@
 <resources>
 
     <!-- Base application theme. -->
-    <style name="Theme.MusicPlayer" parent="Theme.Material3.DayNight.NoActionBar">
+    <style name="Theme.MusicPlayer" parent="Theme.Material3.Dark.NoActionBar">
         <item name="toolbarStyle">@style/Widget.AppCompat.Toolbar</item>
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorOnPrimary">@color/colorOnPrimary</item>
@@ -16,6 +16,7 @@
         <item name="colorTertiaryContainer">@color/colorTertiaryContainer</item>
         <item name="colorOnTertiaryContainer">@color/colorOnTertiaryContainer</item>
         <item name="colorSurface">@color/colorSurface</item>
+        <item name="colorOnSurface">@color/colorOnSurface</item>
         <item name="colorSurfaceVariant">@color/colorSurfaceVariant</item>
         <item name="colorOnSurfaceVariant">@color/colorOnSurfaceVariant</item>
 
@@ -38,9 +39,4 @@
         <item name="android:windowEnterAnimation">@anim/popupwindow_show</item>
         <item name="android:windowExitAnimation">@anim/popupwindow_dismiss</item>
     </style>
-
-    <style name="PopupMenu" parent="@android:style/Widget.PopupMenu">
-        <item name="android:popupBackground">@color/colorSurface</item>
-    </style>
-
 </resources>

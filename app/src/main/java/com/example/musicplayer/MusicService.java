@@ -46,6 +46,8 @@ import com.example.musicplayer.utils.images.BitmapColorExtractor;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Random;
 
 import androidx.annotation.NonNull;
@@ -54,13 +56,15 @@ import androidx.core.app.NotificationCompat;
 
 public class MusicService extends Service implements MediaPlayer.OnPreparedListener, MediaPlayer.OnErrorListener, MediaPlayer.OnCompletionListener {
     private final ArrayList<Track> songlist = new ArrayList<>();
-    private int currSongIndex;
+    private Track currentPlaying = null;
     private PlaybackBehaviour.PlaybackBehaviourState playbackBehaviour = PlaybackBehaviour.PlaybackBehaviourState.REPEAT_LIST;
-    private DashboardListType currentListType;
+    private DashboardListType currentListType = DashboardListType.TRACK;
+
+    private final IBinder mBinder = new MusicBinder();
+    private Handler handler;
+    private Runnable mediaButtonCounterRunnable, createMetadataRunnable;
 
     private MediaPlayer player;
-    private final IBinder mBinder = new MusicBinder();
-
     private EnvironmentalReverb environmentalReverb;
     private Equalizer equalizer;
     private BassBoost bassBoost;
@@ -70,14 +74,13 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
     private MediaSessionCompat mediaSession;
     private MediaMetadataCompat metadataCompat;
 
-    private int MEDIA_BUTTON_DOWN_COUNT = 0;
-    Handler handler;
-    Runnable mediaButtonCounterRunnable, createMetadataRunnable;
-
     private Bitmap customCoverImage, currentBitmap;
     private BitmapColorExtractor bitmapColorExtractor;
+
     private final int NOTIFICATION_ID = 123456;
+    private int MEDIA_BUTTON_DOWN_COUNT = 0;
     private int bitmapWidth, bitmapHeight;
+    private int currSongIndex = -1;
 
     public class MusicBinder extends Binder {
         public MusicService getServiceInstance() {
@@ -105,49 +108,18 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
     }
 
     private void updateMediaMetatdata() {
-        if (songlist.isEmpty()) {
-            metadataCompat = new MediaMetadataCompat.Builder()
-                    .putString(MediaMetadataCompat.METADATA_KEY_TITLE, "Select a song to play")
-                    .putString(MediaMetadataCompat.METADATA_KEY_ARTIST, "")
-                    .putBitmap(MediaMetadataCompat.METADATA_KEY_ALBUM_ART, currentBitmap)
-                    .putLong(MediaMetadataCompat.METADATA_KEY_DURATION, 0)
-                    .build();
+        String title = (songlist.isEmpty()) ? "Select a song to play" : songlist.get(currSongIndex).getTTitle();
+        String artist = (songlist.isEmpty()) ? "" : songlist.get(currSongIndex).getTArtist();
+        int duration = (songlist.isEmpty()) ? 0 : player.getDuration();
 
-        } else {
-            metadataCompat = new MediaMetadataCompat.Builder()
-                    .putString(MediaMetadataCompat.METADATA_KEY_TITLE, songlist.get(currSongIndex).getTTitle())
-                    .putString(MediaMetadataCompat.METADATA_KEY_ARTIST, songlist.get(currSongIndex).getTArtist())
-                    .putBitmap(MediaMetadataCompat.METADATA_KEY_ALBUM_ART, currentBitmap)
-                    .putLong(MediaMetadataCompat.METADATA_KEY_DURATION, player.getDuration())
-                    .build();
-        }
+        metadataCompat = new MediaMetadataCompat.Builder()
+                .putString(MediaMetadataCompat.METADATA_KEY_TITLE, title)
+                .putString(MediaMetadataCompat.METADATA_KEY_ARTIST, artist)
+                .putBitmap(MediaMetadataCompat.METADATA_KEY_ALBUM_ART, currentBitmap)
+                .putLong(MediaMetadataCompat.METADATA_KEY_DURATION, duration)
+                .build();
+
         mediaSession.setMetadata(metadataCompat);
-    }
-
-    @Override
-    public boolean onUnbind(Intent intent) {
-        player.stop();
-        player.release();
-        environmentalReverb.release();
-        equalizer.release();
-        bassBoost.release();
-        virtualizer.release();
-        loudnessEnhancer.release();
-        return super.onUnbind(intent);
-    }
-
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-        if (player != null) player.release();
-        if (environmentalReverb != null) environmentalReverb.release();
-        if (equalizer != null) equalizer.release();
-        if (bassBoost != null) bassBoost.release();
-        if (virtualizer != null) virtualizer.release();
-        if (loudnessEnhancer != null) loudnessEnhancer.release();
-
-        stopForeground(true);
-        this.unregisterReceiver(this.broadcastReceiver);
     }
 
     @Override
@@ -179,11 +151,10 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
         mediaButtonCounterRunnable = () -> MEDIA_BUTTON_DOWN_COUNT = 0;
         createMetadataRunnable = () -> {
             Uri trackUri = ContentUris.withAppendedId(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, songlist.get(currSongIndex).getTId());
-            MediaMetadataRetriever mmr = new MediaMetadataRetriever();
-            mmr.setDataSource(this, trackUri);
-            byte[] thumbnail = mmr.getEmbeddedPicture();
-            try {
-                mmr.release();
+            byte[] thumbnail = null;
+            try (MediaMetadataRetriever mmr = new MediaMetadataRetriever()) {
+                mmr.setDataSource(this, trackUri);
+                thumbnail = mmr.getEmbeddedPicture();
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -232,12 +203,54 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
         super.onCreate();
     }
 
-    private void updateMediaSessionPlaybackState() {
-        int state = (isPlaying()) ? PlaybackStateCompat.STATE_PLAYING : PlaybackStateCompat.STATE_PAUSED;
-        mediaSession.setPlaybackState(new PlaybackStateCompat.Builder()
-                .setState(state, player.getCurrentPosition(), 1f)
-                .build());
+    @Override
+    public void onPrepared(MediaPlayer mediaPlayer) {
+        currentPlaying = songlist.get(currSongIndex);
+        sendCurrentStateToPlaybackControl();
+        sendPreparedSong();
+        handler.post(createMetadataRunnable);
+        resume();
     }
+
+    @Override
+    public boolean onError(MediaPlayer mediaPlayer, int i, int i1) {
+        player.reset();
+        currentPlaying = null;
+        return true;
+    }
+
+    @Override
+    public void onCompletion(MediaPlayer mediaPlayer) {
+        currentPlaying = null;
+        skip();
+    }
+
+    @Override
+    public boolean onUnbind(Intent intent) {
+        player.stop();
+        player.release();
+        environmentalReverb.release();
+        equalizer.release();
+        bassBoost.release();
+        virtualizer.release();
+        loudnessEnhancer.release();
+        return super.onUnbind(intent);
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        if (player != null) player.release();
+        if (environmentalReverb != null) environmentalReverb.release();
+        if (equalizer != null) equalizer.release();
+        if (bassBoost != null) bassBoost.release();
+        if (virtualizer != null) virtualizer.release();
+        if (loudnessEnhancer != null) loudnessEnhancer.release();
+
+        stopForeground(true);
+        this.unregisterReceiver(this.broadcastReceiver);
+    }
+
 
     private final BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
         @Override
@@ -269,41 +282,81 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
         }
     };
 
-    @Override
-    public void onPrepared(MediaPlayer mediaPlayer) {
+    private void updateMediaSessionPlaybackState() {
+        int state = (isPlaying()) ? PlaybackStateCompat.STATE_PLAYING : PlaybackStateCompat.STATE_PAUSED;
+        mediaSession.setPlaybackState(new PlaybackStateCompat.Builder()
+                .setState(state, player.getCurrentPosition(), 1f)
+                .build());
+    }
+
+    public void addToSonglist(ArrayList<Track> toAdd, boolean next) {
+        int sizePreAdd = songlist.size();
+        for (Track track : toAdd) {
+            if (!next) {
+                if (!this.songlist.contains(track)) {
+                    this.songlist.add(track);
+                }
+            } else {
+                if (!this.songlist.contains(track)) {
+                    this.songlist.add(currSongIndex + 1, track);
+                } else {
+                    int tIndex = this.songlist.indexOf(track);
+                    int insert = (tIndex < currSongIndex) ? currSongIndex : currSongIndex+1;
+                    Track toMove = this.songlist.remove(tIndex);
+                    this.songlist.add(insert, toMove);
+                    currSongIndex = songlist.indexOf(currentPlaying);
+                }
+            }
+        }
+        if ((currentPlaying == null || sizePreAdd == 0) && next) {
+            setSong(toAdd.get(0));
+        }
+
         sendCurrentStateToPlaybackControl();
-        sendPreparedSong();
-        handler.post(createMetadataRunnable);
-        resume();
     }
 
-    @Override
-    public boolean onError(MediaPlayer mediaPlayer, int i, int i1) {
-        player.reset();
-        return true;
-    }
+    public void removeTracks(List<Track> tracksToRemove) {
+        Track currPlayed = songlist.get(currSongIndex);
 
-    @Override
-    public void onCompletion(MediaPlayer mediaPlayer) {
-        skip();
-    }
+        for (Track track : tracksToRemove) {
+            if (track.equals(currPlayed)) {
+                sendOnSongCompleted();
+                player.reset();
+            }
+            songlist.remove(track);
+        }
 
-    public void setSonglist(ArrayList<Track> list, DashboardListType dashboardListType) {
-        sendOnSongCompleted();
-        this.songlist.clear();
-        this.songlist.addAll(list);
-        currentListType = dashboardListType;
+        currSongIndex = songlist.indexOf(currPlayed);
         sendCurrentStateToPlaybackControl();
     }
 
-    public void addToSonglist(ArrayList<Track> toAdd) {
-        this.songlist.addAll(toAdd);
+    public void removeAllTracks() {
+        if (!songlist.isEmpty() && currSongIndex >= 0) {
+            Track currPlaying = songlist.get(currSongIndex);
+            songlist.clear();
+            currSongIndex = -1;
+            sendCurrentStateToPlaybackControl(currPlaying);
+        }
+    }
+
+    public void changeOrder(int fromPosition, int toPosition) {
+        Track currPlayed = songlist.get(currSongIndex);
+        if (fromPosition < toPosition) {
+            for (int i = fromPosition; i < toPosition; i++) {
+                Collections.swap(songlist, i, i + 1);
+            }
+        } else {
+            for (int i = fromPosition; i > toPosition; i--) {
+                Collections.swap(songlist, i, i - 1);
+            }
+        }
+        currSongIndex = songlist.indexOf(currPlayed);
         sendCurrentStateToPlaybackControl();
     }
 
     public void skip() {
-        if (songlist.size() > 0) {
-            sendOnSongCompleted();
+        sendOnSongCompleted();
+        if (songlist.size() > 0 && currSongIndex >= 0) {
             switch (playbackBehaviour) {
                 case SHUFFLE:
                     Random random = new Random();
@@ -323,7 +376,7 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
     }
 
     public void skipPrevious() {
-        if (songlist.size() > 0) {
+        if (songlist.size() > 0 && currSongIndex >= 0) {
             sendOnSongCompleted();
             if (player.getCurrentPosition() < 2000) {
                 switch (playbackBehaviour) {
@@ -361,15 +414,8 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
     }
 
     public void setSong(Track track) {
-        if (player.isPlaying()) {
-            sendOnSongCompleted();
-        }
-
-        for (int i = 0; i < songlist.size(); i++) {
-            if (songlist.get(i).getTId().equals(track.getTId())) {
-                currSongIndex = i;
-            }
-        }
+        sendOnSongCompleted();
+        currSongIndex = songlist.indexOf(track);
         play();
     }
 
@@ -393,13 +439,13 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
                 Log.e("MUSIC-SERVICE", "Failed to set MediaPlayer-DataSource:", e);
             }
             player.prepareAsync();
-            sendCurrentStateToPlaybackControl();
+            //currentPlaying = songlist.get(currSongIndex);
+            //sendCurrentStateToPlaybackControl();
         }
     }
 
     public Track getCurrSong() {
-        if (!songlist.isEmpty()) return songlist.get(currSongIndex);
-        else return null;
+        return currentPlaying;
     }
 
     public int getDuration() {
@@ -413,6 +459,11 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
 
     public void setPlaybackBehaviour(PlaybackBehaviour.PlaybackBehaviourState newState) {
         playbackBehaviour = newState;
+
+        if (currentPlaying == null && !songlist.isEmpty() && newState == PlaybackBehaviour.PlaybackBehaviourState.SHUFFLE) {
+            currSongIndex = 0;
+            skip();
+        }
     }
 
     public int getSessionId() {
@@ -424,10 +475,7 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
     }
 
     public boolean isPlaying() {
-        if (player != null) {
-            return player.isPlaying();
-        }
-        return false;
+        return player != null && player.isPlaying();
     }
 
     /*
@@ -583,65 +631,58 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
     }
 
     private void createNotificationChannel() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            CharSequence name = "MUSICSERVICE_CHANNEL";
-            String description = "PLAYBACK_CONTROL";
-            int importance = NotificationManager.IMPORTANCE_HIGH;
-            NotificationChannel channel = new NotificationChannel("MUSICSERVICE_CHANNEL", name, importance);
-            channel.setDescription(description);
+        CharSequence name = "MUSICSERVICE_CHANNEL";
+        String description = "PLAYBACK_CONTROL";
+        int importance = NotificationManager.IMPORTANCE_HIGH;
+        NotificationChannel channel = new NotificationChannel("MUSICSERVICE_CHANNEL", name, importance);
+        channel.setDescription(description);
 
-            NotificationManager notificationManager = getSystemService(NotificationManager.class);
-            notificationManager.createNotificationChannel(channel);
-        }
+        NotificationManager notificationManager = getSystemService(NotificationManager.class);
+        notificationManager.createNotificationChannel(channel);
     }
 
     public void sendCurrentStateToPlaybackControl() {
         Track currSong = getCurrSong();
-        if (currSong != null) {
-            Bundle bundle = new Bundle();
+        sendCurrentStateToPlaybackControl(currSong);
+    }
 
-            bundle.putString("TITLE", currSong.getTTitle());
-            bundle.putString("ARTIST", currSong.getTArtist());
-            bundle.putInt("DURATION", currSong.getTDuration());
-            bundle.putLong("ID", currSong.getTId());
+    public void sendCurrentStateToPlaybackControl(Track currSong) {
+        Bundle bundle = new Bundle();
 
-            bundle.putInt("QUEUE_SIZE", songlist.size());
-            bundle.putInt("QUEUE_INDEX", currSongIndex);
-            bundle.putBoolean("ISONPAUSE", !player.isPlaying());
-            bundle.putInt("BEHAVIOUR_STATE", PlaybackBehaviour.getStateAsInteger(playbackBehaviour));
-            bundle.putInt("SESSION_ID", getSessionId());
-            bundle.putInt("CURRENT_POSITION", getCurrentPosition());
+        bundle.putString("TITLE", (currSong != null) ? currSong.getTTitle() : "");
+        bundle.putString("ARTIST", (currSong != null) ? currSong.getTArtist() : "");
+        bundle.putInt("DURATION", (currSong != null) ? currSong.getTDuration() : 0);
+        bundle.putLong("ID", (currSong != null) ? currSong.getTId() : -1);
+        bundle.putInt("QUEUE_SIZE", songlist.size());
+        bundle.putInt("QUEUE_INDEX", currSongIndex);
+        bundle.putBoolean("ISONPAUSE", !player.isPlaying());
+        bundle.putInt("BEHAVIOUR_STATE", PlaybackBehaviour.getStateAsInteger(playbackBehaviour));
+        bundle.putInt("SESSION_ID", getSessionId());
+        bundle.putInt("CURRENT_POSITION", (currSong != null) ? getCurrentPosition() : 0);
+        bundle.putParcelableArrayList(getString(R.string.parcelable_track_list), songlist);
 
-            sendBroadcast(new Intent().setAction(getString(R.string.playback_control_values)).putExtras(bundle));
-        }
+        sendBroadcast(new Intent().setAction(getString(R.string.playback_control_values)).putExtras(bundle));
     }
 
     private void sendPreparedSong() {
         Track currSong = getCurrSong();
+        currentPlaying = currSong;
         if (currSong != null) {
             Bundle bundle = new Bundle();
             bundle.putInt("ID", currSong.getTId());
+            bundle.putInt("LIST_INDEX", currSongIndex);
             sendBroadcast(new Intent(this, SystemBroadcastReceiver.class).setAction(getString(R.string.musicservice_song_prepared)).putExtras(bundle));
-            sendBroadcast(new Intent().setAction(getString(R.string.musicservice_song_prepared)).putExtras(bundle));
         }
     }
 
     public void sendOnSongCompleted() {
-        Bundle bundle = getOnSongCompletedBundle();
-        if (bundle != null) {
-            sendBroadcast(new Intent(this, SystemBroadcastReceiver.class).setAction(getString(R.string.musicservice_song_ended)).putExtras(bundle));
-        }
-    }
-
-    private Bundle getOnSongCompletedBundle() {
         Track completedSong = getCurrSong();
         if (completedSong != null) {
             Bundle bundle = new Bundle();
             bundle.putInt("ID", completedSong.getTId());
             bundle.putInt("TYPE", currentListType.getTypeId());
             bundle.putLong("TIME_PLAYED", getCurrentPosition());
-            return bundle;
+            sendBroadcast(new Intent(this, SystemBroadcastReceiver.class).setAction(getString(R.string.musicservice_song_ended)).putExtras(bundle));
         }
-        return null;
     }
 }

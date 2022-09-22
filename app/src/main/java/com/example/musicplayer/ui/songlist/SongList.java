@@ -5,17 +5,16 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
-import android.media.MediaMetadataRetriever;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.FrameLayout;
@@ -32,6 +31,7 @@ import com.example.musicplayer.database.dto.TrackDTO;
 import com.example.musicplayer.database.entity.Track;
 import com.example.musicplayer.database.viewmodel.MusicplayerViewModel;
 import com.example.musicplayer.interfaces.PlaybackControlInterface;
+import com.example.musicplayer.interfaces.ServiceTriggerInterface;
 import com.example.musicplayer.interfaces.SongInterface;
 import com.example.musicplayer.ui.views.SideIndex;
 import com.example.musicplayer.utils.GeneralUtils;
@@ -40,7 +40,6 @@ import com.example.musicplayer.utils.enums.DashboardEnumDeserializer;
 import com.example.musicplayer.utils.enums.DashboardListType;
 import com.example.musicplayer.utils.enums.ListFilterType;
 import com.example.musicplayer.utils.enums.PlaybackBehaviour;
-import com.google.android.material.divider.MaterialDividerItemDecoration;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 
@@ -50,11 +49,11 @@ import java.util.stream.Collectors;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.widget.PopupMenu;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
-import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -70,6 +69,7 @@ public class SongList extends Fragment implements SongListInterface {
     private SongInterface songInterface;
     private PlaybackControlInterface playbackControlInterface;
     private SongListInterface songListInterface;
+    private ServiceTriggerInterface serviceTriggerInterface;
 
     private SongListAdapter songListAdapter;
     private SideIndex sideIndex;
@@ -94,6 +94,7 @@ public class SongList extends Fragment implements SongListInterface {
             songInterface = (SongInterface) context;
             songListInterface = this;
             playbackControlInterface = (PlaybackControlInterface) context;
+            serviceTriggerInterface = (ServiceTriggerInterface) context;
         } catch (ClassCastException e) {
             throw new ClassCastException(context + "must implement Interface");
         }
@@ -121,7 +122,9 @@ public class SongList extends Fragment implements SongListInterface {
         MusicplayerDataAccess mda = ((MusicplayerApplication) requireActivity().getApplication()).getDatabase().musicplayerDao();
         musicplayerViewModel = new ViewModelProvider(this, new MusicplayerViewModel.MusicplayerViewModelFactory(mda)).get(MusicplayerViewModel.class);
 
-        IntentFilter intentFilter = new IntentFilter(getResources().getString(R.string.musicservice_song_prepared));
+        IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction(getResources().getString(R.string.musicservice_song_prepared));
+        intentFilter.addAction(getResources().getString(R.string.playback_control_values));
         requireActivity().registerReceiver(receiver, intentFilter);
 
         sharedPreferences = requireActivity().getPreferences(Context.MODE_PRIVATE);
@@ -141,8 +144,14 @@ public class SongList extends Fragment implements SongListInterface {
             if (!isSearchModeActive) {
                 item.setIcon(R.drawable.ic_shuffle_black_24dp);
                 item.setIconTintList(ContextCompat.getColorStateList(requireContext(), R.color.colorOnSurface));
+
+                Animation anim = AnimationUtils.loadAnimation(requireContext(), R.anim.view_animation_to_bottom);
                 shuffle.setVisibility(View.GONE);
+                shuffle.startAnimation(anim);
+
+                Animation animFallDown = AnimationUtils.loadAnimation(requireContext(), R.anim.view_animation_from_top);
                 search_layout.setVisibility(View.VISIBLE);
+                search_layout.setAnimation(animFallDown);
                 isSearchModeActive = true;
             } else {
                 if (!search.getText().toString().equals("")) {
@@ -151,8 +160,15 @@ public class SongList extends Fragment implements SongListInterface {
                 search.setText("");
                 item.setIcon(R.drawable.ic_search_black_24dp);
                 item.setIconTintList(ContextCompat.getColorStateList(requireContext(), R.color.colorOnSurface));
-                shuffle.setVisibility(View.VISIBLE);
+
+                Animation anim = AnimationUtils.loadAnimation(requireContext(), R.anim.view_animation_to_bottom);
                 search_layout.setVisibility(View.GONE);
+                search_layout.startAnimation(anim);
+
+                Animation animFallDown = AnimationUtils.loadAnimation(requireContext(), R.anim.view_animation_from_top);
+                shuffle.setVisibility(View.VISIBLE);
+                shuffle.setAnimation(animFallDown);
+
                 isSearchModeActive = false;
 
                 InputMethodManager imm = (InputMethodManager) requireContext().getSystemService(Context.INPUT_METHOD_SERVICE);
@@ -168,7 +184,10 @@ public class SongList extends Fragment implements SongListInterface {
     @Override
     public void onResume() {
         super.onResume();
-        loadSonglist();
+        songListAdapter.getAllBackgroundImages(songList, true);
+        int time = songList.stream().map(TrackDTO::getTrack).map(Track::getTDuration).reduce(0, Integer::sum);
+        shuffle_size.setText(songList.size() + " songs - " + GeneralUtils.convertTimeWithUnit(time));
+        serviceTriggerInterface.triggerCurrentDataBroadcast();
     }
 
     @Override
@@ -229,8 +248,46 @@ public class SongList extends Fragment implements SongListInterface {
             }
         });
 
-        songListAdapter = new SongListAdapter(requireContext(), songList, songListInterface, listFilterType);
+        songListAdapter = new SongListAdapter(requireContext(), songList, listFilterType);
         songListAdapter.setCurrentPlayingIndex(currentPlayingSongId);
+        songListAdapter.setOnItemClickedListener((position -> songListInterface.OnSongSelectedListener(position)));
+        songListAdapter.setOnItemOptionClickedListener((view, position, inQueue) -> {
+            PopupMenu popupMenu = new PopupMenu(requireContext(), view);
+            popupMenu.getMenuInflater().inflate(R.menu.songlist_item_more, popupMenu.getMenu());
+
+            if (inQueue) {
+                popupMenu.getMenu().getItem(0).setTitle("Remove from queue");
+            }
+
+            popupMenu.setOnMenuItemClickListener(item -> {
+                if (item.getItemId() == R.id.action_songlist_item_add_to_queue) {
+                    List<Track> track = new ArrayList<>();
+                    track.add(songList.get(position).getTrack());
+
+                    if (!inQueue) {
+                        songInterface.onAddSongsToSonglistListener(track, false);
+                        playbackControlInterface.onPlaybackBehaviourChangeListener(PlaybackBehaviour.PlaybackBehaviourState.REPEAT_LIST);
+                    } else {
+                        songInterface.onSongsRemoveListener(track);
+                    }
+                } else if (item.getItemId() == R.id.action_songlist_item_play_next) {
+                    List<Track> track = new ArrayList<>();
+                    track.add(songList.get(position).getTrack());
+                    songInterface.onAddSongsToSonglistListener(track, true);
+                    playbackControlInterface.onPlaybackBehaviourChangeListener(PlaybackBehaviour.PlaybackBehaviourState.REPEAT_LIST);
+                } else if (item.getItemId() == R.id.action_songlist_item_new_queue) {
+                    List<Track> track = new ArrayList<>();
+                    track.add(songList.get(position).getTrack());
+                    songInterface.onRemoveAllSongsListener();
+                    songInterface.onAddSongsToSonglistListener(track, true);
+                    playbackControlInterface.onPlaybackBehaviourChangeListener(PlaybackBehaviour.PlaybackBehaviourState.REPEAT_LIST);
+                }
+                return false;
+            });
+
+            popupMenu.show();
+        });
+
         listView.setAdapter(songListAdapter);
 
         shuffle.setOnClickListener(view -> {
@@ -319,9 +376,9 @@ public class SongList extends Fragment implements SongListInterface {
             if (firstLoad) {
                 songListAdapter.notifyItemRangeInserted(0, tracks.size());
                 int time = tracks.stream().map(TrackDTO::getTrack).map(Track::getTDuration).reduce(0, Integer::sum);
-                shuffle_size.setText(tracks.size() + " songs - " + GeneralUtils.convertTime(time));
+                shuffle_size.setText(tracks.size() + " songs - " + GeneralUtils.convertTimeWithUnit(time));
                 firstLoad = false;
-                songListAdapter.getAllBackgroundImages(tracks);
+                songListAdapter.getAllBackgroundImages(tracks, false);
             }
 
             if (listFilterType.equals(ListFilterType.ALPHABETICAL)) {
@@ -400,9 +457,18 @@ public class SongList extends Fragment implements SongListInterface {
     private final BroadcastReceiver receiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            Bundle bundle = intent.getExtras();
-            currentPlayingSongId = bundle.getInt("ID", -1);
-            songListAdapter.setCurrentPlayingIndex(currentPlayingSongId);
+            if (intent.getAction().equals(getResources().getString(R.string.musicservice_song_prepared))) {
+                Bundle bundle = intent.getExtras();
+                currentPlayingSongId = bundle.getInt("ID", -1);
+                songListAdapter.setCurrentPlayingIndex(currentPlayingSongId);
+            } else if (intent.getAction().equals(getResources().getString(R.string.playback_control_values))) {
+                Bundle bundle = intent.getExtras();
+                currentPlayingSongId = (int) bundle.getLong("ID", -1);
+                songListAdapter.setCurrentPlayingIndex(currentPlayingSongId);
+                ArrayList<Track> t = bundle.getParcelableArrayList(getResources().getString(R.string.parcelable_track_list));
+                songListAdapter.setPlaybackBehaviour(PlaybackBehaviour.getStateFromInteger(bundle.getInt("BEHAVIOUR_STATE")));
+                songListAdapter.setQueueList(t);
+            }
         }
     };
 }

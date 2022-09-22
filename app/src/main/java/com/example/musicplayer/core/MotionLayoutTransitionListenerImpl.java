@@ -4,7 +4,7 @@ import android.content.Context;
 import android.transition.Fade;
 
 import com.example.musicplayer.R;
-import com.example.musicplayer.transition.AlbumDetailTransition;
+import com.example.musicplayer.core.transition.AlbumDetailTransition;
 import com.example.musicplayer.ui.expandedplaybackcontrol.ExpandedPlaybackControl;
 import com.example.musicplayer.ui.playbackcontrol.PlaybackControl;
 

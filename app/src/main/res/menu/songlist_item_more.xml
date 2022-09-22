@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/action_songlist_item_add_to_queue"
+        android:title="Add to queue"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/action_songlist_item_play_next"
+        android:title="Play next"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/action_songlist_item_new_queue"
+        android:title="New queue"
+        app:showAsAction="never" />
+</menu>

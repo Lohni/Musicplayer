@@ -551,12 +551,27 @@ public class MainActivity extends AppCompatActivity implements PlaybackControlIn
 
     @Override
     public void onSongListCreatedListener(@NonNull List<? extends Track> trackList, DashboardListType dashboardListType) {
-        musicService.setSonglist((ArrayList<Track>) trackList, dashboardListType);
+        musicService.addToSonglist((ArrayList<Track>) trackList, false);
     }
 
     @Override
-    public void onAddSongsToSonglistListener(@NonNull List<? extends Track> trackList) {
-        musicService.addToSonglist((ArrayList<Track>) trackList);
+    public void onAddSongsToSonglistListener(@NonNull List<? extends Track> trackList, boolean next) {
+        musicService.addToSonglist((ArrayList<Track>) trackList, next);
+    }
+
+    @Override
+    public void onSongsRemoveListener(@NonNull List<? extends Track> tracks) {
+        musicService.removeTracks((ArrayList<Track>) tracks);
+    }
+
+    @Override
+    public void onRemoveAllSongsListener() {
+        musicService.removeAllTracks();
+    }
+
+    @Override
+    public void onOrderChangeListener(int fromPosition, int toPosition) {
+        musicService.changeOrder(fromPosition, toPosition);
     }
 
     @Override
@@ -566,4 +581,6 @@ public class MainActivity extends AppCompatActivity implements PlaybackControlIn
         musicService.sendCurrentStateToPlaybackControl();
         runnable.run();
     }
+
+
 }

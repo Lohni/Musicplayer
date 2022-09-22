@@ -86,11 +86,11 @@
         app:layout_constraintRight_toLeftOf="@id/control_play"
         app:layout_constraintTop_toBottomOf="@id/control_title" />
 
-    <ImageButton
+    <View
         android:id="@+id/control_queue"
         android:layout_width="34dp"
-        android:layout_height="36dp"
-        android:layout_marginStart="8dp"
+        android:layout_height="34dp"
+        android:layout_marginStart="12dp"
         android:focusable="false"
         android:backgroundTint="@color/colorOnBackground"
         android:background="@drawable/ic_baseline_queue_music_24"
