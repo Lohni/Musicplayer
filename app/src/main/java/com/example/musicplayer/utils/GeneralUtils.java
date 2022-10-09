@@ -1,6 +1,7 @@
 package com.example.musicplayer.utils;
 
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
@@ -28,14 +29,18 @@ public class GeneralUtils {
     }
 
     public static String convertTimeWithUnit(int duration) {
-        float d = (float) duration / (1000 * 60);
-        int min = (int) d;
-        float seconds = (d - min) * 60;
-        int sec = (int) seconds;
-        String minute = min + "", second = sec + "";
-        if (min < 10) minute = "0" + minute;
-        if (sec < 10) second = "0" + second;
-        return minute + ":" + second;
+        long dur = duration * 1000000L;
+        LocalTime lt = LocalTime.ofNanoOfDay(dur);
+
+        int hour = lt.getHour();
+        int minute = lt.getMinute();
+        int second = lt.getSecond();
+
+        String hourString = (hour > 0) ? hour + "h" : "";
+        String minuteString = (minute > 0) ? minute + "m" : "";
+        String secondString = (second > 0) ? second + "s" : "";
+
+        return hourString + minuteString + secondString;
     }
 
     public static String getTimeDiffAsText(LocalDateTime dbTime){

@@ -12,5 +12,4 @@
         android:icon="@drawable/ic_playlist_add_black_24dp"
         android:title="playlist_detail_add"
         app:showAsAction="ifRoom" />
-
 </menu>

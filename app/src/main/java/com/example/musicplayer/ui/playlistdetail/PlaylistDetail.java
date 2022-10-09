@@ -241,7 +241,6 @@ public class PlaylistDetail extends Fragment implements OnStartDragListener, Pla
                 }
 
                 playlistDetailAdapter.notifyItemMoved(fromPosition, toPosition);
-
                 recalcOrdinal();
                 return false;
             }

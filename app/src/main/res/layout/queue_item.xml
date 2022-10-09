@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="52dp"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_marginTop="8dp"
+    android:layout_marginStart="4dp"
+    android:backgroundTint="@color/colorSurface"
+    android:background="@drawable/background_button_secondary"
+    android:foreground="@drawable/shuffle_ripple"
+    android:focusable="true"
+    android:clickable="true"
+    android:layout_marginEnd="4dp">
+
+    <TextView
+        android:id="@+id/queue_item_position"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:textSize="14sp"
+        android:text="1000"
+        android:layout_marginEnd="2dp"
+        android:gravity="center"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/queue_item_cover"/>
+
+    <View
+        android:id="@+id/queue_item_cover"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="40dp"
+        android:layout_marginTop="3dp"
+        android:layout_marginBottom="3dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintDimensionRatio="1"
+        app:layout_constraintStart_toStartOf="parent"/>
+
+    <TextView
+        android:id="@+id/queue_item_title"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:textSize="16sp"
+        android:lines="1"
+        app:layout_constraintStart_toEndOf="@id/queue_item_cover"
+        app:layout_constraintTop_toTopOf="@id/queue_item_cover"
+        app:layout_constraintBottom_toTopOf="@id/queue_item_artist"
+        app:layout_constraintEnd_toStartOf="@id/queue_item_handle"/>
+
+    <TextView
+        android:id="@+id/queue_item_artist"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:textSize="14sp"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:lines="1"
+        app:layout_constraintTop_toBottomOf="@id/queue_item_title"
+        app:layout_constraintStart_toEndOf="@id/queue_item_cover"
+        app:layout_constraintBottom_toBottomOf="@id/queue_item_cover"
+        app:layout_constraintEnd_toStartOf="@id/queue_item_handle"/>
+
+    <View
+        android:id="@+id/queue_item_handle"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:layout_marginEnd="16dp"
+        android:background="@drawable/ic_baseline_drag_handle_24"
+        android:backgroundTint="@color/colorOnBackground"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+</androidx.constraintlayout.widget.ConstraintLayout>

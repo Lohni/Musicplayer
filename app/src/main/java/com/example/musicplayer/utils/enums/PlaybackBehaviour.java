@@ -1,5 +1,7 @@
 package com.example.musicplayer.utils.enums;
 
+import com.example.musicplayer.R;
+
 public class PlaybackBehaviour {
 
     public enum PlaybackBehaviourState {
@@ -52,4 +54,16 @@ public class PlaybackBehaviour {
 
         return PlaybackBehaviourState.REPEAT_LIST;
     }
+
+    public static int getDrawableResourceIdForState(PlaybackBehaviourState state) {
+        switch (state) {
+            case SHUFFLE:
+                return R.drawable.ic_round_shuffle_24;
+            case REPEAT_SONG:
+                return R.drawable.ic_round_repeat_one_24;
+            default:
+                return R.drawable.ic_round_repeat_24;
+        }
+    }
+
 }
