@@ -3,7 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:showIn="navigation_view">
 
-    <group android:checkableBehavior="single">
+    <group android:checkableBehavior="single" android:id="@+id/drawer_fragments">
         <item
             android:icon="@drawable/ic_library_music_black_24dp"
             android:id="@+id/nav_tracklist"
@@ -25,5 +25,12 @@
             android:icon="@drawable/ic_edit_black_24dp"
             android:id="@+id/nav_tagEditor"
             android:title="Tag-Editor"/>
+    </group>
+
+    <group android:checkableBehavior="none" android:id="@+id/drawer_settings">
+        <item
+            android:icon="@drawable/ic_round_settings_24"
+            android:id="@+id/nav_settings"
+            android:title="Settings"/>
     </group>
 </menu>

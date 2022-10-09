@@ -2,11 +2,9 @@ package com.example.musicplayer;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
-import android.content.BroadcastReceiver;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
@@ -27,7 +25,6 @@ import com.example.musicplayer.database.dao.PlaylistDataAccess;
 import com.example.musicplayer.database.dto.TrackDTO;
 import com.example.musicplayer.database.entity.Album;
 import com.example.musicplayer.database.entity.Track;
-import com.example.musicplayer.database.entity.TrackPlayed;
 import com.example.musicplayer.database.viewmodel.AudioEffectViewModel;
 import com.example.musicplayer.database.viewmodel.MusicplayerViewModel;
 import com.example.musicplayer.database.viewmodel.PlaylistViewModel;
@@ -43,21 +40,19 @@ import com.example.musicplayer.ui.dashboard.DashboardFragment;
 import com.example.musicplayer.ui.expandedplaybackcontrol.ExpandedPlaybackControl;
 import com.example.musicplayer.ui.playbackcontrol.PlaybackControl;
 import com.example.musicplayer.ui.playlist.PlaylistFragment;
+import com.example.musicplayer.ui.settings.SettingFragment;
 import com.example.musicplayer.ui.songlist.SongList;
 import com.example.musicplayer.ui.tagEditor.TagEditorFragment;
 import com.example.musicplayer.utils.GeneralUtils;
 import com.example.musicplayer.utils.NavigationControlInterface;
 import com.example.musicplayer.utils.Permissions;
-import com.example.musicplayer.utils.enums.DashboardEnumDeserializer;
 import com.example.musicplayer.utils.enums.DashboardListType;
 import com.example.musicplayer.utils.enums.PlaybackBehaviour;
 import com.google.android.material.navigation.NavigationView;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.Observable;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -71,7 +66,6 @@ import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
-import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 
 public class MainActivity extends AppCompatActivity implements PlaybackControlInterface, NavigationView.OnNavigationItemSelectedListener,
@@ -417,14 +411,10 @@ public class MainActivity extends AppCompatActivity implements PlaybackControlIn
         switch (item.getItemId()) {
             case R.id.nav_tracklist: {
                 selectedDrawerFragment = new SongList();
-                //getSupportFragmentManager().beginTransaction().replace(R.id.nav_host_fragment,new SongList()).commit();
                 break;
             }
             case R.id.nav_album: {
-                AlbumFragment albumFragment = new AlbumFragment();
-                //albumFragment.setQueueDestination(playcontrol.getQueueScreenLocation());
-                selectedDrawerFragment = albumFragment;
-                //getSupportFragmentManager().beginTransaction().replace(R.id.nav_host_fragment, albumFragment).commit();
+                selectedDrawerFragment = new AlbumFragment();
                 break;
             }
             case R.id.nav_playlist: {
@@ -442,12 +432,14 @@ public class MainActivity extends AppCompatActivity implements PlaybackControlIn
                         musicService.isVirtualizerEnabled(), musicService.getVirtualizerStrength(),
                         musicService.isLoudnessEnhancerEnabled(), musicService.getLoudnessEnhancerStrength());
                 selectedDrawerFragment = equalizerFragment;
-                //getSupportFragmentManager().beginTransaction().replace(R.id.nav_host_fragment,equalizerFragment).commit();
                 break;
             }
             case R.id.nav_tagEditor: {
                 selectedDrawerFragment = new TagEditorFragment();
-                //getSupportFragmentManager().beginTransaction().replace(R.id.nav_host_fragment,new TagEditorFragment()).commit();
+                break;
+            }
+            case R.id.nav_settings: {
+                selectedDrawerFragment = new SettingFragment();
                 break;
             }
         }
