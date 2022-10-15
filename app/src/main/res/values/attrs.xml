@@ -5,4 +5,10 @@
     </declare-styleable>
     <declare-styleable name="PlaybackControlSeekbar"/>
     <declare-styleable name="ControlKnob"/>
+    
+
+    <declare-styleable name="RangeSeekbar">
+        <attr name="innerColor" format="color"/>
+        <attr name="outerColor" format="color"/>
+    </declare-styleable>
 </resources>
