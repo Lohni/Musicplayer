@@ -7,6 +7,7 @@ import android.graphics.Canvas;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.util.DisplayMetrics;
+import android.util.TypedValue;
 
 import androidx.core.content.ContextCompat;
 import androidx.core.graphics.drawable.RoundedBitmapDrawable;
@@ -29,6 +30,10 @@ public class ImageTransformUtil {
 
     public static float convertPixelToSp(float pixel, Resources resources) {
         return pixel / (resources.getDisplayMetrics().scaledDensity);
+    }
+
+    public static float convertSpToPixel(float sp, Context context) {
+        return TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, sp, context.getResources().getDisplayMetrics());
     }
 
     public static Bitmap getBitmapFromVectorDrawable(Context context, int drawableId) {

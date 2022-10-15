@@ -38,7 +38,7 @@ public class GeneralUtils {
 
         String hourString = (hour > 0) ? hour + "h" : "";
         String minuteString = (minute > 0) ? minute + "m" : "";
-        String secondString = (second > 0) ? second + "s" : "";
+        String secondString = (second > 0 || hourString.isEmpty() && minuteString.isEmpty()) ? second + "s" : "";
 
         return hourString + minuteString + secondString;
     }

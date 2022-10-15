@@ -11,9 +11,11 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.example.musicplayer.R;
+import com.example.musicplayer.ui.views.RangeSeekbar;
 
 public class SettingFragment extends Fragment {
     private SharedPreferences sharedPreferences;
+    private RangeSeekbar rangeSeekbar;
 
     public SettingFragment() {
     }
@@ -27,6 +29,7 @@ public class SettingFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_setting, container, false);
+        rangeSeekbar = view.findViewById(R.id.settings_range_seekbar);
         return view;
     }
 }
