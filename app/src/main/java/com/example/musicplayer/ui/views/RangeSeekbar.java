@@ -24,8 +24,13 @@ public class RangeSeekbar extends View {
     private final Path backgroundPath;
     private final Path innerPath;
     private long from = 0, to = 14400000, max = 14400000;
-    private final float touchMargin;
+    private final float touchMargin, height;
     private DragHandle dragHandle = DragHandle.NONE;
+    private OnValueChangedListener onValueChangedListener;
+
+    public interface OnValueChangedListener {
+        void onValueChanged(long newValue, DragHandle dragHandle);
+    }
 
     public RangeSeekbar(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
@@ -45,6 +50,7 @@ public class RangeSeekbar extends View {
 
         clipBounds = new Rect();
         touchMargin = ImageTransformUtil.convertDpToPixel(8f, context.getResources());
+        height = ImageTransformUtil.convertSpToPixel(12f, context);
         backgroundPath = new Path();
         innerPath = new Path();
     }
@@ -52,7 +58,7 @@ public class RangeSeekbar extends View {
     @Override
     protected void onDraw(Canvas canvas) {
         canvas.getClipBounds(clipBounds);
-        long bottom = Math.min(clipBounds.bottom, Math.round(touchMargin));
+        long bottom = Math.min(clipBounds.bottom, Math.round(height));
 
         backgroundPath.reset();
         backgroundPath.addRoundRect(clipBounds.left, clipBounds.top, clipBounds.right, bottom, touchMargin / 4, touchMargin / 4, Path.Direction.CW);
@@ -85,10 +91,10 @@ public class RangeSeekbar extends View {
             switch (event.getAction()) {
                 case MotionEvent.ACTION_DOWN:
                     if (xStart - touchMargin < event.getX() && event.getX() < xStart + touchMargin) {
-                        dragHandle = DragHandle.LEFT;
+                        dragHandle = DragHandle.FROM;
                         handleDrag(event);
                     } else if (xEnd - touchMargin < event.getX() && event.getX() < xEnd + touchMargin) {
-                        dragHandle = DragHandle.RIGHT;
+                        dragHandle = DragHandle.TO;
                         handleDrag(event);
                     }
                     break;
@@ -98,6 +104,9 @@ public class RangeSeekbar extends View {
 
                 case MotionEvent.ACTION_UP:
                     handleDrag(event);
+                    if (onValueChangedListener != null && dragHandle != DragHandle.NONE) {
+                        onValueChangedListener.onValueChanged((dragHandle == DragHandle.FROM) ? from : to, dragHandle);
+                    }
                     dragHandle = DragHandle.NONE;
                     break;
             }
@@ -109,9 +118,9 @@ public class RangeSeekbar extends View {
         double t = (Math.pow(event.getX(), 3)) / Math.pow(clipBounds.right, 3);
         long newProgress = snapTo(Math.round(t * max));
         long margin = Math.round((touchMargin / clipBounds.width()) * max);
-        if (dragHandle == DragHandle.LEFT && newProgress < (to - margin)) {
+        if (dragHandle == DragHandle.FROM && newProgress < (to - margin)) {
             from = Math.max(Math.round(newProgress), 0);
-        } else if (dragHandle == DragHandle.RIGHT && newProgress > (from + margin)) {
+        } else if (dragHandle == DragHandle.TO && newProgress > (from + margin)) {
             to = Math.min(Math.round(newProgress), max);
         }
         invalidate();
@@ -128,19 +137,25 @@ public class RangeSeekbar extends View {
 
     public void setFrom(long from) {
         this.from = from;
+        invalidate();
     }
 
     public void setTo(long to) {
-        this.to = to;
+        if (to > 0) {
+            this.to = to;
+            invalidate();
+        }
     }
 
     public void setMax(long max) {
         this.max = max;
     }
 
-    private enum DragHandle {
-        LEFT,
-        RIGHT,
-        NONE
+    public void setOnValueChangedListener(OnValueChangedListener onValueChangedListener) {
+        this.onValueChangedListener = onValueChangedListener;
+    }
+
+    public enum DragHandle {
+        FROM, TO, NONE
     }
 }

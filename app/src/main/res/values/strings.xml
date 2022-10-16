@@ -95,8 +95,10 @@
     <!-- Bundle keys -->
     <string name="parcelable_track_list">PARCELABLE_TRACK_LIST</string>
 
-    <string name="hello_blank_fragment">Hello blank fragment</string>
-    <!-- TODO: Remove or change this placeholder text -->
+    <!-- Database Keys -->
+    <string name="db_preference_include_from">INCLUDE_DURATION_FROM</string>
+    <string name="db_preference_include_to">INCLUDE_DURATION_TO</string>
+
     <string-array name="AlbumOption">
         <item>Play</item>
         <item>Shuffle</item>

@@ -8,6 +8,7 @@ import androidx.sqlite.db.SupportSQLiteDatabase
 import com.example.musicplayer.database.dao.AudioEffectDataAccess
 import com.example.musicplayer.database.dao.MusicplayerDataAccess
 import com.example.musicplayer.database.dao.PlaylistDataAccess
+import com.example.musicplayer.database.dao.PreferenceDataAccess
 import com.example.musicplayer.database.entity.*
 import kotlinx.coroutines.CoroutineScope
 
@@ -17,12 +18,14 @@ import kotlinx.coroutines.CoroutineScope
 @Database(
     entities = [AdvancedReverbPreset::class, EqualizerPreset::class, Playlist::class, PlaylistItem::class,
         PlaylistTagMtc::class, Tag::class, Track::class, TrackTagMtc::class, Album::class,
-        AlbumPlayed::class, PlaylistPlayed::class, TrackPlayed::class], version = 1
+        AlbumPlayed::class, PlaylistPlayed::class, TrackPlayed::class, Preference::class],
+    version = 1
 )
 abstract class MusicplayerDatabase : RoomDatabase() {
     abstract fun playlistDao(): PlaylistDataAccess
     abstract fun musicplayerDao(): MusicplayerDataAccess
     abstract fun audioEffectDao(): AudioEffectDataAccess
+    abstract fun preferenceDao(): PreferenceDataAccess
 
     private class MusicplayerDatabaseCallback(
         private val scope: CoroutineScope
