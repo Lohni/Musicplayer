@@ -93,7 +93,6 @@
                 android:layout_marginStart="8dp"
                 android:layout_marginEnd="8dp"
                 android:gravity="center"
-                android:lines="1"
                 android:text="Shuffle"
                 android:textColor="@color/colorOnBackground"
                 android:textSize="14sp"

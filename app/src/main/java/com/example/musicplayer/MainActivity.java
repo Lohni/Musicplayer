@@ -493,13 +493,10 @@ public class MainActivity extends AppCompatActivity implements PlaybackControlIn
     @Override
     public void onLoudnessEnhancerChanged(int strength, boolean state) {
         musicService.setLoudnessEnhancerGain(strength);
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putInt(getResources().getString(R.string.preference_loudnessenhancer_strength), strength);
-        editor.apply();
+        sharedPreferences.edit().putInt(getResources().getString(R.string.preference_loudnessenhancer_strength), strength).apply();
 
         musicService.setLoudnessEnhancerEnabled(state);
-        editor.putBoolean(getResources().getString(R.string.preference_loudnessenhancer_isenabled), state);
-        editor.apply();
+        sharedPreferences.edit().putBoolean(getResources().getString(R.string.preference_loudnessenhancer_isenabled), state).apply();
     }
 
     @Override

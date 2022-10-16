@@ -17,7 +17,9 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface MusicplayerDataAccess {
 
-    @Query("SELECT t.*, null FROM Track as t ORDER BY t_title ASC")
+    @Query("SELECT t.*, null FROM Track as t JOIN Preference as p1 JOIN Preference as p2 " +
+            "WHERE p1.pref_key = 'INCLUDE_DURATION_FROM' and p2.pref_key = 'INCLUDE_DURATION_TO' " +
+            "and t_duration BETWEEN p1.pref_value AND p2.pref_value ORDER BY t_title ASC")
     fun getAllTracks(): Flow<List<TrackDTO>>
 
     @Query("SELECT t.* FROM PlaylistItem JOIN TRACK as t on pi_t_id = t_id WHERE pi_p_id = :playlistId ORDER BY pi_custom_ordinal ASC")
@@ -60,15 +62,28 @@ interface MusicplayerDataAccess {
     fun insertTrackPlayed(trackPlayed: TrackPlayed)
 
     @Transaction
-    @Query("SELECT t.*, tp_played as size FROM Track t JOIN TrackPlayed tp on tp_t_id = t.t_id GROUP BY t.t_id ORDER BY max(datetime(tp_played)) DESC")
+    @Query("SELECT t.*, tp_played as size FROM Track t " +
+            "JOIN TrackPlayed tp on tp_t_id = t.t_id " +
+            "JOIN Preference as p1 JOIN Preference p2 " +
+            "WHERE p1.pref_key = 'INCLUDE_DURATION_FROM' and p2.pref_key = 'INCLUDE_DURATION_TO' " +
+            "and t_duration BETWEEN p1.pref_value AND p2.pref_value " +
+            "GROUP BY t.t_id ORDER BY max(datetime(tp_played)) DESC")
     fun getTracksByLastPlayed(): Flow<List<TrackDTO>>
 
     @Transaction
-    @Query("SELECT t.*, count(t.t_id) as size FROM Track t JOIN TrackPlayed on tp_t_id = t.t_id GROUP BY t.t_id ORDER BY count(t.t_id) DESC")
+    @Query("SELECT t.*, count(t.t_id) as size FROM Track t JOIN TrackPlayed on tp_t_id = t.t_id " +
+            "JOIN Preference as p1 JOIN Preference p2 " +
+            "WHERE p1.pref_key = 'INCLUDE_DURATION_FROM' and p2.pref_key = 'INCLUDE_DURATION_TO' " +
+            "and t_duration BETWEEN p1.pref_value AND p2.pref_value " +
+            "GROUP BY t.t_id ORDER BY count(t.t_id) DESC")
     fun getTracksByTimesPlayed(): Flow<List<TrackDTO>>
 
     @Transaction
-    @Query("SELECT t.*, sum(tp_time_played) as size FROM TrackPlayed JOIN Track as t on tp_t_id = t.t_id GROUP BY t_id ORDER BY sum(tp_time_played) DESC")
+    @Query("SELECT t.*, sum(tp_time_played) as size FROM TrackPlayed JOIN Track as t on tp_t_id = t.t_id " +
+            "JOIN Preference as p1 JOIN Preference p2 " +
+            "WHERE p1.pref_key = 'INCLUDE_DURATION_FROM' and p2.pref_key = 'INCLUDE_DURATION_TO' " +
+            "and t_duration BETWEEN p1.pref_value AND p2.pref_value " +
+            "GROUP BY t_id ORDER BY sum(tp_time_played) DESC")
     fun getTracksbyTimePlayed(): Flow<List<TrackDTO>>
 
     @Transaction
@@ -84,7 +99,11 @@ interface MusicplayerDataAccess {
     @Query("SELECT tp_played as time, sum(tp_time_played) as total_time, count(tp_t_id) as amount FROM TrackPlayed WHERE tp_played > :date GROUP BY date(tp_played)")
     fun getAllTrackPlayedInDaySteps(date: String): Flow<List<StatisticDTO>>
 
-    @Query("SELECT *, null FROM Track ORDER BY t_created DESC")
+    @Query("SELECT *, null FROM Track " +
+            "JOIN Preference as p1 JOIN Preference p2 " +
+            "WHERE p1.pref_key = 'INCLUDE_DURATION_FROM' and p2.pref_key = 'INCLUDE_DURATION_TO' " +
+            "and t_duration BETWEEN p1.pref_value AND p2.pref_value " +
+            "ORDER BY t_created DESC")
     fun getAllTracksByCreated(): Flow<List<TrackDTO>>
 
     @Transaction
