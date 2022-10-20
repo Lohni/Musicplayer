@@ -70,7 +70,7 @@ public class SongListAdapter extends RecyclerView.Adapter<SongListAdapter.ViewHo
         this.customCoverBackground = ResourcesCompat.getDrawable(context.getResources(), R.drawable.background_button_secondary, null);
     }
 
-    public void getAllBackgroundImages(List<TrackDTO> newList, boolean notify) {
+    public void getAllBackgroundImages(List<TrackDTO> newList) {
         new Thread(() -> {
             MediaMetadataRetriever mmr = new MediaMetadataRetriever();
             List<TrackDTO> t = new ArrayList<>(newList);
@@ -91,9 +91,7 @@ public class SongListAdapter extends RecyclerView.Adapter<SongListAdapter.ViewHo
                     System.out.println("MediaMetadataRetriever IllegalArgument");
                 }
             }
-            if (notify) {
-                notifyItemRangeChanged(0, songList.size(), "RELOAD_IMAGES");
-            }
+            notifyItemRangeChanged(0, songList.size(), "RELOAD_IMAGES");
         }).start();
     }
 
@@ -142,21 +140,19 @@ public class SongListAdapter extends RecyclerView.Adapter<SongListAdapter.ViewHo
         });
 
         if (holder.imageTrackID < 0) {
-            //holder.coverImage.post(() -> {
-                Integer trackId = holder.trackDTO.getTrack().getTId();
-                Drawable drawable = drawableHashMap.getOrDefault(trackId, null);
+            Integer trackId = holder.trackDTO.getTrack().getTId();
+            Drawable drawable = drawableHashMap.getOrDefault(trackId, null);
 
-                if (drawable != null) {
-                    Animation fadeIn = new AlphaAnimation(0, 1);
-                    fadeIn.setInterpolator(new DecelerateInterpolator());
-                    fadeIn.setDuration(350);
-                    holder.coverImage.setAnimation(fadeIn);
-                    holder.coverImage.setClipToOutline(true);
-                    holder.coverImage.setForeground(null);
-                    holder.coverImage.setBackground(drawable);
-                }
-                holder.imageTrackID = holder.trackDTO.getTrack().getTId();
-            //});
+            if (drawable != null) {
+                Animation fadeIn = new AlphaAnimation(0, 1);
+                fadeIn.setInterpolator(new DecelerateInterpolator());
+                fadeIn.setDuration(350);
+                holder.coverImage.setAnimation(fadeIn);
+                holder.coverImage.setClipToOutline(true);
+                holder.coverImage.setForeground(null);
+                holder.coverImage.setBackground(drawable);
+            }
+            holder.imageTrackID = holder.trackDTO.getTrack().getTId();
         }
 
         if (!isScrolling) {
@@ -168,16 +164,16 @@ public class SongListAdapter extends RecyclerView.Adapter<SongListAdapter.ViewHo
         }
 
         if (currPlayingSongIndex >= 0 && track.equals(currPlaying)) {
-            holder.itemView.setBackgroundTintList(ContextCompat.getColorStateList(context, R.color.colorTertiaryContainer));
-            holder.title.setTextColor(ContextCompat.getColorStateList(context, R.color.colorOnTertiaryContainer));
-            holder.artist.setTextColor(ContextCompat.getColorStateList(context, R.color.colorOnTertiaryContainer));
+            holder.itemView.setBackgroundTintList(ContextCompat.getColorStateList(context, R.color.colorPrimaryContainer));
+            holder.title.setTextColor(ContextCompat.getColorStateList(context, R.color.colorOnPrimaryContainer));
+            holder.artist.setTextColor(ContextCompat.getColorStateList(context, R.color.colorOnPrimaryContainer));
         } else {
             holder.itemView.setBackgroundTintList(ContextCompat.getColorStateList(context, R.color.colorBackground));
             holder.title.setTextColor(ContextCompat.getColorStateList(context, R.color.colorOnSurface));
             holder.artist.setTextColor(ContextCompat.getColorStateList(context, R.color.colorOnSurface));
         }
 
-        int color = (queue.contains(track)) ? R.color.colorTertiary : R.color.colorOnSurface;
+        int color = (queue.contains(track)) ? R.color.colorPrimary : R.color.colorOnSurface;
         holder.more.setBackgroundTintList(ContextCompat.getColorStateList(context, color));
 
         int currQueueIndex = queue.indexOf(currPlaying);

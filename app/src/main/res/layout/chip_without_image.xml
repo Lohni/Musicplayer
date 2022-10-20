@@ -2,12 +2,11 @@
 <com.google.android.material.chip.Chip
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    style="@style/Widget.MaterialComponents.Chip.Filter"
+    style="@style/Widget.Material3.Chip.Filter"
     android:text="test"
     app:checkedIconEnabled="false"
     app:chipStrokeWidth="1dp"
     android:textColor="@color/chip_text"
     android:backgroundTint="@color/chip_background"
-    app:chipStrokeColor="@color/colorOutline"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content" />

@@ -29,6 +29,7 @@ import com.google.android.material.button.MaterialButton;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -141,7 +142,8 @@ public class PlaybackControlInfoFragment extends PlaybackControlDetailFragment {
             });
 
             if (currentTrack.getTCreated() != null && !currentTrack.getTCreated().isEmpty()) {
-                info4.setText(currentTrack.getTCreated() + "");
+                LocalDateTime ldt = LocalDateTime.parse(currentTrack.getTCreated().replace(" ", "T"));
+                info4.setText(ldt.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
             }
         }
     }

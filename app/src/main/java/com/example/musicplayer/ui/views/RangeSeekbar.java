@@ -50,7 +50,7 @@ public class RangeSeekbar extends View {
 
         clipBounds = new Rect();
         touchMargin = ImageTransformUtil.convertDpToPixel(8f, context.getResources());
-        height = ImageTransformUtil.convertSpToPixel(12f, context);
+        height = ImageTransformUtil.convertSpToPixel(10f, context);
         backgroundPath = new Path();
         innerPath = new Path();
     }

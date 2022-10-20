@@ -184,7 +184,7 @@ public class SongList extends Fragment implements SongListInterface {
     @Override
     public void onResume() {
         super.onResume();
-        songListAdapter.getAllBackgroundImages(songList, true);
+        songListAdapter.getAllBackgroundImages(songList);
         int time = songList.stream().map(TrackDTO::getTrack).map(Track::getTDuration).reduce(0, Integer::sum);
         shuffle_size.setText(songList.size() + " songs - " + GeneralUtils.convertTimeWithUnit(time));
         serviceTriggerInterface.triggerCurrentDataBroadcast();
@@ -378,15 +378,16 @@ public class SongList extends Fragment implements SongListInterface {
                 int time = tracks.stream().map(TrackDTO::getTrack).map(Track::getTDuration).reduce(0, Integer::sum);
                 shuffle_size.setText(tracks.size() + " songs - " + GeneralUtils.convertTimeWithUnit(time));
                 firstLoad = false;
-                songListAdapter.getAllBackgroundImages(tracks, false);
+                songListAdapter.getAllBackgroundImages(tracks);
             }
 
             if (listFilterType.equals(ListFilterType.ALPHABETICAL)) {
+                sideIndex.setVisible();
                 sideIndex.setIndexListDTO(songList).displayIndex();
             } else if (listFilterType.equals(ListFilterType.LAST_PLAYED)
                     || listFilterType.equals(ListFilterType.TIMES_PLAYED)
                     || listFilterType.equals(ListFilterType.TIME_PLAYED)) {
-
+                sideIndex.setVisibilityGone();
                 if (oldList.size() == tracks.size()) {
                     int toPos = 0, targetId = -1;
                     for (int i = 0; i < oldList.size(); i++) {
