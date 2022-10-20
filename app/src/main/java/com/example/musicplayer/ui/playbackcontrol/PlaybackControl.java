@@ -131,7 +131,7 @@ public class PlaybackControl extends Fragment {
 
                 Slide anim = new Slide();
                 anim.setSlideEdge(Gravity.BOTTOM);
-                anim.setDuration(300);
+                anim.setDuration(200);
 
                 queueFragment.setEnterTransition(anim);
                 getParentFragmentManager().beginTransaction()

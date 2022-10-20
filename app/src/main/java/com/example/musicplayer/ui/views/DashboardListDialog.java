@@ -1,6 +1,5 @@
 package com.example.musicplayer.ui.views;
 
-import android.app.Dialog;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
@@ -22,8 +21,9 @@ import com.google.android.material.chip.ChipGroup;
 import com.google.android.material.textfield.TextInputEditText;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatDialog;
 
-public class DashboardListDialog extends Dialog implements View.OnClickListener {
+public class DashboardListDialog extends AppCompatDialog implements View.OnClickListener {
     private final String title;
     private MaterialButton save;
     private MaterialButton cancel;

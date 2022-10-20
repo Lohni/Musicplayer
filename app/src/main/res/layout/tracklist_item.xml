@@ -1,20 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="50dp"
+    android:layout_height="52dp"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_marginStart="8dp"
     android:layout_marginTop="6dp"
     android:layout_marginBottom="4dp"
+    android:layout_marginEnd="8dp"
     android:orientation="horizontal"
-    android:backgroundTint="@color/colorSurface"
+    android:backgroundTint="@color/colorTransparent"
     android:background="@drawable/background_button_secondary"
     android:foreground="@drawable/shuffle_ripple">
 
         <View
             android:id="@+id/tracklist_cover"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
+            android:layout_width="52dp"
+            android:layout_height="52dp"
             android:background="@drawable/background_button_secondary"
             android:backgroundTint="@color/colorSecondary" />
 
@@ -55,14 +56,15 @@
 
             <LinearLayout
                 android:id="@+id/tracklist_next"
-                android:background="@drawable/rounded_border_tertiary"
+                android:background="@drawable/background_button_secondary"
+                android:backgroundTint="@color/colorPrimaryContainer"
                 android:layout_width="wrap_content"
-                android:layout_marginStart="8dp"
+                android:layout_marginStart="12dp"
                 app:layout_constraintStart_toEndOf="@id/tracklist_title"
                 app:layout_constraintBottom_toBottomOf="@id/tracklist_title"
                 app:layout_constraintTop_toTopOf="@id/tracklist_title"
                 app:layout_constraintEnd_toStartOf="@id/tracklist_spacer"
-                android:visibility="gone"
+                android:visibility="visible"
                 android:layout_height="wrap_content">
                 <TextView
                     android:layout_width="match_parent"
@@ -70,8 +72,9 @@
                     android:gravity="center"
                     android:layout_marginStart="4dp"
                     android:layout_marginEnd="4dp"
-                    android:textSize="10sp"
-                    android:textColor="@color/colorTertiary"
+                    android:textSize="11sp"
+                    android:padding="2dp"
+                    android:textColor="@color/colorOnPrimaryContainer"
                     android:text="NEXT"/>
             </LinearLayout>
 

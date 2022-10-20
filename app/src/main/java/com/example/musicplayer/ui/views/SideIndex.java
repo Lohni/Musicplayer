@@ -69,7 +69,7 @@ public class SideIndex {
         indexLayout.setOrientation(LinearLayout.VERTICAL);
 
         int div = (int) (27);
-        float width = ImageTransformUtil.convertPixelToSp(sideIndex.getWidth() - 8, context.getResources());
+        float width = ImageTransformUtil.convertPixelToSp(sideIndex.getWidth() - 9, context.getResources());
 
         float textsize = ImageTransformUtil.convertPixelToSp(sideIndex.getHeight() / (div), context.getResources());
         textsize = Math.min(textsize, width);
@@ -133,5 +133,13 @@ public class SideIndex {
             mapIndex.putIfAbsent(index, i);
         }
         return this;
+    }
+
+    public void setVisibilityGone() {
+        sideIndex.setVisibility(View.GONE);
+    }
+
+    public void setVisible() {
+        sideIndex.setVisibility(View.VISIBLE);
     }
 }

@@ -19,6 +19,8 @@
         <item name="colorOnSurface">@color/colorOnSurface</item>
         <item name="colorSurfaceVariant">@color/colorSurfaceVariant</item>
         <item name="colorOnSurfaceVariant">@color/colorOnSurfaceVariant</item>
+        <item name="background">@color/colorBackground</item>
+        <item name="colorOnBackground">@color/colorOnBackground</item>
 
         <item name="colorControlNormal">@color/colorOnBackground</item>
         <item name="android:navigationBarColor">@color/colorSurface</item>
@@ -29,14 +31,26 @@
         <item name="actionBarSize">50dp</item>
         <item name="fontFamily">@font/nunito</item>
     </style>
+
     <style name="ShapeAppearance.MusicPlayer.SmallComponents"
         parent="ShapeAppearance.Material3.SmallComponent">
         <item name="cornerFamily">rounded</item>
-        <item name="cornerSize">12dp</item>
+        <item name="cornerSize">4dp</item>
     </style>
 
     <style name="PopupAnimation">
         <item name="android:windowEnterAnimation">@anim/popupwindow_show</item>
         <item name="android:windowExitAnimation">@anim/popupwindow_dismiss</item>
     </style>
+
+    <style name="Widget.App.Chip" parent="Widget.Material3.Chip.Input">
+        <item name="chipBackgroundColor">@color/colorTransparent</item>
+        <item name="chipStrokeWidth">2dp</item>
+        <item name="shapeAppearanceOverlay">@null</item>
+    </style>
+
+    <style name="DialogAnim">
+        <item name="android:windowEnterAnimation">@anim/layout_animation_fall_down</item>
+    </style>
+
 </resources>

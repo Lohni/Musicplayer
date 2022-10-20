@@ -25,18 +25,18 @@
         android:text="Show tracks between duration"
         android:textSize="18sp"
         android:textColor="@color/colorOnBackground"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="24dp"
+        android:layout_marginStart="32dp"
+        android:layout_marginTop="20dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/settings_track_title"/>
 
     <com.example.musicplayer.ui.views.RangeSeekbar
         android:id="@+id/settings_range_seekbar"
         android:layout_width="0dp"
-        android:layout_height="38dp"
+        android:layout_height="36dp"
         android:layout_marginStart="32dp"
         android:layout_marginEnd="32dp"
-        android:layout_marginTop="24dp"
+        android:layout_marginTop="20dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@id/settings_range_title"/>
