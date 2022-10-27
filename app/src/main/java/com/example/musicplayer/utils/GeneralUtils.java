@@ -52,12 +52,12 @@ public class GeneralUtils {
             if (hours < 1) {
                 long minutes = ChronoUnit.MINUTES.between(dbTime, ldtNow);
                 if (minutes < 1) {
-                    return "<1 minutes";
+                    return "<1m ago";
                 }
-                return minutes + " minutes";
+                return minutes + "m ago";
             }
-            return hours + " hours";
+            return hours + "h ago";
         }
-        return dayDiff + " days";
+        return dayDiff + " days ago";
     }
 }

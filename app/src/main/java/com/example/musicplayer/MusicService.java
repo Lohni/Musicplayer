@@ -53,6 +53,7 @@ import java.util.Random;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
+import androidx.room.paging.LimitOffsetDataSource;
 
 public class MusicService extends Service implements MediaPlayer.OnPreparedListener, MediaPlayer.OnErrorListener, MediaPlayer.OnCompletionListener {
     private final ArrayList<Track> songlist = new ArrayList<>();
@@ -316,18 +317,28 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
     }
 
     public void removeTracks(List<Track> tracksToRemove) {
-        Track currPlayed = songlist.get(currSongIndex);
+        if (!songlist.isEmpty()) {
+            Track currPlayed = songlist.get(currSongIndex);
 
-        for (Track track : tracksToRemove) {
-            if (track.equals(currPlayed)) {
-                sendOnSongCompleted();
-                player.reset();
+            boolean currPlayedDeleted = false;
+            for (Track track : tracksToRemove) {
+                if (track.equals(currPlayed)) {
+                    sendOnSongCompleted();
+                    player.reset();
+                    currPlayedDeleted = true;
+                }
+                songlist.remove(track);
             }
-            songlist.remove(track);
-        }
 
-        currSongIndex = songlist.indexOf(currPlayed);
-        sendCurrentStateToPlaybackControl();
+            if (playbackBehaviour != PlaybackBehaviour.PlaybackBehaviourState.REPEAT_SONG && currPlayedDeleted) {
+                currSongIndex = (songlist.size() > currSongIndex) ? currSongIndex : 0;
+                play();
+            } else {
+                currSongIndex = songlist.indexOf(currPlayed);
+            }
+
+            sendCurrentStateToPlaybackControl();
+        }
     }
 
     public void removeAllTracks() {
@@ -428,7 +439,7 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
     }
 
     public void play() {
-        if (songlist.size() > 0) {
+        if (songlist.size() > 0 && currSongIndex >= 0) {
             player.reset();
             Uri trackUri = ContentUris.withAppendedId(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, songlist.get(currSongIndex).getTId());
             try {

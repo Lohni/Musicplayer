@@ -11,7 +11,6 @@ import android.widget.TextView;
 
 import com.example.musicplayer.R;
 import com.example.musicplayer.database.entity.Track;
-import com.example.musicplayer.ui.playlistdetail.OnTrackSelectedListener;
 
 import java.util.ArrayList;
 
@@ -23,14 +22,17 @@ public class TrackSelectionAdapter extends RecyclerView.Adapter<TrackSelectionAd
 
     private ArrayList<Track> trackList, mDisplayedvalues, selected;
     private ArrayList<Integer> originalIndex;
-    private Context context;
+    private final Context context;
     private OnTrackSelectedListener onTrackSelectedListener;
 
-    public TrackSelectionAdapter(Context c, ArrayList<Track> trackList, OnTrackSelectedListener onTrackSelectedListener) {
+    public interface OnTrackSelectedListener {
+        void onSongSelected(int position);
+    }
+
+    public TrackSelectionAdapter(Context context, ArrayList<Track> trackList) {
         this.trackList = trackList;
         this.mDisplayedvalues = trackList;
-        context = c;
-        this.onTrackSelectedListener = onTrackSelectedListener;
+        this.context = context;
         this.selected = new ArrayList<>();
     }
 
@@ -58,7 +60,9 @@ public class TrackSelectionAdapter extends RecyclerView.Adapter<TrackSelectionAd
             }
 
             viewHolder.checkBox.setChecked(!viewHolder.checkBox.isChecked());
-            onTrackSelectedListener.onSongSelected(position);
+            if (onTrackSelectedListener != null) {
+                onTrackSelectedListener.onSongSelected(position);
+            }
         });
 
         if (viewHolder.checkBox.isChecked()) {
@@ -69,16 +73,16 @@ public class TrackSelectionAdapter extends RecyclerView.Adapter<TrackSelectionAd
     }
 
     private void updateViewHolderSelected(TrackSelectionAdapter.ViewHolder viewHolder) {
-        viewHolder.itemView.setBackgroundResource(R.color.colorOnPrimaryContainer);
-        viewHolder.title.setTextColor(ContextCompat.getColor(context, R.color.colorPrimaryContainer));
-        viewHolder.artist.setTextColor(ContextCompat.getColor(context, R.color.colorPrimaryContainer));
-        viewHolder.checkBox.setButtonTintList(ContextCompat.getColorStateList(context, R.color.colorPrimaryContainer));
+        viewHolder.itemView.setBackgroundResource(R.color.colorSurfaceLevel3);
+        viewHolder.title.setTextColor(ContextCompat.getColor(context, R.color.colorOnSurface));
+        viewHolder.artist.setTextColor(ContextCompat.getColor(context, R.color.colorOnSurface));
+        viewHolder.checkBox.setButtonTintList(ContextCompat.getColorStateList(context, R.color.colorPrimary));
     }
 
     private void updateViewHolderNotSelected(TrackSelectionAdapter.ViewHolder viewHolder) {
-        viewHolder.itemView.setBackgroundResource(R.color.colorTransparent);
-        viewHolder.title.setTextColor(ContextCompat.getColor(context, R.color.colorOnBackground));
-        viewHolder.artist.setTextColor(ContextCompat.getColor(context, R.color.colorOnBackground));
+        viewHolder.itemView.setBackgroundResource(R.color.colorSurface);
+        viewHolder.title.setTextColor(ContextCompat.getColor(context, R.color.colorOnSurface));
+        viewHolder.artist.setTextColor(ContextCompat.getColor(context, R.color.colorOnSurface));
         viewHolder.checkBox.setButtonTintList(ContextCompat.getColorStateList(context, R.color.colorPrimary));
     }
 
@@ -136,9 +140,8 @@ public class TrackSelectionAdapter extends RecyclerView.Adapter<TrackSelectionAd
         };
     }
 
-
-    public Integer getOriginalPosition(int i) {
-        return originalIndex.get(i);
+    public void setOnTrackSelectedListener(OnTrackSelectedListener onTrackSelectedListener) {
+        this.onTrackSelectedListener = onTrackSelectedListener;
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {

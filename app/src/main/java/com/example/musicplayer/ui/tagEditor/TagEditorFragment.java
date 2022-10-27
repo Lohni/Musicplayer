@@ -78,7 +78,7 @@ public class TagEditorFragment extends Fragment implements TagEditorInterface {
         tagList.setHasFixedSize(true);
         tagList.setLayoutManager(new LinearLayoutManager(requireContext()));
 
-        musicplayerViewModel.getAllTracks().observe(getViewLifecycleOwner(), tracks -> {
+        musicplayerViewModel.getTrackAlphabetical().observe(getViewLifecycleOwner(), tracks -> {
             this.trackList.clear();
             this.trackList.addAll(tracks.stream().map(TrackDTO::getTrack).collect(Collectors.toList()));
 

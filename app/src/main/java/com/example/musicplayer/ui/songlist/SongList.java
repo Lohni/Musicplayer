@@ -33,6 +33,7 @@ import com.example.musicplayer.database.viewmodel.MusicplayerViewModel;
 import com.example.musicplayer.interfaces.PlaybackControlInterface;
 import com.example.musicplayer.interfaces.ServiceTriggerInterface;
 import com.example.musicplayer.interfaces.SongInterface;
+import com.example.musicplayer.ui.views.DeleteDialog;
 import com.example.musicplayer.ui.views.SideIndex;
 import com.example.musicplayer.utils.GeneralUtils;
 import com.example.musicplayer.utils.NavigationControlInterface;
@@ -184,7 +185,7 @@ public class SongList extends Fragment implements SongListInterface {
     @Override
     public void onResume() {
         super.onResume();
-        songListAdapter.getAllBackgroundImages(songList);
+        songListAdapter.getAllBackgroundImages(songList, listView);
         int time = songList.stream().map(TrackDTO::getTrack).map(Track::getTDuration).reduce(0, Integer::sum);
         shuffle_size.setText(songList.size() + " songs - " + GeneralUtils.convertTimeWithUnit(time));
         serviceTriggerInterface.triggerCurrentDataBroadcast();
@@ -281,6 +282,21 @@ public class SongList extends Fragment implements SongListInterface {
                     songInterface.onRemoveAllSongsListener();
                     songInterface.onAddSongsToSonglistListener(track, true);
                     playbackControlInterface.onPlaybackBehaviourChangeListener(PlaybackBehaviour.PlaybackBehaviourState.REPEAT_LIST);
+                } else if (item.getItemId() == R.id.action_songlist_item_delete) {
+                    DeleteDialog dialog = new DeleteDialog(requireContext());
+                    dialog.setOnDeleteListener((v) -> {
+                        Track toDelete = songList.get(position).getTrack();
+                        toDelete.setTDeleted(1);
+                        musicplayerViewModel.updateTrack(toDelete);
+                        List<Track> del = new ArrayList<>();
+                        del.add(toDelete);
+                        songInterface.onSongsRemoveListener(del);
+                        songList.remove(position);
+                        songListAdapter.notifyItemRemoved(position);
+                        int time = songList.stream().map(TrackDTO::getTrack).map(Track::getTDuration).reduce(0, Integer::sum);
+                        shuffle_size.setText(songList.size() + " songs - " + GeneralUtils.convertTimeWithUnit(time));
+                    });
+                    dialog.show();
                 }
                 return false;
             });
@@ -378,7 +394,7 @@ public class SongList extends Fragment implements SongListInterface {
                 int time = tracks.stream().map(TrackDTO::getTrack).map(Track::getTDuration).reduce(0, Integer::sum);
                 shuffle_size.setText(tracks.size() + " songs - " + GeneralUtils.convertTimeWithUnit(time));
                 firstLoad = false;
-                songListAdapter.getAllBackgroundImages(tracks);
+                songListAdapter.getAllBackgroundImages(tracks, listView);
             }
 
             if (listFilterType.equals(ListFilterType.ALPHABETICAL)) {

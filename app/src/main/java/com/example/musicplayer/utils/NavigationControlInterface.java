@@ -6,4 +6,5 @@ public interface NavigationControlInterface {
     void setHomeAsUpIndicator(int resId);
     void setToolbarTitle(String title);
     void onBackPressedListener();
+    void setToolbarBackground(boolean scrolling);
 }

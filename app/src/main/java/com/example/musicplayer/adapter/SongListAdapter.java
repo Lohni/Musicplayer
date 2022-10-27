@@ -70,7 +70,7 @@ public class SongListAdapter extends RecyclerView.Adapter<SongListAdapter.ViewHo
         this.customCoverBackground = ResourcesCompat.getDrawable(context.getResources(), R.drawable.background_button_secondary, null);
     }
 
-    public void getAllBackgroundImages(List<TrackDTO> newList) {
+    public void getAllBackgroundImages(List<TrackDTO> newList, RecyclerView recyclerView) {
         new Thread(() -> {
             MediaMetadataRetriever mmr = new MediaMetadataRetriever();
             List<TrackDTO> t = new ArrayList<>(newList);
@@ -89,6 +89,14 @@ public class SongListAdapter extends RecyclerView.Adapter<SongListAdapter.ViewHo
                     }
                 } catch (IllegalArgumentException e) {
                     System.out.println("MediaMetadataRetriever IllegalArgument");
+                }
+            }
+
+            while (recyclerView.isComputingLayout()) {
+                try {
+                    Thread.sleep(10);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
                 }
             }
             notifyItemRangeChanged(0, songList.size(), "RELOAD_IMAGES");
@@ -164,13 +172,9 @@ public class SongListAdapter extends RecyclerView.Adapter<SongListAdapter.ViewHo
         }
 
         if (currPlayingSongIndex >= 0 && track.equals(currPlaying)) {
-            holder.itemView.setBackgroundTintList(ContextCompat.getColorStateList(context, R.color.colorPrimaryContainer));
-            holder.title.setTextColor(ContextCompat.getColorStateList(context, R.color.colorOnPrimaryContainer));
-            holder.artist.setTextColor(ContextCompat.getColorStateList(context, R.color.colorOnPrimaryContainer));
+            holder.itemView.setBackgroundTintList(ContextCompat.getColorStateList(context, R.color.colorSurfaceLevel4));
         } else {
             holder.itemView.setBackgroundTintList(ContextCompat.getColorStateList(context, R.color.colorBackground));
-            holder.title.setTextColor(ContextCompat.getColorStateList(context, R.color.colorOnSurface));
-            holder.artist.setTextColor(ContextCompat.getColorStateList(context, R.color.colorOnSurface));
         }
 
         int color = (queue.contains(track)) ? R.color.colorPrimary : R.color.colorOnSurface;

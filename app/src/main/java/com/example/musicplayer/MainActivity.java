@@ -1,6 +1,9 @@
 package com.example.musicplayer;
 
 import android.Manifest;
+import android.animation.ArgbEvaluator;
+import android.animation.ObjectAnimator;
+import android.animation.ValueAnimator;
 import android.annotation.SuppressLint;
 import android.content.ContentResolver;
 import android.content.Context;
@@ -22,7 +25,6 @@ import com.example.musicplayer.database.MusicplayerApplication;
 import com.example.musicplayer.database.dao.AudioEffectDataAccess;
 import com.example.musicplayer.database.dao.MusicplayerDataAccess;
 import com.example.musicplayer.database.dao.PlaylistDataAccess;
-import com.example.musicplayer.database.dto.TrackDTO;
 import com.example.musicplayer.database.entity.Album;
 import com.example.musicplayer.database.entity.Track;
 import com.example.musicplayer.database.viewmodel.AudioEffectViewModel;
@@ -48,6 +50,7 @@ import com.example.musicplayer.utils.NavigationControlInterface;
 import com.example.musicplayer.utils.Permissions;
 import com.example.musicplayer.utils.enums.DashboardListType;
 import com.example.musicplayer.utils.enums.PlaybackBehaviour;
+import com.google.android.material.appbar.AppBarLayout;
 import com.google.android.material.navigation.NavigationView;
 
 import java.util.ArrayList;
@@ -73,6 +76,7 @@ public class MainActivity extends AppCompatActivity implements PlaybackControlIn
 
     private DrawerLayout drawer;
     private MusicService musicService;
+    private AppBarLayout appBarLayout;
 
     private AudioEffectViewModel audioEffectViewModel;
     private MusicplayerViewModel musicplayerViewModel;
@@ -95,6 +99,7 @@ public class MainActivity extends AppCompatActivity implements PlaybackControlIn
         drawer = findViewById(R.id.drawer_layout);
         motionLayout = findViewById(R.id.parentContainer);
         Toolbar toolbar = findViewById(R.id.toolbar);
+        appBarLayout = findViewById(R.id.appbar);
         NavigationView navigationView = findViewById(R.id.nav_view);
 
         setSupportActionBar(toolbar);
@@ -162,7 +167,7 @@ public class MainActivity extends AppCompatActivity implements PlaybackControlIn
 
     private void updateTracks() {
         musicplayerViewModel.getAllTracks().observe(this, tracks -> {
-            compareTracksToDatabase((ArrayList<TrackDTO>) tracks);
+            compareTracksToDatabase((ArrayList<Track>) tracks);
             musicplayerViewModel.getAllTracks().removeObservers(this);
             loadPlayControl();
             loadDashboard(new DashboardFragment());
@@ -176,7 +181,7 @@ public class MainActivity extends AppCompatActivity implements PlaybackControlIn
         });
     }
 
-    private void compareTracksToDatabase(ArrayList<TrackDTO> tracks) {
+    private void compareTracksToDatabase(ArrayList<Track> tracks) {
         ArrayList<Track> toInsert = new ArrayList<>();
 
         ContentResolver contentResolver = getContentResolver();
@@ -206,13 +211,15 @@ public class MainActivity extends AppCompatActivity implements PlaybackControlIn
                 track.setTDuration((int) duration);
                 track.setTTrackNr(trackId);
                 track.setTIsFavourite(0);
+                track.setTDeleted(0);
                 track.setTCreated(GeneralUtils.getCurrentUTCTimestamp());
 
-                Optional<TrackDTO> optionalTrackDB = tracks.stream().filter(trackDB -> trackDB.getTrack().getTId().equals((int) thisId)).findFirst();
+                Optional<Track> optionalTrackDB = tracks.stream().filter(trackDB -> trackDB.getTId().equals((int) thisId)).findFirst();
                 if (optionalTrackDB.isPresent()) {
-                    Track trackDB = optionalTrackDB.get().getTrack();
+                    Track trackDB = optionalTrackDB.get();
                     track.setTIsFavourite(trackDB.getTIsFavourite());
                     track.setTCreated(trackDB.getTCreated());
+                    track.setTDeleted(trackDB.getTDeleted());
                 }
 
                 toInsert.add(track);
@@ -223,7 +230,7 @@ public class MainActivity extends AppCompatActivity implements PlaybackControlIn
         if (musicCursor != null) musicCursor.close();
 
         ArrayList<Integer> insertIds = toInsert.stream().map(Track::getTId).collect(Collectors.toCollection(ArrayList::new));
-        ArrayList<Track> toDelete = tracks.stream().map(TrackDTO::getTrack).filter(track -> !insertIds.contains(track.getTId())).collect(Collectors.toCollection(ArrayList::new));
+        ArrayList<Track> toDelete = tracks.stream().filter(track -> !insertIds.contains(track.getTId())).collect(Collectors.toCollection(ArrayList::new));
 
         if (!toDelete.isEmpty()) {
             musicplayerViewModel.deleteTracks(toDelete);
@@ -524,6 +531,36 @@ public class MainActivity extends AppCompatActivity implements PlaybackControlIn
     @Override
     public void onBackPressedListener() {
         onBackPressed();
+    }
+
+    @Override
+    public void setToolbarBackground(boolean scrolling) {
+        int surface = getResources().getColor(R.color.colorSurface, null);
+        int level2 = getResources().getColor(R.color.colorSurfaceLevel2, null);
+
+        if (scrolling) {
+            ValueAnimator valueAnimatorToolbar = ObjectAnimator.ofArgb(appBarLayout, "backgroundColor", surface, level2);
+            valueAnimatorToolbar.setDuration(500);
+            valueAnimatorToolbar.setEvaluator(new ArgbEvaluator());
+
+            ValueAnimator valueAnimatorStatusBar = ObjectAnimator.ofArgb(getWindow(), "statusBarColor", surface, level2);
+            valueAnimatorStatusBar.setDuration(500);
+            valueAnimatorStatusBar.setEvaluator(new ArgbEvaluator());
+
+            valueAnimatorToolbar.start();
+            valueAnimatorStatusBar.start();
+        } else {
+            ValueAnimator valueAnimatorToolbar = ObjectAnimator.ofArgb(appBarLayout, "backgroundColor", level2, surface);
+            valueAnimatorToolbar.setDuration(300);
+            valueAnimatorToolbar.setEvaluator(new ArgbEvaluator());
+
+            ValueAnimator valueAnimatorStatusBar = ObjectAnimator.ofArgb(getWindow(), "statusBarColor", level2, surface);
+            valueAnimatorStatusBar.setDuration(300);
+            valueAnimatorStatusBar.setEvaluator(new ArgbEvaluator());
+
+            valueAnimatorToolbar.start();
+            valueAnimatorStatusBar.start();
+        }
     }
 
     @Override

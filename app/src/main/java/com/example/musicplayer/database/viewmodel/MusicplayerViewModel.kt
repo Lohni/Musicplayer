@@ -16,13 +16,15 @@ import kotlin.streams.toList
 
 class MusicplayerViewModel(private val dao: MusicplayerDataAccess) : ViewModel() {
 
-    val allTracks: LiveData<List<TrackDTO>> = dao.getAllTracks().asLiveData()
+    val allTracks: LiveData<List<Track>> = dao.getAllTracks().asLiveData()
     val allAlbums: LiveData<List<Album>> = dao.getAllAbums().asLiveData()
     val lastPlayedTracks: LiveData<List<TrackDTO>> = dao.getTracksByLastPlayed().asLiveData()
     val favouriteTracks: LiveData<List<TrackDTO>> = dao.getFavouriteTracks().asLiveData()
     val mostPlayedTracks: LiveData<List<TrackDTO>> = dao.getTracksByTimesPlayed().asLiveData()
     val tracksTimePlayed: LiveData<List<TrackDTO>> = dao.getTracksbyTimePlayed().asLiveData()
     val tracksCreated: LiveData<List<TrackDTO>> = dao.getAllTracksByCreated().asLiveData()
+    val deletedTracks: LiveData<List<Track>> = dao.getDeletedTracks().asLiveData()
+    val trackAlphabetical: LiveData<List<TrackDTO>> = dao.getTracksAlphabetical().asLiveData()
 
     val lastTrackPlayed: LiveData<TrackPlayed> = dao.getLastTrackPlayed().asLiveData()
 
@@ -69,7 +71,7 @@ class MusicplayerViewModel(private val dao: MusicplayerDataAccess) : ViewModel()
         return when (filterType) {
             ListFilterType.FAVOURITE -> favouriteTracks
             ListFilterType.TIMES_PLAYED -> mostPlayedTracks
-            ListFilterType.ALPHABETICAL -> allTracks
+            ListFilterType.ALPHABETICAL -> trackAlphabetical
             ListFilterType.TIME_PLAYED -> tracksTimePlayed
             ListFilterType.LAST_CREATED -> tracksCreated
             else -> lastPlayedTracks
