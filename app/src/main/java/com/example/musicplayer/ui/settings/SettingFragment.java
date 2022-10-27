@@ -1,26 +1,34 @@
 package com.example.musicplayer.ui.settings;
 
 import android.os.Bundle;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
 import com.example.musicplayer.R;
 import com.example.musicplayer.database.MusicplayerApplication;
+import com.example.musicplayer.database.dao.MusicplayerDataAccess;
 import com.example.musicplayer.database.dao.PreferenceDataAccess;
 import com.example.musicplayer.database.entity.Preference;
+import com.example.musicplayer.database.entity.Track;
+import com.example.musicplayer.database.viewmodel.MusicplayerViewModel;
 import com.example.musicplayer.database.viewmodel.PreferenceViewModel;
+import com.example.musicplayer.ui.views.DeletedTrackDialog;
 import com.example.musicplayer.ui.views.RangeSeekbar;
 
 import java.util.List;
 import java.util.Optional;
 
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.transition.Slide;
 
 public class SettingFragment extends Fragment {
     private RangeSeekbar rangeSeekbar;
     private PreferenceViewModel preferenceViewModel;
+    private MusicplayerViewModel musicplayerViewModel;
     private List<Preference> preferenceList;
 
     public SettingFragment() {
@@ -32,6 +40,9 @@ public class SettingFragment extends Fragment {
 
         PreferenceDataAccess pda = ((MusicplayerApplication) requireActivity().getApplication()).getDatabase().preferenceDao();
         preferenceViewModel = new ViewModelProvider(this, new PreferenceViewModel.PreferenceViewModelFactory(pda)).get(PreferenceViewModel.class);
+
+        MusicplayerDataAccess mda = ((MusicplayerApplication) requireActivity().getApplication()).getDatabase().musicplayerDao();
+        musicplayerViewModel = new ViewModelProvider(this, new MusicplayerViewModel.MusicplayerViewModelFactory(mda)).get(MusicplayerViewModel.class);
     }
 
     @Override
@@ -55,6 +66,26 @@ public class SettingFragment extends Fragment {
                 preferenceViewModel.updatePreference(pref);
             });
         });
+
+        ConstraintLayout deletedTrack = view.findViewById(R.id.settings_deleted_tracks);
+        deletedTrack.setOnClickListener((v) -> {
+            musicplayerViewModel.getDeletedTracks().observe(getViewLifecycleOwner(), tracks -> {
+                musicplayerViewModel.getDeletedTracks().removeObservers(getViewLifecycleOwner());
+                DeletedTrackDialog dialog = new DeletedTrackDialog(tracks);
+                dialog.setOnRestoreClickListener((toRestore) -> {
+                    for (Track track : toRestore) {
+                        track.setTDeleted(0);
+                        musicplayerViewModel.updateTrack(track);
+                    }
+                });
+                Slide slide = new Slide();
+                slide.setDuration(500);
+                slide.setSlideEdge(Gravity.END);
+                dialog.setEnterTransition(slide);
+                dialog.show(getParentFragmentManager(), "DELETE_DIALOG");
+            });
+        });
+
         return view;
     }
 

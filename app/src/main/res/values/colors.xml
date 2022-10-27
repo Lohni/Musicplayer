@@ -18,12 +18,17 @@
 
     <color name="colorBackground">#201a19</color>
     <color name="colorOnBackground">#ede0dd</color>
-    <color name="colorSurface">#2C2524</color>
+    <color name="colorSurface">#201a19</color>
     <color name="colorOnSurface">#ede0dd</color>
 
     <color name="colorOutline">#a08c89</color>
     <color name="colorSurfaceVariant">#534746</color>
     <color name="colorOnSurfaceVariant">#d8c2be</color>
+
+    <color name="colorSurfaceLevel1">#29201F</color>
+    <color name="colorSurfaceLevel2">#312624</color>
+    <color name="colorSurfaceLevel3">#382B28</color>
+    <color name="colorSurfaceLevel4">#3B2D2A</color>
 
     <color name="colorTransparent">#004B636E</color>
 </resources>

@@ -41,6 +41,9 @@ public class Track implements Parcelable {
     @ColumnInfo(name = "t_track_nr")
     private Integer tTrackNr;
 
+    @ColumnInfo(name = "t_deleted")
+    private Integer tDeleted;
+
     public Integer getTId() {
         return tId;
     }
@@ -105,6 +108,14 @@ public class Track implements Parcelable {
         this.tTrackNr = tTrackNr;
     }
 
+    public Integer getTDeleted() {
+        return tDeleted;
+    }
+
+    public void setTDeleted(Integer tDeleted) {
+        this.tDeleted = tDeleted;
+    }
+
     protected Track(Parcel in) {
         in.readByte();
         tId = in.readInt();
@@ -121,6 +132,7 @@ public class Track implements Parcelable {
         tAlbumId = (in.readByte() == 0) ? null : in.readInt();
         tDuration = (in.readByte() == 0) ? null : in.readInt();
         tTrackNr = (in.readByte() == 0) ? null : in.readInt();
+        tDeleted = (in.readByte() == 0) ? 0 : in.readInt();
     }
 
     public static final Creator<Track> CREATOR = new Creator<Track>() {
@@ -180,6 +192,12 @@ public class Track implements Parcelable {
         } else {
             parcel.writeByte((byte) 1);
             parcel.writeInt(tTrackNr);
+        }
+        if (tDeleted == null) {
+            parcel.writeByte((byte) 0);
+        } else {
+            parcel.writeByte((byte) 1);
+            parcel.writeInt(tDeleted);
         }
     }
 

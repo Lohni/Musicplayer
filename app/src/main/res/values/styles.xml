@@ -23,7 +23,7 @@
         <item name="colorOnBackground">@color/colorOnBackground</item>
 
         <item name="colorControlNormal">@color/colorOnBackground</item>
-        <item name="android:navigationBarColor">@color/colorSurface</item>
+        <item name="android:navigationBarColor">@color/colorSurfaceLevel1</item>
         <item name="android:statusBarColor">@color/colorSurface</item>
         <item name="android:windowContentTransitions">true</item>
         <item name="android:windowAllowEnterTransitionOverlap">true</item>
@@ -50,7 +50,8 @@
     </style>
 
     <style name="DialogAnim">
-        <item name="android:windowEnterAnimation">@anim/layout_animation_fall_down</item>
+        <item name="android:windowEnterAnimation">@anim/popupwindow_show</item>
+        <item name="android:windowExitAnimation">@anim/popupwindow_dismiss</item>
     </style>
 
 </resources>

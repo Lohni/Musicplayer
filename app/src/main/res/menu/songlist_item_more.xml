@@ -15,4 +15,9 @@
         android:id="@+id/action_songlist_item_new_queue"
         android:title="New queue"
         app:showAsAction="never" />
+
+    <item
+        android:id="@+id/action_songlist_item_delete"
+        android:title="Delete"
+        app:showAsAction="never"/>
 </menu>

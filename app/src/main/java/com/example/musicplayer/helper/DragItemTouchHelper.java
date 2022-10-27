@@ -37,7 +37,7 @@ public class DragItemTouchHelper extends ItemTouchHelper.SimpleCallback {
     private final float iconSize;
     private Snackbar snackbar;
     private final View anchor;
-    private final ColorStateList cls;
+    private final ColorStateList cls, textColor, actionTextColor;
 
     public interface OnItemMovedListener {
         void onItemMoved(int fromPosition, int toPosition);
@@ -61,9 +61,11 @@ public class DragItemTouchHelper extends ItemTouchHelper.SimpleCallback {
         this.adapter = adapter;
         paint = new Paint();
         paint.setColor(ContextCompat.getColor(context, R.color.colorSecondary));
-        icon = ImageTransformUtil.getBitmapFromVectorDrawable(context, R.drawable.ic_delete_black_24dp);
+        icon = ImageTransformUtil.getBitmapFromVectorDrawable(context, R.drawable.ic_round_delete_24);
         iconSize = ImageTransformUtil.convertDpToPixel(16f, context.getResources());
         cls = ContextCompat.getColorStateList(context, R.color.colorBackground);
+        textColor = ContextCompat.getColorStateList(context, R.color.colorOnSurface);
+        actionTextColor = ContextCompat.getColorStateList(context, R.color.colorPrimary);
     }
 
     @Override
@@ -174,6 +176,8 @@ public class DragItemTouchHelper extends ItemTouchHelper.SimpleCallback {
 
     private void createSnackbar(View anchor) {
         snackbar = Snackbar.make(anchor, idsToDelete.size() + " items will be deleted!", Snackbar.LENGTH_LONG)
+                .setActionTextColor(actionTextColor)
+                .setTextColor(textColor)
                 .setAction("Undo", view -> undo = true)
                 .addCallback(new BaseTransientBottomBar.BaseCallback<>() {
                     @Override

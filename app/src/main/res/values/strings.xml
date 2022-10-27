@@ -13,13 +13,9 @@
 
     <string name="home_second">Home Second</string>
 
-    <string name="cat_card_action_move_top_left" description="A description of an action that a user of an accessibility service can perform to move the card to the top left corner of the screen. [CHAR LIMIT=25]">Move to top left</string>
-    <string name="cat_card_action_move_up" description="A description of an action that a user of an accessibility service can perform to swap the card with the one above it. [CHAR LIMIT=25]">Move Up</string>
-    <string name="cat_card_action_move_down" description="A description of an action that a user of an accessibility service can perform to swap the card with the one below it. [CHAR LIMIT=25]">Move Down</string>
-    <string name="cat_card_action_move_top_right" description="A description of an action that a user of an accessibility service can perform to move the card to the top right corner of the screen. [CHAR LIMIT=25]">Move to top right</string>
-    <string name="cat_card_action_move_bottom_left" description="A description of an action that a user of an accessibility service can perform to move the card to the bottom left corner of the screen. [CHAR LIMIT=25]">Move to bottom left</string>
-    <string name="cat_card_action_move_bottom_right" description="A description of an action that a user of an accessibility service can perform to move the card to the bottom right corner of the screen. [CHAR LIMIT=25]">Move to bottom right</string>
-    <string name="cat_card_action_move_center" description="A description of an action that a user of an accessibility service can perform to move the card to the center of the screen. [CHAR LIMIT=25]">Move to center</string>
+    <!-- Delete Track dialog -->
+    <string name="delete_dialog_title">Delete track</string>
+    <string name="delete_dialog_description">This track will be excluded from all major listings, <b>it will not be deleted from the device.</b> This action can always be undone in the settings.</string>
 
     <!-- MusicService Intent-Tags-->
     <string name="music_service_action_resume">MUSICSERVICE_ACTION_RESUME</string>
@@ -28,7 +24,6 @@
     <string name="playback_control_values">PLAYBACK_CONTROL_VALUES</string>
     <string name="musicservice_song_prepared">MUSICSERVICE_SONG_PREPARED</string>
     <string name="musicservice_song_ended">MUSICSERVICE_SONG_ENDED</string>
-
 
     <!-- Notification Intent-Tags-->
     <string name="notification_action_pause">NOTIFICATION_ACTION_PAUSE</string>

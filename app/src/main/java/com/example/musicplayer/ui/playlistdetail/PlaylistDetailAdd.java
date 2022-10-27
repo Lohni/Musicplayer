@@ -40,7 +40,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 
-public class PlaylistDetailAdd extends Fragment implements OnTrackSelectedListener {
+public class PlaylistDetailAdd extends Fragment {
     private RecyclerView selection;
     private EditText search;
     private ArrayList<Track> trackList = new ArrayList<>();
@@ -115,12 +115,21 @@ public class PlaylistDetailAdd extends Fragment implements OnTrackSelectedListen
         LinearLayout linearLayout = view.findViewById(R.id.playlist_detail_add_side_index);
         sideIndex = new SideIndex(requireActivity(), linearLayout, indexZoomHolder, indexZoom, linearLayoutManager);
 
-        musicplayerViewModel.getAllTracks().observe(getViewLifecycleOwner(), tracklist -> {
+        musicplayerViewModel.getTrackAlphabetical().observe(getViewLifecycleOwner(), tracklist -> {
             this.trackList.clear();
             this.trackList.addAll(tracklist.stream().map(TrackDTO::getTrack).collect(Collectors.toList()));
 
             Collections.sort(this.trackList, (a, b) -> a.getTTitle().compareToIgnoreCase(b.getTTitle()));
-            mAdapter = new TrackSelectionAdapter(requireContext(), trackList, this);
+            mAdapter = new TrackSelectionAdapter(requireContext(), trackList);
+            mAdapter.setOnTrackSelectedListener((position) -> {
+                int selectedCount = mAdapter.getSelectedCount();
+                if (selectedCount > 0) {
+                    if (selectedCount == 1) {
+                        confirm.setVisibility(View.VISIBLE);
+                        confirm.setText("ADD " + selectedCount + " SONG");
+                    } else confirm.setText("ADD " + selectedCount + " SONGS");
+                } else confirm.setVisibility(View.INVISIBLE);
+            });
             selection.setAdapter(mAdapter);
             sideIndex.setIndexList(trackList).displayIndex();
         });
@@ -160,16 +169,5 @@ public class PlaylistDetailAdd extends Fragment implements OnTrackSelectedListen
         });
 
         return view;
-    }
-
-    @Override
-    public void onSongSelected(int i) {
-        int selectedCount = mAdapter.getSelectedCount();
-        if (selectedCount > 0) {
-            if (selectedCount == 1) {
-                confirm.setVisibility(View.VISIBLE);
-                confirm.setText("ADD " + selectedCount + " SONG");
-            } else confirm.setText("ADD " + selectedCount + " SONGS");
-        } else confirm.setVisibility(View.INVISIBLE);
     }
 }

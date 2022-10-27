@@ -52,6 +52,7 @@ public class QueueFragment extends Fragment {
     private NavigationControlInterface navigationControlInterface;
     private PlaybackBehaviour.PlaybackBehaviourState playbackBehaviour;
     private int queuePosition = -1;
+    private boolean scrolling = false;
 
     public QueueFragment() {
     }
@@ -198,12 +199,29 @@ public class QueueFragment extends Fragment {
         touchHelper.attachToRecyclerView(queueList);
 
         serviceTriggerInterface.triggerCurrentDataBroadcast();
+
+        queueList.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
+                if (!scrolling && linearLayoutManager.findFirstCompletelyVisibleItemPosition() > 0) {
+                    scrolling = true;
+                    navigationControlInterface.setToolbarBackground(true);
+                } else if (scrolling && linearLayoutManager.findFirstCompletelyVisibleItemPosition() == 0) {
+                    scrolling = false;
+                    navigationControlInterface.setToolbarBackground(false);
+                }
+
+                super.onScrolled(recyclerView, dx, dy);
+            }
+        });
+
         return view;
     }
 
     @Override
     public void onDetach() {
         requireActivity().unregisterReceiver(receiver);
+        navigationControlInterface.setToolbarBackground(false);
         super.onDetach();
     }
 

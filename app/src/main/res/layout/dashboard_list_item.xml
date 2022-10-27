@@ -5,6 +5,8 @@
     android:layout_width="wrap_content"
     android:layout_height="match_parent"
     android:foreground="@drawable/rounded_border"
+    android:background="@drawable/background_button_secondary"
+    android:backgroundTint="@color/colorSurfaceLevel1"
     android:focusable="true"
     android:clickable="true"
     android:layout_marginEnd="10dp">
@@ -68,10 +70,10 @@
         <FrameLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginEnd="8dp"
+            android:layout_marginEnd="4dp"
             android:layout_marginBottom="4dp"
             android:background="@drawable/background_button_secondary"
-            android:backgroundTint="@color/colorSurface"
+            android:backgroundTint="@color/colorPrimary"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintBottom_toBottomOf="@id/dashboard_list_item_image">
 
@@ -82,10 +84,10 @@
                 android:layout_gravity="center"
                 android:layout_marginStart="6dp"
                 android:layout_marginEnd="6dp"
-                android:layout_marginBottom="0.5dp"
-                android:layout_marginTop="1dp"
-                android:textColor="@color/colorOnSurface"
-                android:textSize="14sp"/>
+                android:paddingTop="1dp"
+                android:paddingBottom="1dp"
+                android:textColor="@color/colorOnPrimary"
+                android:textSize="13sp"/>
         </FrameLayout>
     </androidx.constraintlayout.widget.ConstraintLayout>
 </LinearLayout>

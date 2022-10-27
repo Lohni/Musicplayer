@@ -58,8 +58,7 @@ public class DashboardTrackAdapter extends RecyclerView.Adapter<DashboardTrackAd
     @Override
     public DashboardTrackAdapter.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.dashboard_list_item, parent, false);
-        ViewHolder holder = new DashboardTrackAdapter.ViewHolder(v);
-        return holder;
+        return new ViewHolder(v);
     }
 
     @Override
