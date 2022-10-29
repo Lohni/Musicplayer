@@ -23,7 +23,6 @@ import android.media.audiofx.LoudnessEnhancer;
 import android.media.audiofx.Virtualizer;
 import android.net.Uri;
 import android.os.Binder;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -39,7 +38,6 @@ import com.example.musicplayer.core.SystemBroadcastReceiver;
 import com.example.musicplayer.database.entity.EqualizerPreset;
 import com.example.musicplayer.database.entity.Track;
 import com.example.musicplayer.ui.audioeffects.EqualizerProperties;
-import com.example.musicplayer.ui.songlist.SongList;
 import com.example.musicplayer.utils.enums.DashboardListType;
 import com.example.musicplayer.utils.enums.PlaybackBehaviour;
 import com.example.musicplayer.utils.images.BitmapColorExtractor;
@@ -53,7 +51,6 @@ import java.util.Random;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
-import androidx.room.paging.LimitOffsetDataSource;
 
 public class MusicService extends Service implements MediaPlayer.OnPreparedListener, MediaPlayer.OnErrorListener, MediaPlayer.OnCompletionListener {
     private final ArrayList<Track> songlist = new ArrayList<>();
@@ -644,7 +641,7 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
     private void createNotificationChannel() {
         CharSequence name = "MUSICSERVICE_CHANNEL";
         String description = "PLAYBACK_CONTROL";
-        int importance = NotificationManager.IMPORTANCE_HIGH;
+        int importance = NotificationManager.IMPORTANCE_DEFAULT;
         NotificationChannel channel = new NotificationChannel("MUSICSERVICE_CHANNEL", name, importance);
         channel.setDescription(description);
 
