@@ -80,7 +80,6 @@ public class MainActivity extends AppCompatActivity implements PlaybackControlIn
 
     private AudioEffectViewModel audioEffectViewModel;
     private MusicplayerViewModel musicplayerViewModel;
-    private PlaylistViewModel playlistViewModel;
 
     private MotionLayout motionLayout;
     private ActionBarDrawerToggle toggle;
@@ -88,6 +87,7 @@ public class MainActivity extends AppCompatActivity implements PlaybackControlIn
     private MusicplayerServiceConnection serviceConnection;
 
     private final Handler mHandler = new Handler();
+    private Runnable runnable;
     private Fragment selectedDrawerFragment;
     private boolean destroyed = false;
 
@@ -118,8 +118,6 @@ public class MainActivity extends AppCompatActivity implements PlaybackControlIn
         audioEffectViewModel = new ViewModelProvider(this, new AudioEffectViewModel.AudioEffectViewModelFactory(aod)).get(AudioEffectViewModel.class);
         MusicplayerDataAccess mda = ((MusicplayerApplication) getApplication()).getDatabase().musicplayerDao();
         musicplayerViewModel = new ViewModelProvider(this, new MusicplayerViewModel.MusicplayerViewModelFactory(mda)).get(MusicplayerViewModel.class);
-        PlaylistDataAccess pda = ((MusicplayerApplication) getApplication()).getDatabase().playlistDao();
-        playlistViewModel = new ViewModelProvider(this, new PlaylistViewModel.PlaylistViewModelFactory(pda)).get(PlaylistViewModel.class);
 
         Intent service = new Intent(this, MusicService.class);
 
@@ -133,7 +131,6 @@ public class MainActivity extends AppCompatActivity implements PlaybackControlIn
             }
         }
 
-        //Todo: Own class
         drawer.addDrawerListener(new DrawerLayout.DrawerListener() {
             @Override
             public void onDrawerSlide(@NonNull View drawerView, float slideOffset) {
@@ -146,13 +143,11 @@ public class MainActivity extends AppCompatActivity implements PlaybackControlIn
             @Override
             public void onDrawerClosed(@NonNull View drawerView) {
                 if (selectedDrawerFragment != null) {
-
                     if (selectedDrawerFragment instanceof SongList && musicService.getCurrSong() != null) {
                         Bundle bundle = new Bundle();
                         bundle.putInt("ID", musicService.getCurrSong().getTId());
                         selectedDrawerFragment.setArguments(bundle);
                     }
-
                     getSupportFragmentManager().beginTransaction().replace(R.id.nav_host_fragment, selectedDrawerFragment).commit();
                 }
             }
@@ -337,7 +332,9 @@ public class MainActivity extends AppCompatActivity implements PlaybackControlIn
 
     @Override
     protected void onPause() {
-        musicService.sendOnSongCompleted();
+        if (musicService != null) {
+            musicService.sendOnSongCompleted();
+        }
         destroyed = true;
         super.onPause();
     }
@@ -358,27 +355,6 @@ public class MainActivity extends AppCompatActivity implements PlaybackControlIn
         unbindService(serviceConnection);
         stopService(new Intent(this, MusicService.class));
     }
-
-    final Runnable runnable = new Runnable() {
-        @Override
-        public void run() {
-            if (musicService.isPlaying()) {
-                PlaybackControl pc = (PlaybackControl) getSupportFragmentManager().findFragmentByTag(getString(R.string.fragment_playbackControl));
-                if (pc != null) {
-                    pc.updateSeekbar(musicService.getCurrentPosition());
-                } else {
-                    ExpandedPlaybackControl epc = (ExpandedPlaybackControl) getSupportFragmentManager().findFragmentByTag(getString(R.string.fragment_expandedPlaybackControl));
-                    if (epc != null) {
-                        epc.updateSeekbar(musicService.getCurrentPosition());
-                    }
-                }
-            }
-
-            if (!destroyed) {
-                mHandler.postDelayed(runnable, 200);
-            }
-        }
-    };
 
     /*
     PlaybackControl
@@ -605,8 +581,25 @@ public class MainActivity extends AppCompatActivity implements PlaybackControlIn
         this.musicService = musicService;
         initialiseAudioEffects();
         musicService.sendCurrentStateToPlaybackControl();
+
+        runnable = () -> {
+            if (musicService.isPlaying()) {
+                PlaybackControl pc = (PlaybackControl) getSupportFragmentManager().findFragmentByTag(getString(R.string.fragment_playbackControl));
+                if (pc != null) {
+                    pc.updateSeekbar(musicService.getCurrentPosition());
+                } else {
+                    ExpandedPlaybackControl epc = (ExpandedPlaybackControl) getSupportFragmentManager().findFragmentByTag(getString(R.string.fragment_expandedPlaybackControl));
+                    if (epc != null) {
+                        epc.updateSeekbar(musicService.getCurrentPosition());
+                    }
+                }
+            }
+
+            if (!destroyed) {
+                mHandler.postDelayed(runnable, 200);
+            }
+        };
+
         runnable.run();
     }
-
-
 }
