@@ -7,7 +7,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.example.musicplayer.R;
-import com.example.musicplayer.utils.AlbumOptions;
+import com.example.musicplayer.utils.enums.AlbumOptions;
 
 import java.util.ArrayList;
 
@@ -15,7 +15,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 public class MediaOptionsAdapter extends RecyclerView.Adapter<MediaOptionsAdapter.ViewHolder> {
-    private ArrayList<String> optionsList = new ArrayList<>();
+    private ArrayList<String> optionsList;
     private final MediaOptionsAdapterListener mediaOptionsAdapterListener;
     private final int albumPosition;
 

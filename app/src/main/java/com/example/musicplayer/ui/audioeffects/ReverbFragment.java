@@ -17,6 +17,8 @@ import com.example.musicplayer.database.MusicplayerApplication;
 import com.example.musicplayer.database.dao.AudioEffectDataAccess;
 import com.example.musicplayer.database.entity.AdvancedReverbPreset;
 import com.example.musicplayer.database.viewmodel.AudioEffectViewModel;
+import com.example.musicplayer.utils.converter.AudioEffectSettingsHelper;
+import com.example.musicplayer.interfaces.AudioEffectInterface;
 import com.example.musicplayer.ui.views.ControlKnob;
 import com.google.android.material.switchmaterial.SwitchMaterial;
 import com.google.android.material.textfield.MaterialAutoCompleteTextView;

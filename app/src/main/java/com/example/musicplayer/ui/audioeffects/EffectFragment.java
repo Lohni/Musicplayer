@@ -7,6 +7,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.example.musicplayer.R;
+import com.example.musicplayer.interfaces.AudioEffectInterface;
 import com.example.musicplayer.ui.views.ControlKnob;
 import com.google.android.material.switchmaterial.SwitchMaterial;
 

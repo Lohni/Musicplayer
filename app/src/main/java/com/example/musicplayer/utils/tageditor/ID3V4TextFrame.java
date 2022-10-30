@@ -1,8 +1,5 @@
 package com.example.musicplayer.utils.tageditor;
 
-import com.example.musicplayer.utils.dictionary.ID3Dictionary;
-
-import java.nio.charset.Charset;
 import java.util.Arrays;
 
 public class ID3V4TextFrame extends ID3V4Frame<String> {

@@ -12,7 +12,7 @@ import android.view.View;
 
 import com.example.musicplayer.R;
 import com.example.musicplayer.utils.GeneralUtils;
-import com.example.musicplayer.utils.images.ImageTransformUtil;
+import com.example.musicplayer.utils.images.ImageUtil;
 
 import androidx.annotation.Nullable;
 
@@ -46,11 +46,11 @@ public class RangeSeekbar extends View {
         text.setColor(context.getResources().getColor(R.color.colorOnBackground, null));
         text.setStrokeWidth(5f);
         text.setAntiAlias(true);
-        text.setTextSize(ImageTransformUtil.convertSpToPixel(16, context));
+        text.setTextSize(ImageUtil.convertSpToPixel(16, context));
 
         clipBounds = new Rect();
-        touchMargin = ImageTransformUtil.convertDpToPixel(8f, context.getResources());
-        height = ImageTransformUtil.convertSpToPixel(10f, context);
+        touchMargin = ImageUtil.convertDpToPixel(8f, context.getResources());
+        height = ImageUtil.convertSpToPixel(10f, context);
         backgroundPath = new Path();
         innerPath = new Path();
     }

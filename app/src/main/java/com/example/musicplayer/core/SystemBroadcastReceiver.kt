@@ -9,7 +9,7 @@ import com.example.musicplayer.database.MusicplayerDatabase
 import com.example.musicplayer.database.dao.MusicplayerDataAccess
 import com.example.musicplayer.database.entity.TrackPlayed
 import com.example.musicplayer.utils.GeneralUtils
-import com.example.musicplayer.utils.enums.DashboardEnumDeserializer
+import com.example.musicplayer.utils.converter.DashboardEnumDeserializer
 import com.example.musicplayer.utils.enums.DashboardListType
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers

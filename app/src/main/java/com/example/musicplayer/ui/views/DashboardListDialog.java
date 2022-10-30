@@ -12,7 +12,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.musicplayer.R;
-import com.example.musicplayer.utils.enums.DashboardEnumDeserializer;
+import com.example.musicplayer.utils.converter.DashboardEnumDeserializer;
 import com.example.musicplayer.utils.enums.DashboardListType;
 import com.example.musicplayer.utils.enums.ListFilterType;
 import com.google.android.material.button.MaterialButton;

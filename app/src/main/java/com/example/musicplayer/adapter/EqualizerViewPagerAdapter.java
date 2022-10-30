@@ -4,7 +4,7 @@ import android.media.audiofx.EnvironmentalReverb;
 
 import com.example.musicplayer.ui.audioeffects.EffectFragment;
 import com.example.musicplayer.ui.audioeffects.EqualizerFragment;
-import com.example.musicplayer.ui.audioeffects.EqualizerProperties;
+import com.example.musicplayer.utils.enums.EqualizerProperties;
 import com.example.musicplayer.ui.audioeffects.ReverbFragment;
 
 import androidx.annotation.NonNull;

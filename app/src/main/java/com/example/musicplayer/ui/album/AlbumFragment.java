@@ -14,8 +14,8 @@ import com.example.musicplayer.database.MusicplayerApplication;
 import com.example.musicplayer.database.dao.MusicplayerDataAccess;
 import com.example.musicplayer.database.entity.Album;
 import com.example.musicplayer.database.viewmodel.MusicplayerViewModel;
-import com.example.musicplayer.core.transition.AlbumDetailTransition;
-import com.example.musicplayer.utils.NavigationControlInterface;
+import com.example.musicplayer.transition.AlbumDetailTransition;
+import com.example.musicplayer.interfaces.NavigationControlInterface;
 
 import java.util.ArrayList;
 

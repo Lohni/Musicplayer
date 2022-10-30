@@ -21,7 +21,7 @@ import com.example.musicplayer.database.entity.Track;
 import com.example.musicplayer.database.viewmodel.MusicplayerViewModel;
 import com.example.musicplayer.interfaces.PlaybackControlInterface;
 import com.example.musicplayer.interfaces.SongInterface;
-import com.example.musicplayer.utils.NavigationControlInterface;
+import com.example.musicplayer.interfaces.NavigationControlInterface;
 import com.example.musicplayer.utils.enums.DashboardListType;
 import com.example.musicplayer.utils.enums.PlaybackBehaviour;
 

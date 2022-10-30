@@ -15,9 +15,7 @@ import android.widget.TextView;
 
 import com.example.musicplayer.R;
 import com.example.musicplayer.database.entity.Track;
-import com.example.musicplayer.interfaces.SongInterface;
-import com.example.musicplayer.ui.playlistdetail.OnStartDragListener;
-import com.example.musicplayer.ui.playlistdetail.PlaylistDetail;
+import com.example.musicplayer.interfaces.OnStartDragListener;
 
 import java.io.IOException;
 import java.util.ArrayList;

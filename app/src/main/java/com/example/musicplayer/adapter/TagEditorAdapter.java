@@ -19,7 +19,7 @@ import android.widget.TextView;
 
 import com.example.musicplayer.R;
 import com.example.musicplayer.database.entity.Track;
-import com.example.musicplayer.ui.tagEditor.TagEditorInterface;
+import com.example.musicplayer.interfaces.TagEditorInterface;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -80,7 +80,7 @@ public class TagEditorAdapter extends RecyclerView.Adapter<TagEditorAdapter.View
                     }
                     if (thumbnail != null) {
                         Bitmap cover = BitmapFactory.decodeByteArray(thumbnail, 0, thumbnail.length);
-                        //ImageTransformUtil.getRoundedCornerBitmap(cover, context.getResources())
+                        //ImageUtil.getRoundedCornerBitmap(cover, context.getResources())
                         holder.cover.setClipToOutline(true);
                         holder.cover.setImageBitmap(cover);
                         Animation fadeIn = new AlphaAnimation(0, 1);

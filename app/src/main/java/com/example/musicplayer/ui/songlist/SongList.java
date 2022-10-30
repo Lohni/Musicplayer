@@ -30,14 +30,14 @@ import com.example.musicplayer.database.dao.MusicplayerDataAccess;
 import com.example.musicplayer.database.dto.TrackDTO;
 import com.example.musicplayer.database.entity.Track;
 import com.example.musicplayer.database.viewmodel.MusicplayerViewModel;
+import com.example.musicplayer.interfaces.NavigationControlInterface;
 import com.example.musicplayer.interfaces.PlaybackControlInterface;
 import com.example.musicplayer.interfaces.ServiceTriggerInterface;
 import com.example.musicplayer.interfaces.SongInterface;
 import com.example.musicplayer.ui.views.DeleteDialog;
 import com.example.musicplayer.ui.views.SideIndex;
 import com.example.musicplayer.utils.GeneralUtils;
-import com.example.musicplayer.utils.NavigationControlInterface;
-import com.example.musicplayer.utils.enums.DashboardEnumDeserializer;
+import com.example.musicplayer.utils.converter.DashboardEnumDeserializer;
 import com.example.musicplayer.utils.enums.DashboardListType;
 import com.example.musicplayer.utils.enums.ListFilterType;
 import com.example.musicplayer.utils.enums.PlaybackBehaviour;
@@ -58,7 +58,7 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-public class SongList extends Fragment implements SongListInterface {
+public class SongList extends Fragment {
     private RecyclerView listView;
     private View view;
     private TextView shuffle_size,filterTitle;
@@ -69,7 +69,6 @@ public class SongList extends Fragment implements SongListInterface {
     private NavigationControlInterface navigationControlInterface;
     private SongInterface songInterface;
     private PlaybackControlInterface playbackControlInterface;
-    private SongListInterface songListInterface;
     private ServiceTriggerInterface serviceTriggerInterface;
 
     private SongListAdapter songListAdapter;
@@ -93,7 +92,6 @@ public class SongList extends Fragment implements SongListInterface {
         try {
             navigationControlInterface = (NavigationControlInterface) context;
             songInterface = (SongInterface) context;
-            songListInterface = this;
             playbackControlInterface = (PlaybackControlInterface) context;
             serviceTriggerInterface = (ServiceTriggerInterface) context;
         } catch (ClassCastException e) {
@@ -251,7 +249,15 @@ public class SongList extends Fragment implements SongListInterface {
 
         songListAdapter = new SongListAdapter(requireContext(), songList, listFilterType);
         songListAdapter.setCurrentPlayingIndex(currentPlayingSongId);
-        songListAdapter.setOnItemClickedListener((position -> songListInterface.OnSongSelectedListener(position)));
+        songListAdapter.setOnItemClickedListener((pos) -> {
+            if (!isSonglistSet) {
+                List<Track> songListAsTracks = songList.stream().map(TrackDTO::getTrack).collect(Collectors.toList());
+                songInterface.onSongListCreatedListener(songListAsTracks, DashboardListType.TRACK);
+                isSonglistSet = true;
+            }
+
+            songInterface.onSongSelectedListener(songList.get(pos).getTrack());
+        });
         songListAdapter.setOnItemOptionClickedListener((view, position, inQueue) -> {
             PopupMenu popupMenu = new PopupMenu(requireContext(), view);
             popupMenu.getMenuInflater().inflate(R.menu.songlist_item_more, popupMenu.getMenu());
@@ -443,17 +449,6 @@ public class SongList extends Fragment implements SongListInterface {
         });
     }
 
-    @Override
-    public void OnSongSelectedListener(int index) {
-        if (!isSonglistSet) {
-            List<Track> songListAsTracks = songList.stream().map(TrackDTO::getTrack).collect(Collectors.toList());
-            songInterface.onSongListCreatedListener(songListAsTracks, DashboardListType.TRACK);
-            isSonglistSet = true;
-        }
-
-        songInterface.onSongSelectedListener(songList.get(index).getTrack());
-    }
-
     private void jumpToCurrentPlayingSong() {
         int targetIndex = -1;
         for (int i = 0; i < songList.size(); i++) {
@@ -485,6 +480,9 @@ public class SongList extends Fragment implements SongListInterface {
                 ArrayList<Track> t = bundle.getParcelableArrayList(getResources().getString(R.string.parcelable_track_list));
                 songListAdapter.setPlaybackBehaviour(PlaybackBehaviour.getStateFromInteger(bundle.getInt("BEHAVIOUR_STATE")));
                 songListAdapter.setQueueList(t);
+                if (isSonglistSet) {
+                    isSonglistSet = t.size() > 0;
+                }
             }
         }
     };

@@ -25,7 +25,7 @@ import com.example.musicplayer.database.entity.Track;
 import com.example.musicplayer.utils.GeneralUtils;
 import com.example.musicplayer.utils.enums.ListFilterType;
 import com.example.musicplayer.utils.enums.PlaybackBehaviour;
-import com.example.musicplayer.utils.images.ImageTransformUtil;
+import com.example.musicplayer.utils.images.ImageUtil;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -83,7 +83,7 @@ public class SongListAdapter extends RecyclerView.Adapter<SongListAdapter.ViewHo
                         byte[] thumbnail = mmr.getEmbeddedPicture();
                         if (thumbnail != null) {
                             Bitmap cover = BitmapFactory.decodeByteArray(thumbnail, 0, thumbnail.length);
-                            Drawable drawable = ImageTransformUtil.roundCorners(cover, context.getResources());
+                            Drawable drawable = ImageUtil.roundCorners(cover, context.getResources());
                             drawableHashMap.put(trackId, drawable);
                         }
                     }
