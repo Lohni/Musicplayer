@@ -31,7 +31,7 @@
                 android:layout_gravity="center"
                 android:layout_marginBottom="8dp"/>
 
-            <com.example.musicplayer.ui.views.ControlKnob
+            <com.lohni.musicplayer.ui.views.ControlKnob
                 android:id="@+id/effects_bass_boost"
                 android:layout_width="120dp"
                 android:layout_height="120dp"
@@ -60,7 +60,7 @@
                 android:layout_gravity="center"
                 android:layout_marginBottom="8dp"/>
 
-            <com.example.musicplayer.ui.views.ControlKnob
+            <com.lohni.musicplayer.ui.views.ControlKnob
                 android:id="@+id/effects_virtualizer"
                 android:layout_width="120dp"
                 android:layout_height="120dp"
@@ -94,7 +94,7 @@
             android:textColor="@color/colorOnBackground"
             android:layout_gravity="center"/>
 
-        <com.example.musicplayer.ui.views.ControlKnob
+        <com.lohni.musicplayer.ui.views.ControlKnob
             android:id="@+id/effects_loudnessEnhancer"
             android:layout_width="120dp"
             android:layout_height="120dp"

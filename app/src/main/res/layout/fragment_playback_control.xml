@@ -11,7 +11,7 @@
     tools:context=".ui.playbackcontrol.PlaybackControl"
     android:transitionName="@string/transition_playback_layout">
 
-    <com.example.musicplayer.ui.views.PlaybackControlSeekbar
+    <com.lohni.musicplayer.ui.views.PlaybackControlSeekbar
         android:id="@+id/new_seekbar"
         android:layout_width="match_parent"
         android:layout_height="10dp"
@@ -20,7 +20,7 @@
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"/>
 
-    <com.example.musicplayer.ui.views.AudioVisualizerView
+    <com.lohni.musicplayer.ui.views.AudioVisualizerView
         android:id="@+id/playbackcontrol_visualizer"
         android:layout_width="match_parent"
         android:layout_height="56dp"
