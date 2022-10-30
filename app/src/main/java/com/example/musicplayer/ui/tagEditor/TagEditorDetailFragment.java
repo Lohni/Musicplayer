@@ -23,7 +23,7 @@ import com.example.musicplayer.R;
 import com.example.musicplayer.database.MusicplayerApplication;
 import com.example.musicplayer.database.dao.MusicplayerDataAccess;
 import com.example.musicplayer.database.viewmodel.MusicplayerViewModel;
-import com.example.musicplayer.utils.NavigationControlInterface;
+import com.example.musicplayer.interfaces.NavigationControlInterface;
 import com.example.musicplayer.utils.Permissions;
 import com.example.musicplayer.utils.enums.ID3FrameId;
 import com.example.musicplayer.utils.tageditor.ID3Editor;

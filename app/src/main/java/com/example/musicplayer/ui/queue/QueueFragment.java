@@ -25,7 +25,7 @@ import com.example.musicplayer.helper.DragItemTouchHelper;
 import com.example.musicplayer.interfaces.PlaybackControlInterface;
 import com.example.musicplayer.interfaces.ServiceTriggerInterface;
 import com.example.musicplayer.interfaces.SongInterface;
-import com.example.musicplayer.utils.NavigationControlInterface;
+import com.example.musicplayer.interfaces.NavigationControlInterface;
 import com.example.musicplayer.utils.enums.PlaybackBehaviour;
 
 import java.util.ArrayList;

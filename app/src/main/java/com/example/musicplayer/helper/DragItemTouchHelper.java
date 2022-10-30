@@ -8,7 +8,7 @@ import android.graphics.Paint;
 import android.view.View;
 
 import com.example.musicplayer.R;
-import com.example.musicplayer.utils.images.ImageTransformUtil;
+import com.example.musicplayer.utils.images.ImageUtil;
 import com.google.android.material.snackbar.BaseTransientBottomBar;
 import com.google.android.material.snackbar.Snackbar;
 
@@ -61,8 +61,8 @@ public class DragItemTouchHelper extends ItemTouchHelper.SimpleCallback {
         this.adapter = adapter;
         paint = new Paint();
         paint.setColor(ContextCompat.getColor(context, R.color.colorSecondary));
-        icon = ImageTransformUtil.getBitmapFromVectorDrawable(context, R.drawable.ic_round_delete_24);
-        iconSize = ImageTransformUtil.convertDpToPixel(16f, context.getResources());
+        icon = ImageUtil.getBitmapFromVectorDrawable(context, R.drawable.ic_round_delete_24);
+        iconSize = ImageUtil.convertDpToPixel(16f, context.getResources());
         cls = ContextCompat.getColorStateList(context, R.color.colorBackground);
         textColor = ContextCompat.getColorStateList(context, R.color.colorOnSurface);
         actionTextColor = ContextCompat.getColorStateList(context, R.color.colorPrimary);

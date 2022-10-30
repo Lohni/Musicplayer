@@ -25,6 +25,8 @@ import com.example.musicplayer.database.MusicplayerApplication;
 import com.example.musicplayer.database.dao.AudioEffectDataAccess;
 import com.example.musicplayer.database.entity.EqualizerPreset;
 import com.example.musicplayer.database.viewmodel.AudioEffectViewModel;
+import com.example.musicplayer.interfaces.AudioEffectInterface;
+import com.example.musicplayer.utils.enums.EqualizerProperties;
 import com.google.android.material.switchmaterial.SwitchMaterial;
 import com.google.android.material.textfield.MaterialAutoCompleteTextView;
 import com.google.android.material.textfield.TextInputLayout;

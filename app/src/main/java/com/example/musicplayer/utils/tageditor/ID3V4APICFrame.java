@@ -3,11 +3,6 @@ package com.example.musicplayer.utils.tageditor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 
-import com.example.musicplayer.utils.dictionary.ID3Dictionary;
-
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
-
 public class ID3V4APICFrame extends ID3V4Frame<byte[]> {
     private int picture_type;
     private String mimeType = "", description = "";

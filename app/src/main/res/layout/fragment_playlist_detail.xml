@@ -5,7 +5,7 @@
     android:layout_height="match_parent"
     android:transitionName="playlist_detail"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    tools:context=".ui.playlistdetail.PlaylistDetail">
+    tools:context=".ui.playlist.PlaylistDetail">
 
     <FrameLayout
         android:layout_width="match_parent"

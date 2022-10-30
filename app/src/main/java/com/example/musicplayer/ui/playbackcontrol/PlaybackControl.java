@@ -24,7 +24,7 @@ import com.example.musicplayer.ui.queue.QueueFragment;
 import com.example.musicplayer.ui.views.AudioVisualizerView;
 import com.example.musicplayer.ui.views.PlaybackControlSeekbar;
 import com.example.musicplayer.utils.enums.PlaybackBehaviour;
-import com.example.musicplayer.utils.images.ImageTransformUtil;
+import com.example.musicplayer.utils.images.ImageUtil;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.widget.PopupMenu;
@@ -148,12 +148,12 @@ public class PlaybackControl extends Fragment {
                 isPopupShown = true;
                 PopupMenu popupMenu = new PopupMenu(requireContext(), queueView);
                 popupMenu.getMenuInflater().inflate(R.menu.queue_quick_delete, popupMenu.getMenu());
-                queue.setBackground(ImageTransformUtil.getDrawableFromVectorDrawable(requireContext(), R.drawable.ic_delete_sweep_black_24dp));
+                queue.setBackground(ImageUtil.getDrawableFromVectorDrawable(requireContext(), R.drawable.ic_delete_sweep_black_24dp));
 
                 popupMenu.setOnMenuItemClickListener(item -> {
                     if (item.getItemId() == R.id.action_queue_quick_delete) {
                         songInterface.onRemoveAllSongsListener();
-                        queue.setBackground(ImageTransformUtil.getDrawableFromVectorDrawable(requireContext(), R.drawable.ic_baseline_queue_music_24));
+                        queue.setBackground(ImageUtil.getDrawableFromVectorDrawable(requireContext(), R.drawable.ic_baseline_queue_music_24));
                         popupMenu.dismiss();
                         isPopupShown =false;
                     }
@@ -161,7 +161,7 @@ public class PlaybackControl extends Fragment {
                 });
 
                 popupMenu.setOnDismissListener(menu -> {
-                    queue.setBackground(ImageTransformUtil.getDrawableFromVectorDrawable(requireContext(), R.drawable.ic_baseline_queue_music_24));
+                    queue.setBackground(ImageUtil.getDrawableFromVectorDrawable(requireContext(), R.drawable.ic_baseline_queue_music_24));
                     popupMenu.dismiss();
                     isPopupShown = false;
                 });

@@ -19,17 +19,16 @@ import com.example.musicplayer.database.dto.TrackDTO;
 import com.example.musicplayer.database.viewmodel.MusicplayerViewModel;
 import com.example.musicplayer.database.viewmodel.PlaylistViewModel;
 import com.example.musicplayer.interfaces.SongInterface;
-import com.example.musicplayer.ui.playlist.PlaylistInterface;
-import com.example.musicplayer.ui.playlistdetail.PlaylistDetail;
+import com.example.musicplayer.interfaces.PlaylistInterface;
+import com.example.musicplayer.ui.playlist.PlaylistDetail;
 import com.example.musicplayer.ui.songlist.SongList;
 import com.example.musicplayer.ui.views.DashboardListDialog;
 import com.example.musicplayer.ui.views.XYGraphView;
-import com.example.musicplayer.utils.enums.DashboardEnumDeserializer;
+import com.example.musicplayer.utils.converter.DashboardEnumDeserializer;
 import com.example.musicplayer.utils.enums.ListFilterType;
 import com.example.musicplayer.utils.enums.DashboardListType;
 
 import java.util.ArrayList;
-import java.util.Collections;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -295,6 +294,4 @@ public class DashboardFragment extends Fragment implements PlaylistInterface {
                 .replace(R.id.nav_host_fragment, playlistDetailFragment, getString(R.string.fragment_playlist_detail))
                 .addToBackStack("DASH").commit();
     }
-
-
 }

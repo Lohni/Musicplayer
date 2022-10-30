@@ -6,7 +6,6 @@ import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.os.IBinder;
 
-import com.example.musicplayer.MusicService;
 import com.example.musicplayer.R;
 import com.example.musicplayer.interfaces.ServiceConnectionListener;
 

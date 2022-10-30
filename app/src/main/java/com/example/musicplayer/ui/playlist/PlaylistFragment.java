@@ -26,16 +26,15 @@ import com.example.musicplayer.database.dao.PlaylistDataAccess;
 import com.example.musicplayer.database.dto.PlaylistDTO;
 import com.example.musicplayer.database.entity.Playlist;
 import com.example.musicplayer.database.viewmodel.PlaylistViewModel;
-import com.example.musicplayer.ui.other.CustomDividerItemDecoration;
-import com.example.musicplayer.ui.playlistdetail.PlaylistDetail;
-import com.example.musicplayer.utils.NavigationControlInterface;
+import com.example.musicplayer.interfaces.PlaylistInterface;
+import com.example.musicplayer.ui.views.CustomDividerItemDecoration;
+import com.example.musicplayer.interfaces.NavigationControlInterface;
 import com.example.musicplayer.utils.Permissions;
 import com.google.android.material.snackbar.BaseTransientBottomBar;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.transition.MaterialElevationScale;
 
 import java.util.ArrayList;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;

@@ -18,8 +18,9 @@ import android.view.ViewGroup;
 
 import com.example.musicplayer.R;
 import com.example.musicplayer.adapter.EqualizerViewPagerAdapter;
-import com.example.musicplayer.utils.NavigationControlInterface;
+import com.example.musicplayer.interfaces.NavigationControlInterface;
 import com.example.musicplayer.utils.Permissions;
+import com.example.musicplayer.utils.enums.EqualizerProperties;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
 

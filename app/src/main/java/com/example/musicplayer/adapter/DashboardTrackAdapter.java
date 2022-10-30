@@ -24,7 +24,7 @@ import com.example.musicplayer.interfaces.SongInterface;
 import com.example.musicplayer.utils.GeneralUtils;
 import com.example.musicplayer.utils.enums.DashboardListType;
 import com.example.musicplayer.utils.enums.ListFilterType;
-import com.example.musicplayer.utils.images.ImageTransformUtil;
+import com.example.musicplayer.utils.images.ImageUtil;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
@@ -100,7 +100,7 @@ public class DashboardTrackAdapter extends RecyclerView.Adapter<DashboardTrackAd
                         if (thumbnail != null) {
                             Bitmap cover = BitmapFactory.decodeByteArray(thumbnail, 0, thumbnail.length);
                             holder.imageView.setClipToOutline(true);
-                            holder.imageView.setBackground(ImageTransformUtil.roundCorners(cover, context.getResources()));
+                            holder.imageView.setBackground(ImageUtil.roundCorners(cover, context.getResources()));
                             holder.imageView.setForeground(null);
                             Animation fadeIn = new AlphaAnimation(0, 1);
                             fadeIn.setInterpolator(new DecelerateInterpolator());

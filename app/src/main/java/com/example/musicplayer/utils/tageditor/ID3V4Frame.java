@@ -1,6 +1,5 @@
 package com.example.musicplayer.utils.tageditor;
 
-import com.example.musicplayer.utils.dictionary.ID3Dictionary;
 import com.example.musicplayer.utils.enums.ID3FrameId;
 
 import java.nio.charset.Charset;

@@ -1,8 +1,6 @@
 package com.example.musicplayer.ui.views;
 
 import android.content.Context;
-import android.content.res.Resources;
-import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
@@ -13,7 +11,7 @@ import android.widget.TextView;
 import com.example.musicplayer.R;
 import com.example.musicplayer.database.dto.TrackDTO;
 import com.example.musicplayer.database.entity.Track;
-import com.example.musicplayer.utils.images.ImageTransformUtil;
+import com.example.musicplayer.utils.images.ImageUtil;
 import com.google.android.material.textview.MaterialTextView;
 
 import java.util.ArrayList;
@@ -69,9 +67,9 @@ public class SideIndex {
         indexLayout.setOrientation(LinearLayout.VERTICAL);
 
         int div = (int) (27);
-        float width = ImageTransformUtil.convertPixelToSp(sideIndex.getWidth() - 9, context.getResources());
+        float width = ImageUtil.convertPixelToSp(sideIndex.getWidth() - 9, context.getResources());
 
-        float textsize = ImageTransformUtil.convertPixelToSp(sideIndex.getHeight() / (div), context.getResources());
+        float textsize = ImageUtil.convertPixelToSp(sideIndex.getHeight() / (div), context.getResources());
         textsize = Math.min(textsize, width);
 
         MaterialTextView textView;

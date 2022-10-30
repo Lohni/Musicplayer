@@ -7,7 +7,7 @@ import android.widget.TextView;
 
 import com.example.musicplayer.R;
 import com.example.musicplayer.database.dto.PlaylistDTO;
-import com.example.musicplayer.ui.playlist.PlaylistInterface;
+import com.example.musicplayer.interfaces.PlaylistInterface;
 
 import java.util.ArrayList;
 

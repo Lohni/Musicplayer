@@ -11,7 +11,7 @@ import android.widget.TextView;
 import com.example.musicplayer.R;
 import com.example.musicplayer.database.entity.Playlist;
 import com.example.musicplayer.database.dto.PlaylistDTO;
-import com.example.musicplayer.ui.playlist.PlaylistInterface;
+import com.example.musicplayer.interfaces.PlaylistInterface;
 import com.example.musicplayer.utils.enums.ListFilterType;
 
 import java.util.List;
