@@ -86,7 +86,7 @@
         app:layout_constraintLeft_toLeftOf="@id/reverb_level"
         app:layout_constraintRight_toRightOf="@id/reverb_level" />
 
-    <com.example.musicplayer.ui.views.ControlKnob
+    <com.lohni.musicplayer.ui.views.ControlKnob
         android:id="@+id/reverb_level"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -98,7 +98,7 @@
         app:layout_constraintTop_toBottomOf="@id/reverb_level_text"
         app:layout_constraintBottom_toBottomOf="@id/reverb_background"/>
 
-    <com.example.musicplayer.ui.views.ControlKnob
+    <com.lohni.musicplayer.ui.views.ControlKnob
         android:id="@+id/reverb_delay"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -110,7 +110,7 @@
         app:layout_constraintTop_toBottomOf="@id/reverb_delay_text"
         app:layout_constraintBottom_toBottomOf="@id/reverb_background"/>
 
-    <com.example.musicplayer.ui.views.ControlKnob
+    <com.lohni.musicplayer.ui.views.ControlKnob
         android:id="@+id/reverb_hfLevel"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -242,7 +242,7 @@
         app:layout_constraintLeft_toLeftOf="@id/reverb_delay_hfratio"
         app:layout_constraintRight_toRightOf="@id/reverb_delay_hfratio"/>
 
-    <com.example.musicplayer.ui.views.ControlKnob
+    <com.lohni.musicplayer.ui.views.ControlKnob
         android:id="@+id/reverb_reflection_level"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -254,7 +254,7 @@
         app:layout_constraintRight_toLeftOf="@id/reverb_reflection_delay"
         app:layout_constraintTop_toBottomOf="@id/reverb_reflection_level_text"/>
 
-    <com.example.musicplayer.ui.views.ControlKnob
+    <com.lohni.musicplayer.ui.views.ControlKnob
         android:id="@+id/reverb_reflection_delay"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -266,7 +266,7 @@
         app:layout_constraintTop_toBottomOf="@id/reverb_reflection_delay_text"
         app:layout_constraintBottom_toTopOf="@id/reverb_reflection_diffusion_text"/>
 
-    <com.example.musicplayer.ui.views.ControlKnob
+    <com.lohni.musicplayer.ui.views.ControlKnob
         android:id="@+id/reverb_delay_time"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -279,7 +279,7 @@
         app:layout_constraintTop_toBottomOf="@id/reverb_delay_time_text"/>
 
 
-    <com.example.musicplayer.ui.views.ControlKnob
+    <com.lohni.musicplayer.ui.views.ControlKnob
         android:id="@+id/reverb_reflection_density"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -291,7 +291,7 @@
         app:layout_constraintRight_toLeftOf="@id/reverb_reflection_diffusion"
         app:layout_constraintTop_toBottomOf="@id/reverb_reflection_density_text"/>
 
-    <com.example.musicplayer.ui.views.ControlKnob
+    <com.lohni.musicplayer.ui.views.ControlKnob
         android:id="@+id/reverb_reflection_diffusion"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -303,7 +303,7 @@
         app:layout_constraintRight_toLeftOf="@id/reverb_guideline3"
         app:layout_constraintTop_toBottomOf="@id/reverb_reflection_diffusion_text"/>
 
-    <com.example.musicplayer.ui.views.ControlKnob
+    <com.lohni.musicplayer.ui.views.ControlKnob
         android:id="@+id/reverb_delay_hfratio"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -339,7 +339,7 @@
         app:layout_constraintRight_toRightOf="@id/reverb_master"
         app:layout_constraintTop_toTopOf="@id/reverb_master_background" />
 
-    <com.example.musicplayer.ui.views.ControlKnob
+    <com.lohni.musicplayer.ui.views.ControlKnob
         android:id="@+id/reverb_master"
         android:layout_width="0dp"
         android:layout_height="0dp"

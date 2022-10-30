@@ -42,7 +42,7 @@
         app:layout_constraintBottom_toTopOf="@+id/control_layout"
         android:background="@color/colorSurface">
 
-        <com.example.musicplayer.ui.views.AudioVisualizerView
+        <com.lohni.musicplayer.ui.views.AudioVisualizerView
             android:id="@+id/audioView"
             android:layout_width="match_parent"
             android:layout_height="100dp"

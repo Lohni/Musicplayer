@@ -143,7 +143,7 @@
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
-        <com.example.musicplayer.ui.views.XYGraphView
+        <com.lohni.musicplayer.ui.views.XYGraphView
             android:id="@+id/dashboard_statistics"
             android:layout_width="match_parent"
             android:layout_height="0dp"
