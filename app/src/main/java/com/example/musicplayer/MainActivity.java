@@ -583,15 +583,13 @@ public class MainActivity extends AppCompatActivity implements PlaybackControlIn
         musicService.sendCurrentStateToPlaybackControl();
 
         runnable = () -> {
-            if (musicService.isPlaying()) {
-                PlaybackControl pc = (PlaybackControl) getSupportFragmentManager().findFragmentByTag(getString(R.string.fragment_playbackControl));
-                if (pc != null) {
-                    pc.updateSeekbar(musicService.getCurrentPosition());
-                } else {
-                    ExpandedPlaybackControl epc = (ExpandedPlaybackControl) getSupportFragmentManager().findFragmentByTag(getString(R.string.fragment_expandedPlaybackControl));
-                    if (epc != null) {
-                        epc.updateSeekbar(musicService.getCurrentPosition());
-                    }
+            PlaybackControl pc = (PlaybackControl) getSupportFragmentManager().findFragmentByTag(getString(R.string.fragment_playbackControl));
+            if (pc != null) {
+                pc.updateSeekbar(musicService.getCurrentPosition());
+            } else {
+                ExpandedPlaybackControl epc = (ExpandedPlaybackControl) getSupportFragmentManager().findFragmentByTag(getString(R.string.fragment_expandedPlaybackControl));
+                if (epc != null) {
+                    epc.updateSeekbar(musicService.getCurrentPosition());
                 }
             }
 
