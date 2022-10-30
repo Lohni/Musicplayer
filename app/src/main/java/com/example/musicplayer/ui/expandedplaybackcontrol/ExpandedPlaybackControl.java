@@ -61,7 +61,6 @@ public class ExpandedPlaybackControl extends Fragment {
     private ImageButton expanded_more;
     private ImageButton expanded_add;
     private AudioVisualizerView audioVisualizerView;
-    private ImageView cover;
     private SeekBar expanded_seekbar;
     private PlaybackBehaviour.PlaybackBehaviourState playbackBehaviour;
     private MotionLayout parentContainer;

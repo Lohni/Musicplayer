@@ -268,23 +268,18 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
                         pause();
                     }
                 }
-
-                int state = (isPlaying()) ? PlaybackStateCompat.STATE_PLAYING : PlaybackStateCompat.STATE_PAUSED;
-                float speed = (isPlaying()) ? 1f : 0f;
-                mediaSession.setPlaybackState(new PlaybackStateCompat.Builder()
-                        .setState(state, player.getCurrentPosition(), speed)
-                        .build());
-
-                createNotification();
             }
         }
     };
 
     private void updateMediaSessionPlaybackState() {
         int state = (isPlaying()) ? PlaybackStateCompat.STATE_PLAYING : PlaybackStateCompat.STATE_PAUSED;
+        float speed = (isPlaying()) ? 1f : 0f;
         mediaSession.setPlaybackState(new PlaybackStateCompat.Builder()
-                .setState(state, player.getCurrentPosition(), 1f)
+                .setState(state, player.getCurrentPosition(), speed)
                 .build());
+
+        createNotification();
     }
 
     public void addToSonglist(ArrayList<Track> toAdd, boolean next) {
@@ -447,8 +442,6 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
                 Log.e("MUSIC-SERVICE", "Failed to set MediaPlayer-DataSource:", e);
             }
             player.prepareAsync();
-            //currentPlaying = songlist.get(currSongIndex);
-            //sendCurrentStateToPlaybackControl();
         }
     }
 
@@ -503,9 +496,7 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
     }
 
     public void setReverbEnabled(boolean status) {
-        if (environmentalReverb.getEnabled() != status) {
-            environmentalReverb.setEnabled(status);
-        }
+        environmentalReverb.setEnabled(status);
     }
 
     public short[] getEqualizerBandLevels() {
