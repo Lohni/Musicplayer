@@ -1,7 +1,7 @@
 package com.lohni.musicplayer.transition;
 
 import android.content.Context;
-import android.transition.Fade;
+import androidx.transition.Fade;
 
 import com.lohni.musicplayer.R;
 import com.lohni.musicplayer.ui.playbackcontrol.ExpandedPlaybackControl;

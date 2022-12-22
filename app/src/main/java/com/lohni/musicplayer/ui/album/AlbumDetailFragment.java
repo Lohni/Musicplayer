@@ -1,49 +1,47 @@
 package com.lohni.musicplayer.ui.album;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.bumptech.glide.Glide;
-import com.bumptech.glide.load.DecodeFormat;
-import com.bumptech.glide.load.engine.DiskCacheStrategy;
-import com.bumptech.glide.request.RequestOptions;
 import com.lohni.musicplayer.R;
 import com.lohni.musicplayer.adapter.AlbumDetailAdapter;
 import com.lohni.musicplayer.database.MusicplayerApplication;
 import com.lohni.musicplayer.database.dao.MusicplayerDataAccess;
 import com.lohni.musicplayer.database.entity.Track;
 import com.lohni.musicplayer.database.viewmodel.MusicplayerViewModel;
+import com.lohni.musicplayer.interfaces.NavigationControlInterface;
 import com.lohni.musicplayer.interfaces.PlaybackControlInterface;
 import com.lohni.musicplayer.interfaces.SongInterface;
-import com.lohni.musicplayer.interfaces.NavigationControlInterface;
 import com.lohni.musicplayer.utils.enums.DashboardListType;
 import com.lohni.musicplayer.utils.enums.PlaybackBehaviour;
+import com.lohni.musicplayer.utils.images.ImageUtil;
 
 import java.util.ArrayList;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
+import androidx.core.content.res.ResourcesCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 public class AlbumDetailFragment extends Fragment implements AlbumDetailAdapter.AlbumDetailAdapterListener {
-
-    private TextView albumName, albumSize, albumArtist;
-    private ImageView albumCover;
-    private RecyclerView albumDetailList;
-    private ImageButton albumDetailPlay, albumDetailShuffle;
+    private Drawable albumCoverDrawable;
 
     private MusicplayerViewModel musicplayerViewModel;
-    private ArrayList<Track> albumSongs = new ArrayList<>();
-    private LinearLayoutManager linearLayoutManager;
+    private final ArrayList<Track> albumSongs = new ArrayList<>();
     private Integer albumId;
 
     private SongInterface songInterface;
@@ -59,7 +57,6 @@ public class AlbumDetailFragment extends Fragment implements AlbumDetailAdapter.
     }
 
     public AlbumDetailFragment() {
-        // Required empty public constructor
     }
 
     @Override
@@ -72,6 +69,12 @@ public class AlbumDetailFragment extends Fragment implements AlbumDetailAdapter.
         navigationControlInterface.setHomeAsUpIndicator(R.drawable.ic_baseline_arrow_back_24);
 
         albumId = getArguments().getInt("ALBUM_ID");
+        if (getArguments().containsKey("COVER")) {
+            albumCoverDrawable = ImageUtil.roundCorners((Bitmap) getArguments().get("COVER"), requireContext().getResources());
+        } else {
+            albumCoverDrawable = ResourcesCompat.getDrawable(requireContext().getResources(), R.drawable.ic_album_black_24dp, null);
+            albumCoverDrawable.setTintList(ContextCompat.getColorStateList(requireContext(), R.color.colorOnSurfaceVariant));
+        }
 
         MusicplayerDataAccess mda = ((MusicplayerApplication) requireActivity().getApplication()).getDatabase().musicplayerDao();
         musicplayerViewModel = new ViewModelProvider(this, new MusicplayerViewModel.MusicplayerViewModelFactory(mda)).get(MusicplayerViewModel.class);
@@ -80,39 +83,37 @@ public class AlbumDetailFragment extends Fragment implements AlbumDetailAdapter.
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_album_detail, container, false);
 
-        albumName = view.findViewById(R.id.album_detail_name);
-        albumSize = view.findViewById(R.id.album_detail_size);
-        albumCover = view.findViewById(R.id.album_detail_cover);
-        albumArtist = view.findViewById(R.id.album_detail_artist);
-        albumDetailList = view.findViewById(R.id.album_detail_list);
-        albumDetailPlay = view.findViewById(R.id.album_detail_play);
-        albumDetailShuffle = view.findViewById(R.id.album_detail_shuffle);
+        TextView albumName = view.findViewById(R.id.album_detail_name);
+        TextView albumSize = view.findViewById(R.id.album_detail_size);
+        TextView albumArtist = view.findViewById(R.id.album_detail_artist);
+        ImageView albumCover = view.findViewById(R.id.album_detail_cover);
+        RecyclerView albumDetailList = view.findViewById(R.id.album_detail_list);
+        LinearLayout albumDetailPlay = view.findViewById(R.id.album_detail_play);
+        LinearLayout albumDetailShuffle = view.findViewById(R.id.album_detail_shuffle);
 
-        albumDetailList.setLayoutManager(linearLayoutManager = new LinearLayoutManager(requireContext()));
+        albumDetailList.setLayoutManager(new LinearLayoutManager(requireContext()));
         albumDetailList.setHasFixedSize(true);
+        albumDetailList.setAdapter(new AlbumDetailAdapter(requireContext(), this.albumSongs, this));
+
 
         musicplayerViewModel.getAlbumByAlbumId(albumId).observe(getViewLifecycleOwner(), album -> {
-
+            musicplayerViewModel.getAlbumByAlbumId(albumId).removeObservers(getViewLifecycleOwner());
             albumName.setText(album.getAName());
-            albumSize.setText(album.getANumSongs() + "songs");
+            albumSize.setText(album.getANumSongs() + " songs");
             albumArtist.setText(album.getAArtistName());
 
-            Glide.with(this)
-                    .load(album.getAArtUri())
-                    .diskCacheStrategy(DiskCacheStrategy.ALL)
-                    .apply(new RequestOptions().error(R.drawable.ic_album_black_24dp).format(DecodeFormat.PREFER_RGB_565))
-                    .override(albumCover.getWidth(), albumCover.getHeight())
-                    .into(albumCover);
+            Drawable customCoverBackground = ResourcesCompat.getDrawable(requireContext().getResources(), R.drawable.background_button_secondary, null);
+            albumCover.setBackground(customCoverBackground);
+            albumCover.setForeground(albumCoverDrawable);
 
             musicplayerViewModel.getTracksByAlbumId(albumId).observe(getViewLifecycleOwner(), tracks -> {
+                musicplayerViewModel.getTracksByAlbumId(albumId).removeObservers(getViewLifecycleOwner());
                 this.albumSongs.clear();
                 this.albumSongs.addAll(tracks);
-                albumDetailList.setAdapter(new AlbumDetailAdapter(requireContext(), this.albumSongs, albumCover.getDrawingCache(), this));
-
-                startPostponedEnterTransition();
+                albumDetailList.getAdapter().notifyItemRangeInserted(0, tracks.size());
+                ((AlbumDetailAdapter) albumDetailList.getAdapter()).getAllBackgroundImages(tracks, albumDetailList);
             });
         });
 
@@ -132,6 +133,7 @@ public class AlbumDetailFragment extends Fragment implements AlbumDetailAdapter.
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        startPostponedEnterTransition();
     }
 
     @Override

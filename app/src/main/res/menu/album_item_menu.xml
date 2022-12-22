@@ -9,7 +9,7 @@
             android:id="@+id/menu_album_shuffle"
             android:title="Shuffle"/>
         <item
-            android:id="@+id/menu_albuM_queue"
+            android:id="@+id/menu_album_queue"
             android:title="Add to queue"/>
     </group>
 </menu>

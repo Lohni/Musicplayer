@@ -1,13 +1,13 @@
 package com.lohni.musicplayer.transition;
 
-import android.transition.ChangeBounds;
-import android.transition.ChangeClipBounds;
-import android.transition.ChangeImageTransform;
-import android.transition.ChangeTransform;
-import android.transition.TransitionSet;
+import androidx.transition.ChangeBounds;
+import androidx.transition.ChangeClipBounds;
+import androidx.transition.ChangeImageTransform;
+import androidx.transition.ChangeTransform;
+import androidx.transition.TransitionSet;
 
 public class AlbumDetailTransition extends TransitionSet {
-    public static final int DURATION = 500;
+    public static final int DURATION = 300;
 
     public AlbumDetailTransition(){
         setOrdering(ORDERING_TOGETHER);

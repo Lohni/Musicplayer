@@ -1,143 +1,110 @@
 package com.lohni.musicplayer.adapter;
 
+import android.content.ContentUris;
 import android.content.Context;
-import android.graphics.drawable.AnimatedVectorDrawable;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
-import android.view.Gravity;
+import android.media.MediaMetadataRetriever;
+import android.net.Uri;
+import android.provider.MediaStore;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.animation.Animation;
-import android.view.animation.AnimationUtils;
 import android.widget.ImageButton;
-import android.widget.ImageView;
-import android.widget.PopupWindow;
-import android.widget.TextView;
-
-import com.bumptech.glide.Glide;
-import com.bumptech.glide.load.DecodeFormat;
-import com.bumptech.glide.load.engine.DiskCacheStrategy;
-import com.bumptech.glide.request.RequestOptions;
-import com.lohni.musicplayer.R;
-import com.lohni.musicplayer.database.entity.Album;
-import com.google.android.material.textview.MaterialTextView;
-
-import java.util.ArrayList;
+import android.widget.LinearLayout;
 
 import androidx.annotation.NonNull;
-import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.content.ContextCompat;
 import androidx.core.content.res.ResourcesCompat;
-import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.core.graphics.drawable.RoundedBitmapDrawableFactory;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.google.android.material.textview.MaterialTextView;
+import com.lohni.musicplayer.R;
+import com.lohni.musicplayer.database.dto.AlbumTrackDTO;
+import com.lohni.musicplayer.database.entity.Album;
+import com.lohni.musicplayer.database.entity.Track;
+import com.lohni.musicplayer.utils.images.ImageUtil;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Optional;
 
 public class AlbumAdapter extends RecyclerView.Adapter<AlbumAdapter.ViewHolder> {
     private final Context context;
-    private final ArrayList<Album> albumList;
-    private final Drawable customCoverImage;
-    AlbumAdapterCallback albumAdapterCallback;
-    private MediaOptionsAdapter.MediaOptionsAdapterListener mediaOptionsAdapterListener;
-    private final LayoutInflater layoutInflater;
-    private final PopupWindow popupWindow;
-    private final RequestOptions requestOptions;
+    private final ArrayList<AlbumTrackDTO> albumList;
+    private final Drawable customCoverImage, customCoverBackground;
+    private final HashMap<Integer, Drawable> drawableHashMap = new HashMap<>();
 
-    private int sharedElementsPosition = 0;
+    private OnItemClickedListener onItemClickedListener;
+    private OnItemOptionClickedListener onItemOptionClickedListener;
 
-    public interface AlbumAdapterCallback {
-        void onLayoutClickListener(ViewHolder viewHolder, Album album, int position);
-
-        void onSharedElementsViewCreated();
+    public interface OnItemClickedListener {
+        void onItemClicked(ViewHolder viewHolder, int position);
     }
 
-    public AlbumAdapter(Context c, ArrayList<Album> albumList, AlbumAdapterCallback albumAdapterCallback, MediaOptionsAdapter.MediaOptionsAdapterListener mediaOptionsAdapterListener, int sharedElementsPosition) {
+    public interface OnItemOptionClickedListener {
+        void onItemOptionClicked(View view, int position);
+    }
+
+    public AlbumAdapter(Context c, ArrayList<AlbumTrackDTO> albumList) {
         this.context = c;
         this.albumList = albumList;
-        this.albumAdapterCallback = albumAdapterCallback;
-        customCoverImage = ResourcesCompat.getDrawable(c.getResources(), R.drawable.ic_album_black_24dp, null);
-        popupWindow = new PopupWindow();
-        this.sharedElementsPosition = sharedElementsPosition;
-        layoutInflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        requestOptions = new RequestOptions().error(R.drawable.ic_album_black_24dp).format(DecodeFormat.PREFER_RGB_565);
-        this.mediaOptionsAdapterListener = mediaOptionsAdapterListener;
+        this.customCoverImage = ResourcesCompat.getDrawable(c.getResources(), R.drawable.ic_album_black_24dp, null);
+        this.customCoverBackground = ResourcesCompat.getDrawable(context.getResources(), R.drawable.background_button_secondary, null);
     }
 
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.albumitem, parent, false);
-        ViewHolder holder = new AlbumAdapter.ViewHolder(v);
-        holder.albumCover.setImageDrawable(customCoverImage);
-
+        View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.album_item, parent, false);
+        ViewHolder holder = new ViewHolder(v);
+        holder.albumCover.setBackground(customCoverBackground);
+        holder.albumCover.setBackgroundTintList(ContextCompat.getColorStateList(context, R.color.colorSurfaceLevel4));
         return holder;
     }
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        Album albumResolver = albumList.get(position);
-        holder.albumName.setText(albumResolver.getAName());
-        holder.albumSize.setText(albumResolver.getANumSongs() + " songs");
-
-        Glide.with(context)
-                .load(albumResolver.getAArtUri())
-                .diskCacheStrategy(DiskCacheStrategy.ALL)
-                .apply(requestOptions)
-                .override(holder.albumCover.getWidth(), holder.albumCover.getHeight())
-                .into(holder.albumCover);
+        Album album = albumList.get(position).album;
+        holder.albumName.setText(album.getAName());
+        holder.albumArtist.setText(album.getAArtistName());
+        holder.albumSize.setText(album.getANumSongs() + " songs");
 
         holder.albumOptions.setOnClickListener(view -> {
-            if (!holder.isTransitionInEndState()) {
-                holder.albumOptions.setImageDrawable(ContextCompat.getDrawable(context, R.drawable.anim_more_vert_to_up));
-                AnimatedVectorDrawable animatedVectorDrawable = (AnimatedVectorDrawable) holder.albumOptions.getDrawable();
-                animatedVectorDrawable.start();
-
-                View linearLayout = layoutInflater.inflate(R.layout.popup_layout, null);
-                RecyclerView menu = linearLayout.findViewById(R.id.album_menu);
-                menu.setLayoutManager(new LinearLayoutManager(context));
-                menu.setHasFixedSize(true);
-                menu.setAdapter(new MediaOptionsAdapter(context, mediaOptionsAdapterListener, position));
-
-                linearLayout.setAnimation(AnimationUtils.loadAnimation(context, R.anim.popupwindow_show));
-                popupWindow.setContentView(linearLayout);
-                popupWindow.setOutsideTouchable(true);
-                popupWindow.setFocusable(true);
-                popupWindow.setTouchInterceptor(new View.OnTouchListener() {
-                    @Override
-                    public boolean onTouch(View view, MotionEvent motionEvent) {
-                        if (motionEvent.getX() < 0 || motionEvent.getX() > popupWindow.getWidth()) {
-                            closePopupWindow(holder);
-                            return true;
-                        }
-                        if (motionEvent.getY() < 0 || motionEvent.getY() > popupWindow.getHeight()) {
-                            closePopupWindow(holder);
-                            return true;
-                        }
-                        return false;
-                    }
-                });
-                popupWindow.showAtLocation(holder.albumCover, Gravity.LEFT | Gravity.TOP, 0, 0);
-                popupWindow.update(holder.albumCover, 0, holder.albumCover.getHeight(), holder.albumCover.getWidth(), holder.albumCover.getHeight());
-
+            if (onItemOptionClickedListener != null) {
+                onItemOptionClickedListener.onItemOptionClicked(view, position);
             }
-            holder.setTransitionInEndState(!holder.isTransitionInEndState());
         });
 
         holder.constraintLayout.setOnClickListener((view -> {
-            holder.albumCover.setTransitionName(context.getResources().getString(R.string.transition_album_cover));
-            holder.albumName.setTransitionName(context.getResources().getString(R.string.transition_album_name));
-            holder.albumSize.setTransitionName(context.getResources().getString(R.string.transition_album_size));
-            albumAdapterCallback.onLayoutClickListener(holder, albumList.get(position), position);
+            if (onItemClickedListener != null) {
+                holder.albumCover.setTransitionName(context.getResources().getString(R.string.transition_album_cover));
+                holder.albumName.setTransitionName(context.getResources().getString(R.string.transition_album_name));
+                holder.albumSize.setTransitionName(context.getResources().getString(R.string.transition_album_size));
+                holder.albumArtist.setTransitionName(context.getResources().getString(R.string.transition_album_artist));
+                holder.constraintLayout.setTransitionName(context.getResources().getString(R.string.transition_album_layout));
+                onItemClickedListener.onItemClicked(holder, position);
+            }
         }));
     }
 
     @Override
-    public void onViewAttachedToWindow(@NonNull ViewHolder holder) {
-        super.onViewAttachedToWindow(holder);
-        if (holder.getBindingAdapterPosition() == sharedElementsPosition) {
-            holder.albumCover.setTransitionName(context.getResources().getString(R.string.transition_album_cover));
-            holder.albumName.setTransitionName(context.getResources().getString(R.string.transition_album_name));
-            holder.albumSize.setTransitionName(context.getResources().getString(R.string.transition_album_size));
-            albumAdapterCallback.onSharedElementsViewCreated();
+    public void onBindViewHolder(@NonNull ViewHolder holder, int position, @NonNull List<Object> payloads) {
+        Album album = albumList.get(position).album;
+        if (drawableHashMap.containsKey(album.getAId())) {
+            holder.albumCover.setForeground(drawableHashMap.get(album.getAId()));
+            holder.albumCover.setForegroundTintList(null);
+        } else {
+            holder.albumCover.setForeground(customCoverImage);
+            holder.albumCover.setForegroundTintList(ContextCompat.getColorStateList(context, R.color.colorOnSurfaceVariant));
+        }
+
+        if (payloads.isEmpty() || !payloads.get(0).equals("RELOAD_IMAGES")) {
+            super.onBindViewHolder(holder, position, payloads);
         }
     }
 
@@ -156,58 +123,74 @@ public class AlbumAdapter extends RecyclerView.Adapter<AlbumAdapter.ViewHolder> 
         return position;
     }
 
-    public Album getItem(int position) {
-        return albumList.get(position);
+    public void setOnItemClickedListener(OnItemClickedListener onItemClickedListener) {
+        this.onItemClickedListener = onItemClickedListener;
     }
 
-    public void closePopupWindow(ViewHolder holder) {
-        Animation animation = AnimationUtils.loadAnimation(context, R.anim.popupwindow_dismiss);
-        animation.setAnimationListener(new Animation.AnimationListener() {
-            @Override
-            public void onAnimationStart(Animation animation) {
+    public void setOnItemOptionClickedListener(OnItemOptionClickedListener onItemOptionClickedListener) {
+        this.onItemOptionClickedListener = onItemOptionClickedListener;
+    }
 
+    public void getAllBackgroundImages(List<AlbumTrackDTO> newList, RecyclerView recyclerView) {
+        new Thread(() -> {
+            MediaMetadataRetriever mmr = new MediaMetadataRetriever();
+            int count = 0;
+            for (AlbumTrackDTO albumTrackDTO : newList) {
+                List<Bitmap> coverList = new ArrayList<>();
+                for (Track track : albumTrackDTO.trackList) {
+                    Integer trackId = track.getTId();
+                    Uri trackUri = ContentUris.withAppendedId(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, trackId);
+                    try {
+                        mmr.setDataSource(context, trackUri);
+                        byte[] thumbnail = mmr.getEmbeddedPicture();
+                        if (thumbnail != null) {
+                            Bitmap cover = BitmapFactory.decodeByteArray(thumbnail, 0, thumbnail.length);
+                            if (coverList.stream().noneMatch(bmp -> ImageUtil.calSimilarity(bmp, cover) > 0.90)) {
+                                coverList.add(cover);
+                            }
+                        }
+                    } catch (IllegalArgumentException ignored) {
+                    }
+
+                    if (coverList.size() >= 4) {
+                        break;
+                    }
+                }
+                ImageUtil.createBitmapCollection(coverList, context)
+                        .ifPresent(coll -> drawableHashMap.put(albumTrackDTO.album.getAId(), coll));
+
+                int finalCount = count;
+                recyclerView.post(() -> notifyItemChanged(finalCount, "RELOAD_IMAGES"));
+                count++;
             }
+        }).start();
+    }
 
-            @Override
-            public void onAnimationEnd(Animation animation) {
-                holder.setTransitionInEndState(!holder.isTransitionInEndState());
-                popupWindow.dismiss();
-            }
-
-            @Override
-            public void onAnimationRepeat(Animation animation) {
-
-            }
-        });
-        popupWindow.getContentView().startAnimation(animation);
-        holder.albumOptions.setImageDrawable(ContextCompat.getDrawable(context, R.drawable.anim_up_to_more_vert));
-        AnimatedVectorDrawable animatedVectorDrawable = (AnimatedVectorDrawable) holder.albumOptions.getDrawable();
-        animatedVectorDrawable.start();
+    public Optional<Bitmap> getBitmapForAlbum(Integer aId){
+        if (drawableHashMap.containsKey(aId)) {
+            Drawable d = drawableHashMap.get(aId);
+            Bitmap cover = Bitmap.createBitmap(d.getBounds().width(), d.getBounds().height(), Bitmap.Config.ARGB_8888);
+            Canvas canvas = new Canvas(cover);
+            d.draw(canvas);
+            return Optional.of(cover);
+        }
+        return Optional.empty();
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {
-        public TextView albumSize;
-        public MaterialTextView albumName;
+        public MaterialTextView albumName, albumSize, albumArtist;
         private ImageButton albumOptions;
-        public ImageView albumCover;
-        private boolean transitionInEndState = false;
-        private ConstraintLayout constraintLayout;
+        public View albumCover;
+        public LinearLayout constraintLayout;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
-            albumName = itemView.findViewById(R.id.albumItem_name);
-            albumSize = itemView.findViewById(R.id.albumItem_size);
-            albumCover = itemView.findViewById(R.id.albumItem_cover);
-            albumOptions = itemView.findViewById(R.id.albumItem_options);
+            albumName = itemView.findViewById(R.id.album_item_title);
+            albumSize = itemView.findViewById(R.id.album_item_size);
+            albumArtist = itemView.findViewById(R.id.album_item_artist);
+            albumCover = itemView.findViewById(R.id.album_item_cover);
+            albumOptions = itemView.findViewById(R.id.album_item_more);
             constraintLayout = itemView.findViewById(R.id.album_motionlayout);
-        }
-
-        public boolean isTransitionInEndState() {
-            return transitionInEndState;
-        }
-
-        public void setTransitionInEndState(boolean transitionInEndState) {
-            this.transitionInEndState = transitionInEndState;
         }
     }
 }
