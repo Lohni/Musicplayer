@@ -58,6 +58,7 @@
     <string name="transition_album_name">TRANSITION_ALBUM_NAME</string>
     <string name="transition_album_size">TRANSITION_ALBUM_SIZE</string>
     <string name="transition_album_layout">TRANSITION_ALBUM_LAYOUT</string>
+    <string name="transition_album_artist">TRANSITION_ALBUM_ARTIST</string>
 
     <string name="transition_playback_layout">TRANSITION_PLAYBACK_LAYOUT</string>
 

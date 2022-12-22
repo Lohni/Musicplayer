@@ -48,6 +48,7 @@ import com.lohni.musicplayer.utils.GeneralUtils;
 import com.lohni.musicplayer.interfaces.NavigationControlInterface;
 import com.lohni.musicplayer.utils.Permissions;
 import com.lohni.musicplayer.utils.enums.DashboardListType;
+import com.lohni.musicplayer.utils.enums.ID3FrameId;
 import com.lohni.musicplayer.utils.enums.PlaybackBehaviour;
 import com.google.android.material.appbar.AppBarLayout;
 import com.google.android.material.navigation.NavigationView;
@@ -552,7 +553,7 @@ public class MainActivity extends AppCompatActivity implements PlaybackControlIn
 
     @Override
     public void onSongListCreatedListener(@NonNull List<? extends Track> trackList, DashboardListType dashboardListType) {
-        musicService.addToSonglist((ArrayList<Track>) trackList, false);
+        musicService.setSonglist((ArrayList<Track>) trackList, false, dashboardListType);
     }
 
     @Override

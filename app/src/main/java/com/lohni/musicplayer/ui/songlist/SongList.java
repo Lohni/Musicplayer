@@ -306,7 +306,6 @@ public class SongList extends Fragment {
                 }
                 return false;
             });
-
             popupMenu.show();
         });
 
@@ -405,7 +404,7 @@ public class SongList extends Fragment {
 
             if (listFilterType.equals(ListFilterType.ALPHABETICAL)) {
                 sideIndex.setVisible();
-                sideIndex.setIndexListDTO(songList).displayIndex();
+                sideIndex.setIndexList(songList).displayIndex();
             } else if (listFilterType.equals(ListFilterType.LAST_PLAYED)
                     || listFilterType.equals(ListFilterType.TIMES_PLAYED)
                     || listFilterType.equals(ListFilterType.TIME_PLAYED)) {

@@ -2,9 +2,11 @@ package com.lohni.musicplayer.database.viewmodel
 
 import androidx.lifecycle.*
 import com.lohni.musicplayer.database.dao.MusicplayerDataAccess
+import com.lohni.musicplayer.database.dto.AlbumTrackDTO
 import com.lohni.musicplayer.database.dto.StatisticDTO
 import com.lohni.musicplayer.database.dto.TrackDTO
 import com.lohni.musicplayer.database.entity.Album
+import com.lohni.musicplayer.database.entity.AlbumPlayed
 import com.lohni.musicplayer.database.entity.Tag
 import com.lohni.musicplayer.database.entity.Track
 import com.lohni.musicplayer.database.entity.TrackPlayed
@@ -25,6 +27,7 @@ class MusicplayerViewModel(private val dao: MusicplayerDataAccess) : ViewModel()
     val tracksCreated: LiveData<List<TrackDTO>> = dao.getAllTracksByCreated().asLiveData()
     val deletedTracks: LiveData<List<Track>> = dao.getDeletedTracks().asLiveData()
     val trackAlphabetical: LiveData<List<TrackDTO>> = dao.getTracksAlphabetical().asLiveData()
+    val allAlbumsWithTracks: LiveData<List<AlbumTrackDTO>> = dao.getAlbumsWithTracks().asLiveData()
 
     val lastTrackPlayed: LiveData<TrackPlayed> = dao.getLastTrackPlayed().asLiveData()
 
@@ -100,6 +103,14 @@ class MusicplayerViewModel(private val dao: MusicplayerDataAccess) : ViewModel()
 
     fun getTagsByTrackId(trackId: Int): LiveData<List<Tag>> {
         return dao.getTagByTrackId(trackId).asLiveData()
+    }
+
+    fun insertAlbumPlayed(albumPlayed: AlbumPlayed) = viewModelScope.launch(Dispatchers.IO) {
+        dao.insertAlbumPlayed(albumPlayed)
+    }
+
+    fun updateAlbumPlayed(albumPlayed: AlbumPlayed) = viewModelScope.launch(Dispatchers.IO) {
+        dao.updateAlbumPlayed(albumPlayed)
     }
 
     class MusicplayerViewModelFactory(private val dataAccess: MusicplayerDataAccess) :

@@ -1,13 +1,7 @@
 package com.lohni.musicplayer.adapter;
 
-import android.content.ContentUris;
 import android.content.Context;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.drawable.Drawable;
-import android.media.MediaMetadataRetriever;
-import android.net.Uri;
-import android.provider.MediaStore;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,32 +13,33 @@ import android.widget.Filterable;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
+import androidx.core.content.res.ResourcesCompat;
+import androidx.recyclerview.widget.RecyclerView;
+
 import com.lohni.musicplayer.R;
 import com.lohni.musicplayer.database.dto.TrackDTO;
 import com.lohni.musicplayer.database.entity.Track;
+import com.lohni.musicplayer.utils.AdapterUtils;
 import com.lohni.musicplayer.utils.GeneralUtils;
 import com.lohni.musicplayer.utils.enums.ListFilterType;
 import com.lohni.musicplayer.utils.enums.PlaybackBehaviour;
-import com.lohni.musicplayer.utils.images.ImageUtil;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
-
-import androidx.annotation.NonNull;
-import androidx.core.content.ContextCompat;
-import androidx.core.content.res.ResourcesCompat;
-import androidx.recyclerview.widget.RecyclerView;
+import java.util.stream.Collectors;
 
 public class SongListAdapter extends RecyclerView.Adapter<SongListAdapter.ViewHolder> implements Filterable {
 
     private ArrayList<TrackDTO> songList, mDisplayedValues;
-    private ArrayList<Track> queue = new ArrayList<>();
-    private HashMap<Integer, Drawable> drawableHashMap = new HashMap<>();
+    private final ArrayList<Track> queue = new ArrayList<>();
+    private final HashMap<Integer, Drawable> drawableHashMap = new HashMap<>();
     private final Drawable customCoverImage, customCoverBackground;
-    private Context context;
+    private final Context context;
     private ListFilterType listFilterType;
     private PlaybackBehaviour.PlaybackBehaviourState playbackBehaviour = PlaybackBehaviour.PlaybackBehaviourState.REPEAT_LIST;
     private int currPlayingSongIndex = -1;
@@ -71,36 +66,8 @@ public class SongListAdapter extends RecyclerView.Adapter<SongListAdapter.ViewHo
     }
 
     public void getAllBackgroundImages(List<TrackDTO> newList, RecyclerView recyclerView) {
-        new Thread(() -> {
-            MediaMetadataRetriever mmr = new MediaMetadataRetriever();
-            List<TrackDTO> t = new ArrayList<>(newList);
-            for (TrackDTO trackDTO : t) {
-                Integer trackId = trackDTO.getTrack().getTId();
-                Uri trackUri = ContentUris.withAppendedId(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, trackId);
-                try {
-                    if (!drawableHashMap.containsKey(trackId)) {
-                        mmr.setDataSource(context, trackUri);
-                        byte[] thumbnail = mmr.getEmbeddedPicture();
-                        if (thumbnail != null) {
-                            Bitmap cover = BitmapFactory.decodeByteArray(thumbnail, 0, thumbnail.length);
-                            Drawable drawable = ImageUtil.roundCorners(cover, context.getResources());
-                            drawableHashMap.put(trackId, drawable);
-                        }
-                    }
-                } catch (IllegalArgumentException e) {
-                    System.out.println("MediaMetadataRetriever IllegalArgument");
-                }
-            }
-
-            while (recyclerView.isComputingLayout()) {
-                try {
-                    Thread.sleep(10);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
-            notifyItemRangeChanged(0, songList.size(), "RELOAD_IMAGES");
-        }).start();
+        List<Track> newTrackList = newList.stream().map(TrackDTO::getTrack).collect(Collectors.toList());
+        AdapterUtils.loadCoverImagesAsync(context, newTrackList, recyclerView, drawableHashMap);
     }
 
     @NonNull
@@ -109,7 +76,6 @@ public class SongListAdapter extends RecyclerView.Adapter<SongListAdapter.ViewHo
         View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.tracklist_item, parent, false);
         ViewHolder viewHolder = new SongListAdapter.ViewHolder(v);
         setDefaultBackground(viewHolder);
-
         return viewHolder;
     }
 
@@ -166,19 +132,19 @@ public class SongListAdapter extends RecyclerView.Adapter<SongListAdapter.ViewHo
         if (!isScrolling) {
             holder.info.postDelayed(() -> {
                 if (position == holder.getAbsoluteAdapterPosition()) {
+                    //holder.info.setText(getInfoText(songList.get(position))); //Todo: Test
                     notifyItemChanged(holder.getAbsoluteAdapterPosition(), "");
                 }
             }, 10000);
         }
 
-        if (currPlayingSongIndex >= 0 && track.equals(currPlaying)) {
-            holder.itemView.setBackgroundTintList(ContextCompat.getColorStateList(context, R.color.colorSurfaceLevel4));
-        } else {
-            holder.itemView.setBackgroundTintList(ContextCompat.getColorStateList(context, R.color.colorBackground));
-        }
+        int colorRes = (currPlayingSongIndex >= 0 && track.equals(currPlaying))
+                ? R.color.colorSurfaceLevel4
+                : R.color.colorBackground;
+        holder.itemView.setBackgroundTintList(ContextCompat.getColorStateList(context, colorRes));
 
-        int color = (queue.contains(track)) ? R.color.colorPrimary : R.color.colorOnSurface;
-        holder.more.setBackgroundTintList(ContextCompat.getColorStateList(context, color));
+        int colorMore = (queue.contains(track)) ? R.color.colorPrimary : R.color.colorOnSurface;
+        holder.more.setBackgroundTintList(ContextCompat.getColorStateList(context, colorMore));
 
         int currQueueIndex = queue.indexOf(currPlaying);
         if (playbackBehaviour == PlaybackBehaviour.PlaybackBehaviourState.REPEAT_LIST

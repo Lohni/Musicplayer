@@ -8,16 +8,19 @@ import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.google.android.material.textview.MaterialTextView;
 import com.lohni.musicplayer.R;
+import com.lohni.musicplayer.database.dto.AlbumTrackDTO;
 import com.lohni.musicplayer.database.dto.TrackDTO;
+import com.lohni.musicplayer.database.entity.Album;
 import com.lohni.musicplayer.database.entity.Track;
 import com.lohni.musicplayer.utils.images.ImageUtil;
-import com.google.android.material.textview.MaterialTextView;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -93,31 +96,26 @@ public class SideIndex {
         sideIndex.addView(indexLayout);
     }
 
-    public SideIndex setIndexList(ArrayList<Track> songList) {
-        mapIndex = new LinkedHashMap<>();
-        for (int i = 0; i < songList.size(); i++) {
-            Track item = songList.get(i);
-            String index = item.getTTitle().substring(0, 1);
-            Character character = index.charAt(0);
-
-            if (character <= 64 || character >= 123) {
-                index = "#";
-            } else if (character >= 91 && character <= 96) index = "#";
-            else if (character > 96) {
-                character = Character.toUpperCase(character);
-                index = character.toString();
+    public SideIndex setIndexList(ArrayList<?> dtos) {
+        if (!dtos.isEmpty()) {
+            Object type = dtos.get(0);
+            if (type instanceof Track) {
+                fillHashMap(dtos.stream().map(dto -> (Track) dto).map(Track::getTTitle).collect(Collectors.toList()));
+            } else if (type instanceof Album) {
+                fillHashMap(dtos.stream().map(dto -> (Album) dto).map(Album::getAName).collect(Collectors.toList()));
+            } else if (type instanceof TrackDTO) {
+                fillHashMap(dtos.stream().map(dto -> (TrackDTO) dto).map(TrackDTO::getTrack).map(Track::getTTitle).collect(Collectors.toList()));
+            } else if (type instanceof AlbumTrackDTO) {
+                fillHashMap(dtos.stream().map(dto -> (AlbumTrackDTO) dto).map(alb -> alb.album.getAName()).collect(Collectors.toList()));
             }
-
-            mapIndex.putIfAbsent(index, i);
         }
         return this;
     }
 
-    public SideIndex setIndexListDTO(ArrayList<TrackDTO> songList) {
+    private void fillHashMap(List<String> values) {
         mapIndex = new LinkedHashMap<>();
-        for (int i = 0; i < songList.size(); i++) {
-            Track item = songList.get(i).getTrack();
-            String index = item.getTTitle().substring(0, 1);
+        for (int i = 0; i < values.size(); i++) {
+            String index = values.get(i).substring(0, 1);
             Character character = index.charAt(0);
 
             if (character <= 64 || character >= 123) {
@@ -130,7 +128,6 @@ public class SideIndex {
 
             mapIndex.putIfAbsent(index, i);
         }
-        return this;
     }
 
     public void setVisibilityGone() {

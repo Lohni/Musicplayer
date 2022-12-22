@@ -2,9 +2,11 @@ package com.lohni.musicplayer.database.dao
 
 import androidx.room.*
 import androidx.room.OnConflictStrategy.REPLACE
+import com.lohni.musicplayer.database.dto.AlbumTrackDTO
 import com.lohni.musicplayer.database.dto.StatisticDTO
 import com.lohni.musicplayer.database.dto.TrackDTO
 import com.lohni.musicplayer.database.entity.Album
+import com.lohni.musicplayer.database.entity.AlbumPlayed
 import com.lohni.musicplayer.database.entity.Tag
 import com.lohni.musicplayer.database.entity.Track
 import com.lohni.musicplayer.database.entity.TrackPlayed
@@ -44,6 +46,10 @@ interface MusicplayerDataAccess {
     @Transaction
     @Query("SELECT * FROM Track where t_album_id = :albumId")
     fun getTracksByAlbumId(albumId: Int): Flow<List<Track>>
+
+    @Transaction
+    @Query("SELECT * FROM Album ORDER BY a_name ASC")
+    fun getAlbumsWithTracks(): Flow<List<AlbumTrackDTO>>
 
     @Delete
     fun deleteTracks(trackList: List<Track>)
@@ -126,4 +132,10 @@ interface MusicplayerDataAccess {
 
     @Query("SELECT t.* FROM Track t WHERE t.t_deleted = 1 ORDER BY t.t_title ASC")
     fun getDeletedTracks(): Flow<List<Track>>
+
+    @Insert
+    fun insertAlbumPlayed(albumPlayed: AlbumPlayed)
+
+    @Update
+    fun updateAlbumPlayed(albumPlayed: AlbumPlayed)
 }

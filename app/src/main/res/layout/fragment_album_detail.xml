@@ -5,6 +5,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:transitionName="@string/transition_album_layout"
     app:layoutDescription="@xml/fragment_album_detail_scene"
     tools:context=".ui.album.AlbumDetailFragment">
 
@@ -13,13 +14,14 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        app:layout_constraintGuide_percent="0.33" />
+        app:layout_constraintGuide_percent="0.27" />
 
     <View
         android:id="@+id/album_detail_seperator"
         android:layout_width="match_parent"
-        android:layout_height="1px"
-        android:background="@color/colorOutline"
+        android:layout_height="1dp"
+        android:background="@drawable/background_button_secondary"
+        android:backgroundTint="@color/colorOutline"
         android:layout_marginStart="8dp"
         android:layout_marginEnd="8dp"
         app:layout_constraintLeft_toLeftOf="parent"
@@ -34,8 +36,9 @@
         app:layout_constraintDimensionRatio="1"
         android:layout_marginStart="16dp"
         android:layout_marginTop="8dp"
-        android:layout_marginBottom="8dp"
-        android:background="#1C313A"
+        android:layout_marginBottom="16dp"
+        android:background="@drawable/background_button_secondary"
+        android:backgroundTint="@color/colorSurfaceLevel2"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="@id/album_detail_seperator"
         app:layout_constraintLeft_toLeftOf="parent"
@@ -47,6 +50,7 @@
         android:layout_height="wrap_content"
         android:textSize="18sp"
         android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
         android:textColor="@color/colorOnBackground"
         android:transitionName="@string/transition_album_name"
         android:maxLines="2"
@@ -60,7 +64,9 @@
         android:layout_height="wrap_content"
         android:textSize="16sp"
         android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
         android:textColor="@color/colorOnBackground"
+        android:transitionName="@string/transition_album_artist"
         android:maxLines="1"
         app:layout_constraintLeft_toRightOf="@id/album_detail_cover"
         app:layout_constraintRight_toRightOf="parent"
@@ -74,32 +80,63 @@
         android:maxLines="1"
         android:textColor="@color/colorOnBackground"
         android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
         android:transitionName="@string/transition_album_size"
         app:layout_constraintTop_toBottomOf="@id/album_detail_artist"
         app:layout_constraintLeft_toRightOf="@id/album_detail_cover"
         app:layout_constraintRight_toRightOf="parent"/>
 
-    <ImageButton
+    <LinearLayout
         android:id="@+id/album_detail_play"
-        android:layout_width="40dp"
-        android:layout_height="40dp"
-        android:layout_marginBottom="8dp"
-        android:background="@drawable/ic_play_arrow_black_24dp"
-        android:backgroundTint="@color/colorOnSurfaceVariant"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintLeft_toRightOf="@id/album_detail_shuffle"
-        app:layout_constraintBottom_toBottomOf="@id/album_detail_cover"/>
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:background="@drawable/background_button_secondary"
+        android:backgroundTint="@color/colorSurfaceVariant"
+        android:foreground="@drawable/shuffle_ripple"
+        app:layout_constraintStart_toEndOf="@id/album_detail_cover"
+        app:layout_constraintBottom_toBottomOf="@id/album_detail_cover">
 
-    <ImageButton
+        <View
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:background="@drawable/ic_play_arrow_black_24dp"
+            android:backgroundTint="@color/colorOnSurfaceVariant"/>
+    </LinearLayout>
+
+    <LinearLayout
         android:id="@+id/album_detail_shuffle"
-        android:layout_width="38dp"
-        android:layout_height="38dp"
-        android:background="@drawable/ic_shuffle_black_24dp"
-        android:backgroundTint="@color/colorOnSurfaceVariant"
-        app:layout_constraintLeft_toRightOf="@id/album_detail_cover"
-        app:layout_constraintBottom_toBottomOf="@id/album_detail_play"
-        app:layout_constraintTop_toTopOf="@id/album_detail_play"
-        app:layout_constraintRight_toLeftOf="@id/album_detail_play"/>
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="16dp"
+        android:background="@drawable/background_button_secondary"
+        android:backgroundTint="@color/colorSurfaceVariant"
+        android:foreground="@drawable/shuffle_ripple"
+        app:layout_constraintStart_toEndOf="@id/album_detail_play"
+        app:layout_constraintBottom_toBottomOf="@id/album_detail_cover"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <View
+            android:layout_width="34dp"
+            android:layout_height="34dp"
+            android:layout_gravity="center"
+            android:layout_marginTop="5dp"
+            android:layout_marginBottom="5dp"
+            android:layout_marginStart="8dp"
+            android:background="@drawable/ic_shuffle_black_24dp"
+            android:backgroundTint="@color/colorOnSurfaceVariant"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:layout_marginStart="8dp"
+            android:paddingEnd="10dp"
+            android:textSize="18sp"
+            android:textColor="@color/colorOnSurfaceVariant"
+            android:text="Shuffle"/>
+    </LinearLayout>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/album_detail_list"
@@ -107,6 +144,7 @@
         android:layout_height="0dp"
         app:fastScrollEnabled="false"
         android:layout_marginTop="8dp"
+        android:layoutAnimation="@anim/layout_animation_fall_down"
         app:layout_constraintTop_toBottomOf="@id/album_detail_seperator"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"

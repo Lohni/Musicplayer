@@ -22,10 +22,10 @@ import com.lohni.musicplayer.R;
 import com.lohni.musicplayer.adapter.QueueAdapter;
 import com.lohni.musicplayer.database.entity.Track;
 import com.lohni.musicplayer.helper.DragItemTouchHelper;
+import com.lohni.musicplayer.interfaces.NavigationControlInterface;
 import com.lohni.musicplayer.interfaces.PlaybackControlInterface;
 import com.lohni.musicplayer.interfaces.ServiceTriggerInterface;
 import com.lohni.musicplayer.interfaces.SongInterface;
-import com.lohni.musicplayer.interfaces.NavigationControlInterface;
 import com.lohni.musicplayer.utils.enums.PlaybackBehaviour;
 
 import java.util.ArrayList;
@@ -61,7 +61,6 @@ public class QueueFragment extends Fragment {
     public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
         inflater.inflate(R.menu.queue_menu, menu);
-
         menu.getItem(0).setIcon(PlaybackBehaviour.getDrawableResourceIdForState(playbackBehaviour));
         menu.getItem(0).setIconTintList(ContextCompat.getColorStateList(requireContext(), R.color.colorOnSurface));
         menu.getItem(1).setIconTintList(ContextCompat.getColorStateList(requireContext(), R.color.colorOnSurface));

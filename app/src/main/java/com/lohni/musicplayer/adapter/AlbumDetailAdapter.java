@@ -6,32 +6,35 @@ import android.graphics.drawable.Drawable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.TextView;
-
-import com.lohni.musicplayer.R;
-import com.lohni.musicplayer.database.entity.Track;
-
-import java.util.ArrayList;
 
 import androidx.annotation.NonNull;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.content.res.ResourcesCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.lohni.musicplayer.R;
+import com.lohni.musicplayer.database.entity.Track;
+import com.lohni.musicplayer.utils.AdapterUtils;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+
 public class AlbumDetailAdapter extends RecyclerView.Adapter<AlbumDetailAdapter.ViewHolder> {
     private ArrayList<Track> albumSongList;
-    private final Bitmap albumCover;
     private final Drawable customCoverDrawable;
     private final AlbumDetailAdapterListener albumDetailAdapterListener;
+    private final Context context;
+    private final HashMap<Integer, Drawable> drawableHashMap = new HashMap<>();
 
     public interface AlbumDetailAdapterListener {
         void onItemClickListener(int position);
     }
 
-    public AlbumDetailAdapter(Context context, ArrayList<Track> albumSongList, Bitmap albumCover, AlbumDetailAdapterListener albumDetailAdapterListener) {
+    public AlbumDetailAdapter(Context context, ArrayList<Track> albumSongList, AlbumDetailAdapterListener albumDetailAdapterListener) {
+        this.context = context;
         this.albumSongList = albumSongList;
-        this.albumCover = albumCover;
         this.albumDetailAdapterListener = albumDetailAdapterListener;
         customCoverDrawable = ResourcesCompat.getDrawable(context.getResources(), R.drawable.ic_album_black_24dp, null);
     }
@@ -50,14 +53,9 @@ public class AlbumDetailAdapter extends RecyclerView.Adapter<AlbumDetailAdapter.
         holder.trackArtist.setText(track.getTArtist());
         holder.trackNr.setText(String.valueOf(track.getTTrackNr()));
 
+        holder.trackCover.setForeground(drawableHashMap.getOrDefault(track.getTId(), customCoverDrawable));
 
-        if (albumCover != null) {
-            holder.albumCover.setImageBitmap(albumCover);
-        } else {
-            holder.albumCover.setImageDrawable(customCoverDrawable);
-        }
-
-        holder.constraintLayout.setOnClickListener((view -> albumDetailAdapterListener.onItemClickListener(position)));
+        holder.constraintLayout.setOnClickListener(view -> albumDetailAdapterListener.onItemClickListener(position));
     }
 
     @Override
@@ -65,16 +63,20 @@ public class AlbumDetailAdapter extends RecyclerView.Adapter<AlbumDetailAdapter.
         return albumSongList.size();
     }
 
+    public void getAllBackgroundImages(List<Track> newList, RecyclerView recyclerView) {
+        AdapterUtils.loadCoverImagesAsync(context, newList, recyclerView, drawableHashMap);
+    }
+
     public class ViewHolder extends RecyclerView.ViewHolder {
-        private TextView trackNr, trackName, trackArtist;
-        public ImageView albumCover;
-        private ConstraintLayout constraintLayout;
+        private final TextView trackNr, trackName, trackArtist;
+        public View trackCover;
+        private final ConstraintLayout constraintLayout;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
             this.trackNr = itemView.findViewById(R.id.album_detail_item_tracknr);
             this.trackName = itemView.findViewById(R.id.album_detail_item_title);
-            this.albumCover = itemView.findViewById(R.id.album_detail_item_cover);
+            this.trackCover = itemView.findViewById(R.id.album_detail_item_cover);
             this.trackArtist = itemView.findViewById(R.id.album_detail_item_artist);
             this.constraintLayout = itemView.findViewById(R.id.album_detail_item_layout);
         }

@@ -283,6 +283,11 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
         createNotification();
     }
 
+    public void setSonglist(ArrayList<Track> toAdd, boolean next, DashboardListType listType) {
+        currentListType = listType;
+        addToSonglist(toAdd, next);
+    }
+
     public void addToSonglist(ArrayList<Track> toAdd, boolean next) {
         int sizePreAdd = songlist.size();
         for (Track track : toAdd) {

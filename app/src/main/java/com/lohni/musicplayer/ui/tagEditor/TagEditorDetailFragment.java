@@ -114,19 +114,12 @@ public class TagEditorDetailFragment extends Fragment {
         navigationControlInterface.setHomeAsUpIndicator(R.drawable.ic_clear_black_24dp);
 
         musicplayerViewModel.getTrackById(trackId).observe(getViewLifecycleOwner(), track -> {
+            readID3Tag();
             if (Permissions.permission(requireActivity(), this, android.Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
                 readID3Tag();
             }
         });
         return view;
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED && permissions[0].equals(android.Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
-            readID3Tag();
-        }
     }
 
     private void setValues(ID3V4Track track) {
