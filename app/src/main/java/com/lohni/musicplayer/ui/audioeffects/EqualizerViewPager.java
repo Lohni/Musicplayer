@@ -3,37 +3,32 @@ package com.lohni.musicplayer.ui.audioeffects;
 import android.Manifest;
 import android.content.Context;
 import android.content.pm.PackageManager;
-import android.media.audiofx.EnvironmentalReverb;
 import android.os.Bundle;
+import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+
+import com.google.android.material.tabs.TabLayout;
+import com.google.android.material.tabs.TabLayoutMediator;
+import com.lohni.musicplayer.R;
+import com.lohni.musicplayer.adapter.EqualizerViewPagerAdapter;
+import com.lohni.musicplayer.dto.EqualizerProperties;
+import com.lohni.musicplayer.interfaces.NavigationControlInterface;
+import com.lohni.musicplayer.utils.Permissions;
 
 import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.viewpager2.widget.ViewPager2;
 
-import android.util.Log;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-
-import com.lohni.musicplayer.R;
-import com.lohni.musicplayer.adapter.EqualizerViewPagerAdapter;
-import com.lohni.musicplayer.interfaces.NavigationControlInterface;
-import com.lohni.musicplayer.utils.Permissions;
-import com.lohni.musicplayer.utils.enums.EqualizerProperties;
-import com.google.android.material.tabs.TabLayout;
-import com.google.android.material.tabs.TabLayoutMediator;
-
 public class EqualizerViewPager extends Fragment {
 
     private ViewPager2 viewPager2;
     private EqualizerViewPagerAdapter mAdapter;
-    private EnvironmentalReverb.Settings settings;
     private short[] equalizerBandLevels;
-    private boolean reverbEnabled = false, equalizerEnabled = false, bassBoostEnabled = false, virtuaizerEnabled = false, loudnessEnhancerEnabled = false;
     private NavigationControlInterface navigationControlInterface;
     private EqualizerProperties equalizerProperties;
-    private int bassBoostStrength = 0, virtualizerStrength = 0, loudnessEnhancerStrength = 0;
 
     public EqualizerViewPager() {
         // Required empty public constructor
@@ -64,8 +59,7 @@ public class EqualizerViewPager extends Fragment {
         TabLayout tabLayout = view.findViewById(R.id.equalizer_tablayout);
 
         if (Permissions.permission(requireActivity(), this, Manifest.permission.MODIFY_AUDIO_SETTINGS)) {
-            mAdapter = new EqualizerViewPagerAdapter(this, settings, reverbEnabled, equalizerBandLevels,
-                    equalizerEnabled, equalizerProperties);
+            mAdapter = new EqualizerViewPagerAdapter(this, equalizerBandLevels, equalizerProperties);
             viewPager2.setAdapter(mAdapter);
         }
 
@@ -84,30 +78,16 @@ public class EqualizerViewPager extends Fragment {
         return view;
     }
 
-    public void setSettings(EnvironmentalReverb.Settings settings, boolean reverbEnabled, short[] equalizerBandLevels,
-                            boolean equalizerEnabled, EqualizerProperties equalizerProperties,
-                            boolean bassBoostEnabled, int bassBoostStrength,
-                            boolean virtuaizerEnabled, int virtualizerStrength,
-                            boolean loudnessEnhancerEnabled, int loudnessEnhancerStrength) {
-        this.settings = settings;
-        this.reverbEnabled = reverbEnabled;
+    public void setSettings(short[] equalizerBandLevels, EqualizerProperties equalizerProperties) {
         this.equalizerBandLevels = equalizerBandLevels;
-        this.equalizerEnabled = equalizerEnabled;
         this.equalizerProperties = equalizerProperties;
-        this.bassBoostEnabled = bassBoostEnabled;
-        this.bassBoostStrength = bassBoostStrength;
-        this.virtuaizerEnabled = virtuaizerEnabled;
-        this.virtualizerStrength = virtualizerStrength;
-        this.loudnessEnhancerEnabled = loudnessEnhancerEnabled;
-        this.loudnessEnhancerStrength = loudnessEnhancerStrength;
     }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED && permissions[0].equals(Manifest.permission.MODIFY_AUDIO_SETTINGS)) {
-            mAdapter = new EqualizerViewPagerAdapter(this, settings, reverbEnabled, equalizerBandLevels,
-                    equalizerEnabled, equalizerProperties);
+            mAdapter = new EqualizerViewPagerAdapter(this, equalizerBandLevels, equalizerProperties);
             viewPager2.setAdapter(mAdapter);
         }
     }

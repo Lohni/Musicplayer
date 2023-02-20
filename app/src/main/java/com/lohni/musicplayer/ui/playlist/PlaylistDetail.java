@@ -22,6 +22,8 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.material.snackbar.BaseTransientBottomBar;
+import com.google.android.material.snackbar.Snackbar;
 import com.lohni.musicplayer.R;
 import com.lohni.musicplayer.adapter.PlaylistDetailAdapter;
 import com.lohni.musicplayer.database.MusicplayerApplication;
@@ -33,16 +35,13 @@ import com.lohni.musicplayer.database.entity.PlaylistPlayed;
 import com.lohni.musicplayer.database.entity.Track;
 import com.lohni.musicplayer.database.viewmodel.MusicplayerViewModel;
 import com.lohni.musicplayer.database.viewmodel.PlaylistViewModel;
+import com.lohni.musicplayer.interfaces.NavigationControlInterface;
 import com.lohni.musicplayer.interfaces.OnStartDragListener;
 import com.lohni.musicplayer.interfaces.PlaybackControlInterface;
-import com.lohni.musicplayer.interfaces.SongInterface;
+import com.lohni.musicplayer.interfaces.QueueControlInterface;
 import com.lohni.musicplayer.ui.views.CustomDividerItemDecoration;
 import com.lohni.musicplayer.utils.GeneralUtils;
-import com.lohni.musicplayer.interfaces.NavigationControlInterface;
-import com.lohni.musicplayer.utils.enums.DashboardListType;
-import com.lohni.musicplayer.utils.enums.PlaybackBehaviour;
-import com.google.android.material.snackbar.BaseTransientBottomBar;
-import com.google.android.material.snackbar.Snackbar;
+import com.lohni.musicplayer.utils.enums.PlaybackBehaviourState;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -81,7 +80,7 @@ public class PlaylistDetail extends Fragment implements OnStartDragListener, Pla
     private ArrayList<PlaylistItem> playlistItems;
     private ArrayList<Track> trackList = new ArrayList<>();
 
-    private SongInterface songInterface;
+    private QueueControlInterface songInterface;
     protected PlaybackControlInterface playbackControlInterface;
 
     private int playlistId;
@@ -107,7 +106,7 @@ public class PlaylistDetail extends Fragment implements OnStartDragListener, Pla
         super.onAttach(context);
         try {
             navigationControlInterface = (NavigationControlInterface) context;
-            songInterface = (SongInterface) context;
+            songInterface = (QueueControlInterface) context;
             playbackControlInterface = (PlaybackControlInterface) context;
         } catch (ClassCastException e) {
             throw new ClassCastException(context + "must implement interface");
@@ -294,7 +293,7 @@ public class PlaylistDetail extends Fragment implements OnStartDragListener, Pla
         itemTouchhelper.attachToRecyclerView(list);
 
         shuffle.setOnClickListener(shuffleView -> {
-            playbackControlInterface.onPlaybackBehaviourChangeListener(PlaybackBehaviour.PlaybackBehaviourState.SHUFFLE);
+            playbackControlInterface.onPlaybackBehaviourChangeListener(PlaybackBehaviourState.SHUFFLE);
             playbackControlInterface.onNextClickListener();
             onPlaylistPlayed();
         });
@@ -384,7 +383,7 @@ public class PlaylistDetail extends Fragment implements OnStartDragListener, Pla
 
     @Override
     public void onAdapterItemClickListener(int position) {
-        songInterface.onSongListCreatedListener(trackList, DashboardListType.PLAYLIST);
+        songInterface.onSongListCreatedListener(trackList, playlist, false);
         songInterface.onSongSelectedListener(trackList.get(position));
         onPlaylistPlayed();
     }
@@ -393,7 +392,6 @@ public class PlaylistDetail extends Fragment implements OnStartDragListener, Pla
         PlaylistPlayed playlistPlayed = new PlaylistPlayed();
         playlistPlayed.setPpPId(playlist.getPId());
         playlistPlayed.setPpPlayed(GeneralUtils.getCurrentUTCTimestamp());
-        playlistPlayed.setPpTimePlayed(0L);
         playlistViewModel.insertPlaylistPlayed(playlistPlayed);
     }
 }

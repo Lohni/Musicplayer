@@ -1,4 +1,4 @@
-package com.lohni.musicplayer.utils.enums;
+package com.lohni.musicplayer.dto;
 
 public class EqualizerProperties {
 

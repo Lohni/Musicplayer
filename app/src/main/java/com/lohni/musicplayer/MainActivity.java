@@ -4,38 +4,40 @@ import android.Manifest;
 import android.animation.ArgbEvaluator;
 import android.animation.ObjectAnimator;
 import android.animation.ValueAnimator;
-import android.annotation.SuppressLint;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
-import android.media.audiofx.EnvironmentalReverb;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.provider.MediaStore;
 import android.view.MenuItem;
 import android.view.View;
 
+import com.google.android.material.appbar.AppBarLayout;
+import com.google.android.material.navigation.NavigationView;
+import com.lohni.musicplayer.core.ApplicationDataViewModel;
 import com.lohni.musicplayer.core.MusicService;
-import com.lohni.musicplayer.transition.MotionLayoutTransitionListenerImpl;
 import com.lohni.musicplayer.core.MusicplayerServiceConnection;
 import com.lohni.musicplayer.database.MusicplayerApplication;
 import com.lohni.musicplayer.database.dao.AudioEffectDataAccess;
 import com.lohni.musicplayer.database.dao.MusicplayerDataAccess;
+import com.lohni.musicplayer.database.dto.AlbumTrackDTO;
 import com.lohni.musicplayer.database.entity.Album;
 import com.lohni.musicplayer.database.entity.Track;
 import com.lohni.musicplayer.database.viewmodel.AudioEffectViewModel;
 import com.lohni.musicplayer.database.viewmodel.MusicplayerViewModel;
+import com.lohni.musicplayer.interfaces.NavigationControlInterface;
 import com.lohni.musicplayer.interfaces.PlaybackControlInterface;
+import com.lohni.musicplayer.interfaces.QueueControlInterface;
 import com.lohni.musicplayer.interfaces.ServiceConnectionListener;
 import com.lohni.musicplayer.interfaces.ServiceTriggerInterface;
-import com.lohni.musicplayer.interfaces.SongInterface;
+import com.lohni.musicplayer.transition.MotionLayoutTransitionListenerImpl;
 import com.lohni.musicplayer.ui.album.AlbumFragment;
-import com.lohni.musicplayer.interfaces.AudioEffectInterface;
-import com.lohni.musicplayer.utils.converter.AudioEffectSettingsHelper;
 import com.lohni.musicplayer.ui.audioeffects.EqualizerViewPager;
 import com.lohni.musicplayer.ui.dashboard.DashboardFragment;
 import com.lohni.musicplayer.ui.playbackcontrol.ExpandedPlaybackControl;
@@ -44,14 +46,11 @@ import com.lohni.musicplayer.ui.playlist.PlaylistFragment;
 import com.lohni.musicplayer.ui.settings.SettingFragment;
 import com.lohni.musicplayer.ui.songlist.SongList;
 import com.lohni.musicplayer.ui.tagEditor.TagEditorFragment;
+import com.lohni.musicplayer.utils.AdapterUtils;
 import com.lohni.musicplayer.utils.GeneralUtils;
-import com.lohni.musicplayer.interfaces.NavigationControlInterface;
 import com.lohni.musicplayer.utils.Permissions;
-import com.lohni.musicplayer.utils.enums.DashboardListType;
-import com.lohni.musicplayer.utils.enums.ID3FrameId;
-import com.lohni.musicplayer.utils.enums.PlaybackBehaviour;
-import com.google.android.material.appbar.AppBarLayout;
-import com.google.android.material.navigation.NavigationView;
+import com.lohni.musicplayer.utils.enums.PlaybackAction;
+import com.lohni.musicplayer.utils.enums.PlaybackBehaviourState;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -72,7 +71,7 @@ import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.ViewModelProvider;
 
 public class MainActivity extends AppCompatActivity implements PlaybackControlInterface, NavigationView.OnNavigationItemSelectedListener,
-        AudioEffectInterface, NavigationControlInterface, SongInterface, ServiceConnectionListener, ServiceTriggerInterface {
+        NavigationControlInterface, QueueControlInterface, ServiceConnectionListener, ServiceTriggerInterface {
 
     private DrawerLayout drawer;
     private MusicService musicService;
@@ -83,7 +82,6 @@ public class MainActivity extends AppCompatActivity implements PlaybackControlIn
 
     private MotionLayout motionLayout;
     private ActionBarDrawerToggle toggle;
-    private SharedPreferences sharedPreferences;
     private MusicplayerServiceConnection serviceConnection;
 
     private final Handler mHandler = new Handler();
@@ -91,7 +89,6 @@ public class MainActivity extends AppCompatActivity implements PlaybackControlIn
     private Fragment selectedDrawerFragment;
     private boolean destroyed = false;
 
-    @SuppressLint("ClickableViewAccessibility")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -103,9 +100,7 @@ public class MainActivity extends AppCompatActivity implements PlaybackControlIn
         NavigationView navigationView = findViewById(R.id.nav_view);
 
         setSupportActionBar(toolbar);
-
-        sharedPreferences = this.getPreferences(Context.MODE_PRIVATE);
-        serviceConnection = new MusicplayerServiceConnection(this, sharedPreferences, this);
+        serviceConnection = new MusicplayerServiceConnection(this);
 
         toggle = new ActionBarDrawerToggle(this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         toggle.syncState();
@@ -125,7 +120,11 @@ public class MainActivity extends AppCompatActivity implements PlaybackControlIn
             bindService(service, serviceConnection, Context.BIND_AUTO_CREATE);
             startForegroundService(service);
 
-            if (Permissions.permission(this, Manifest.permission.READ_EXTERNAL_STORAGE)) {
+            String perm = (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
+                    ? Manifest.permission.READ_MEDIA_AUDIO
+                    : Manifest.permission.READ_EXTERNAL_STORAGE;
+
+            if (Permissions.permission(this, perm)) {
                 updateTracks();
                 updateAlbums();
             }
@@ -179,9 +178,11 @@ public class MainActivity extends AppCompatActivity implements PlaybackControlIn
     private void compareTracksToDatabase(ArrayList<Track> tracks) {
         ArrayList<Track> toInsert = new ArrayList<>();
 
-        ContentResolver contentResolver = getContentResolver();
-        Uri musicUri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
-        Cursor musicCursor = contentResolver.query(musicUri, null, null, null, null);
+        Uri musicUri = (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
+                ? MediaStore.Audio.Media.getContentUri(MediaStore.VOLUME_EXTERNAL)
+                : MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
+
+        Cursor musicCursor = getApplicationContext().getContentResolver().query(musicUri, null, null, null, null);
         if (musicCursor != null && musicCursor.moveToFirst()) {
             int titleColumn = musicCursor.getColumnIndex(android.provider.MediaStore.Audio.Media.TITLE);
             int idColumn = musicCursor.getColumnIndex(MediaStore.Audio.Media._ID);
@@ -218,11 +219,12 @@ public class MainActivity extends AppCompatActivity implements PlaybackControlIn
                 }
 
                 toInsert.add(track);
-
             } while (musicCursor.moveToNext());
         }
 
         if (musicCursor != null) musicCursor.close();
+
+        AdapterUtils.loadCoverImagesAsync(getBaseContext(), toInsert, new ViewModelProvider(this).get(ApplicationDataViewModel.class));
 
         ArrayList<Integer> insertIds = toInsert.stream().map(Track::getTId).collect(Collectors.toCollection(ArrayList::new));
         ArrayList<Track> toDelete = tracks.stream().filter(track -> !insertIds.contains(track.getTId())).collect(Collectors.toCollection(ArrayList::new));
@@ -246,17 +248,14 @@ public class MainActivity extends AppCompatActivity implements PlaybackControlIn
         final String album_name = MediaStore.Audio.Albums.ALBUM;
         final String totSongs = MediaStore.Audio.Albums.NUMBER_OF_SONGS;
         final String artist_Name = MediaStore.Audio.Albums.ARTIST;
-        //final String artist_Id = MediaStore.Audio.Albums.ARTIST_ID;
         final String albumArt = MediaStore.Audio.Albums.ALBUM_ART;
 
-        final String[] columns = {_id, album_name, artist_Name, totSongs, albumArt};
         Cursor cursor = contentResolver.query(musicUri, null, null, null, null);
         if (cursor != null && cursor.moveToFirst()) {
             int albumIdColum = cursor.getColumnIndex(_id);
             int albumArtistColumn = cursor.getColumnIndex(artist_Name);
             int albumNameColumn = cursor.getColumnIndex(album_name);
             int albumTotSongsColumn = cursor.getColumnIndex(totSongs);
-            //int artistIdColumn = cursor.getColumnIndex(artist_Id);
             int artUriColumn = cursor.getColumnIndex(albumArt);
 
             do {
@@ -264,16 +263,15 @@ public class MainActivity extends AppCompatActivity implements PlaybackControlIn
                 String albumName = cursor.getString(albumNameColumn);
                 String albumArtist = cursor.getString(albumArtistColumn);
                 int totalSongs = cursor.getInt(albumTotSongsColumn);
-                //long artistId = cursor.getLong(artistIdColumn);
                 String artUri = cursor.getString(artUriColumn);
 
                 Album album = new Album();
                 album.setAId((int) albumId);
                 album.setAArtUri(artUri);
                 album.setANumSongs(totalSongs);
-                //album.setAArtistId((int) artistId);
                 album.setAArtistName(albumArtist);
                 album.setAName(albumName);
+                album.setACreated(GeneralUtils.getCurrentUTCTimestamp());
 
                 toInsert.add(album);
 
@@ -281,6 +279,11 @@ public class MainActivity extends AppCompatActivity implements PlaybackControlIn
         }
         if (cursor != null) cursor.close();
         musicplayerViewModel.insertAlbums(toInsert);
+
+        musicplayerViewModel.getAllAlbumsWithTracks().observe(this, albumWithTracks -> {
+            musicplayerViewModel.getAllAlbumsWithTracks().removeObservers(this);
+            AdapterUtils.loadAlbumCoverImagesAsync(getBaseContext(), albumWithTracks, new ViewModelProvider(this).get(ApplicationDataViewModel.class));
+        });
     }
 
 
@@ -308,11 +311,16 @@ public class MainActivity extends AppCompatActivity implements PlaybackControlIn
                 bindService(service, serviceConnection, Context.BIND_AUTO_CREATE);
                 startService(service);
 
-                if (Permissions.permission(this, android.Manifest.permission.READ_EXTERNAL_STORAGE)) {
+                String perm = (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
+                        ? Manifest.permission.READ_MEDIA_AUDIO
+                        : Manifest.permission.READ_EXTERNAL_STORAGE;
+
+                if (Permissions.permission(this, perm)) {
                     updateTracks();
                     updateAlbums();
                 }
-            } else if (permissions[0].equals(android.Manifest.permission.READ_EXTERNAL_STORAGE)) {
+            } else if (permissions[0].equals(android.Manifest.permission.READ_EXTERNAL_STORAGE)
+                    || (permissions[0].equals(Manifest.permission.READ_MEDIA_AUDIO))) {
                 updateTracks();
                 updateAlbums();
             }
@@ -321,13 +329,27 @@ public class MainActivity extends AppCompatActivity implements PlaybackControlIn
 
     private void initialiseAudioEffects() {
         audioEffectViewModel.getActiveAdvancedReverbPreset().observe(this, reverbSettings -> {
+            audioEffectViewModel.getActiveAdvancedReverbPreset().removeObservers(this);
             if (reverbSettings != null)
-                musicService.setEnvironmentalReverbSettings(AudioEffectSettingsHelper.extractReverbValues(reverbSettings));
+                sendBroadcast(new Intent(getString(R.string.musicservice_reverb_values)).putExtra("VALUES", reverbSettings));
         });
         audioEffectViewModel.getActiveEqualizerPreset().observe(this, equalizerPreset -> {
+            audioEffectViewModel.getActiveEqualizerPreset().removeObservers(this);
             if (equalizerPreset != null)
-                musicService.setEqualizerBandLevels(equalizerPreset);
+                sendBroadcast(new Intent(getString(R.string.musicservice_equalizer_values)).putExtra("VALUES", equalizerPreset));
         });
+
+        SharedPreferences sharedPreferences = getPreferences(Context.MODE_PRIVATE);
+        boolean eqEnabled = sharedPreferences.getBoolean(getString(R.string.preference_equalizer_isenabled), false);
+        sendBroadcast(new Intent(getString(R.string.musicservice_equalizer_enabled)).putExtra("ENABLED", eqEnabled));
+        boolean bbEnabled = sharedPreferences.getBoolean(getString(R.string.preference_bassboost_isenabled), false);
+        sendBroadcast(new Intent(getString(R.string.musicservice_bassboost_enabled)).putExtra("ENABLED", bbEnabled));
+        boolean loudnessEnabled = sharedPreferences.getBoolean(getString(R.string.preference_loudnessenhancer_isenabled), false);
+        sendBroadcast(new Intent(getString(R.string.musicservice_loudness_enhancer_enabled)).putExtra("ENABLED", loudnessEnabled));
+        boolean reverbEnabled = sharedPreferences.getBoolean(getString(R.string.preference_reverb_isenabled), false);
+        sendBroadcast(new Intent(getString(R.string.musicservice_reverb_enabled)).putExtra("ENABLED", reverbEnabled));
+        boolean virtualizerEnabled = sharedPreferences.getBoolean(getString(R.string.preference_virtualizer_isenabled), false);
+        sendBroadcast(new Intent(getString(R.string.musicservice_virtualizer_enabled)).putExtra("ENABLED", virtualizerEnabled));
     }
 
     @Override
@@ -375,16 +397,16 @@ public class MainActivity extends AppCompatActivity implements PlaybackControlIn
 
     @Override
     public void onNextClickListener() {
-        musicService.skip();
+        musicService.skip(PlaybackAction.SKIP_NEXT);
     }
 
     @Override
     public void onPreviousClickListener() {
-        musicService.skipPrevious();
+        musicService.skip(PlaybackAction.SKIP_PREVIOUS);
     }
 
     @Override
-    public void onPlaybackBehaviourChangeListener(@NonNull PlaybackBehaviour.PlaybackBehaviourState newState) {
+    public void onPlaybackBehaviourChangeListener(@NonNull PlaybackBehaviourState newState) {
         musicService.setPlaybackBehaviour(newState);
     }
 
@@ -406,14 +428,7 @@ public class MainActivity extends AppCompatActivity implements PlaybackControlIn
             }
             case R.id.nav_equalizer: {
                 EqualizerViewPager equalizerFragment = new EqualizerViewPager();
-                equalizerFragment.setSettings(musicService.getReverbSettings(),
-                        musicService.isReverbEnabled(),
-                        musicService.getEqualizerBandLevels(),
-                        musicService.isEqualizerEnabled(),
-                        musicService.getEqualizerProperties(),
-                        musicService.isBassBoostEnabled(), musicService.getBassBoostStrength(),
-                        musicService.isVirtualizerEnabled(), musicService.getVirtualizerStrength(),
-                        musicService.isLoudnessEnhancerEnabled(), musicService.getLoudnessEnhancerStrength());
+                equalizerFragment.setSettings(musicService.getEqualizerBandLevels(), musicService.getEqualizerProperties());
                 selectedDrawerFragment = equalizerFragment;
                 break;
             }
@@ -428,58 +443,6 @@ public class MainActivity extends AppCompatActivity implements PlaybackControlIn
         }
         drawer.closeDrawer(GravityCompat.START);
         return true;
-    }
-
-    @Override
-    public void onEnvironmentalReverbChanged(EnvironmentalReverb.Settings settings, boolean state) {
-        musicService.setReverbEnabled(state);
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putBoolean(getResources().getString(R.string.preference_reverb_isenabled), state);
-        editor.apply();
-
-        musicService.setEnvironmentalReverbSettings(settings);
-    }
-
-    @Override
-    public void onEqualizerStatusChanged(boolean state) {
-        musicService.setEqualizerEnabled(state);
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putBoolean(getResources().getString(R.string.preference_equalizer_isenabled), state);
-        editor.apply();
-    }
-
-    @Override
-    public void onBassBoostChanged(int strength, boolean state) {
-        musicService.setBassBoostStrength((short) strength);
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putInt(getResources().getString(R.string.preference_bassboost_strength), strength);
-        editor.apply();
-
-        musicService.setBassBoostEnabled(state);
-        editor.putBoolean(getResources().getString(R.string.preference_bassboost_isenabled), state);
-        editor.apply();
-    }
-
-
-    @Override
-    public void onVirtualizerChanged(int strength, boolean state) {
-        musicService.setVirtualizerStrength((short) strength);
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putInt(getResources().getString(R.string.preference_virtualizer_strength), strength);
-        editor.apply();
-
-        musicService.setVirtualizerEnabled(state);
-        editor.putBoolean(getResources().getString(R.string.preference_virtualizer_isenabled), state);
-        editor.apply();
-    }
-
-    @Override
-    public void onLoudnessEnhancerChanged(int strength, boolean state) {
-        musicService.setLoudnessEnhancerGain(strength);
-        sharedPreferences.edit().putInt(getResources().getString(R.string.preference_loudnessenhancer_strength), strength).apply();
-
-        musicService.setLoudnessEnhancerEnabled(state);
-        sharedPreferences.edit().putBoolean(getResources().getString(R.string.preference_loudnessenhancer_isenabled), state).apply();
     }
 
     @Override
@@ -541,24 +504,24 @@ public class MainActivity extends AppCompatActivity implements PlaybackControlIn
 
     @Override
     public void triggerCurrentDataBroadcast() {
-        if (musicService != null) {
-            musicService.sendCurrentStateToPlaybackControl();
-        }
+        if (musicService != null) musicService.sendCurrentStateToPlaybackControl();
     }
 
     @Override
     public void onSongSelectedListener(@NonNull Track track) {
-        musicService.setSong(track);
+        musicService.playSong(track);
     }
 
     @Override
-    public void onSongListCreatedListener(@NonNull List<? extends Track> trackList, DashboardListType dashboardListType) {
-        musicService.setSonglist((ArrayList<Track>) trackList, false, dashboardListType);
+    public void onSongListCreatedListener(@NonNull List<? extends Track> trackList, Object listTypePayload, boolean play) {
+        musicService.removeAllTracks();
+        musicService.setListTypePayload(listTypePayload);
+        musicService.addSongList((ArrayList<Track>) trackList, play);
     }
 
     @Override
     public void onAddSongsToSonglistListener(@NonNull List<? extends Track> trackList, boolean next) {
-        musicService.addToSonglist((ArrayList<Track>) trackList, next);
+        musicService.addSongList((ArrayList<Track>) trackList, next);
     }
 
     @Override
@@ -573,7 +536,7 @@ public class MainActivity extends AppCompatActivity implements PlaybackControlIn
 
     @Override
     public void onOrderChangeListener(int fromPosition, int toPosition) {
-        musicService.changeOrder(fromPosition, toPosition);
+        musicService.changeOrder(fromPosition, toPosition, true);
     }
 
     @Override

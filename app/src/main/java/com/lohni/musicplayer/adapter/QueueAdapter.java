@@ -18,8 +18,8 @@ import android.widget.TextView;
 
 import com.lohni.musicplayer.R;
 import com.lohni.musicplayer.database.entity.Track;
-import com.lohni.musicplayer.interfaces.SongInterface;
-import com.lohni.musicplayer.utils.enums.PlaybackBehaviour;
+import com.lohni.musicplayer.interfaces.QueueControlInterface;
+import com.lohni.musicplayer.utils.enums.PlaybackBehaviourState;
 import com.lohni.musicplayer.utils.images.ImageUtil;
 
 import java.util.ArrayList;
@@ -35,13 +35,13 @@ public class QueueAdapter extends RecyclerView.Adapter<QueueAdapter.ViewHolder> 
     private ArrayList<Track> queueList;
     private int queuePosition;
     private Context context;
-    private PlaybackBehaviour.PlaybackBehaviourState playbackBehaviour;
-    private SongInterface songInterface;
+    private PlaybackBehaviourState playbackBehaviour;
+    private QueueControlInterface songInterface;
 
     private final Drawable customCoverImage, customCoverBackground;
     private HashMap<Integer, Drawable> loadedCovers = new HashMap<>();
 
-    public QueueAdapter(Context c, ArrayList<Track> queueList, int queuePosition, PlaybackBehaviour.PlaybackBehaviourState playbackBehaviour, SongInterface songInterface) {
+    public QueueAdapter(Context c, ArrayList<Track> queueList, int queuePosition, PlaybackBehaviourState playbackBehaviour, QueueControlInterface songInterface) {
         this.queueList = queueList;
         this.queuePosition = queuePosition;
         this.context = c;
@@ -80,9 +80,9 @@ public class QueueAdapter extends RecyclerView.Adapter<QueueAdapter.ViewHolder> 
     }
 
     private String getIndexTextForPosition(int position) {
-        if (position == queuePosition && playbackBehaviour != PlaybackBehaviour.PlaybackBehaviourState.SHUFFLE) {
+        if (position == queuePosition && playbackBehaviour != PlaybackBehaviourState.SHUFFLE) {
             return String.valueOf(0);
-        } else if (position >= queuePosition && playbackBehaviour == PlaybackBehaviour.PlaybackBehaviourState.REPEAT_LIST) {
+        } else if (position >= queuePosition && playbackBehaviour == PlaybackBehaviourState.REPEAT_LIST) {
             return String.valueOf(position - queuePosition);
         } else {
             return "~";
@@ -115,7 +115,7 @@ public class QueueAdapter extends RecyclerView.Adapter<QueueAdapter.ViewHolder> 
     }
 
     private void setColors(int position, ViewHolder holder) {
-        if (position >= queuePosition || !(playbackBehaviour == PlaybackBehaviour.PlaybackBehaviourState.REPEAT_LIST)) {
+        if (position >= queuePosition || !(playbackBehaviour == PlaybackBehaviourState.REPEAT_LIST)) {
             if (position == queuePosition) {
                 holder.itemView.setBackgroundTintList(ContextCompat.getColorStateList(context, R.color.colorTertiaryContainer));
                 holder.title.setTextColor(ContextCompat.getColorStateList(context, R.color.colorOnTertiaryContainer));
@@ -143,7 +143,7 @@ public class QueueAdapter extends RecyclerView.Adapter<QueueAdapter.ViewHolder> 
         notifyItemRangeChanged(0, queueList.size(), "REFRESH_INDEX");
     }
 
-    public void updatePlaybackBehaviourState(PlaybackBehaviour.PlaybackBehaviourState newState) {
+    public void updatePlaybackBehaviourState(PlaybackBehaviourState newState) {
         playbackBehaviour = newState;
         notifyItemRangeChanged(0, queueList.size(), "REFRESH_INDEX");
     }

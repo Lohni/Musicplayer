@@ -3,9 +3,15 @@ package com.lohni.musicplayer.database.entity;
 import androidx.annotation.NonNull;
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
+import androidx.room.PrimaryKey;
 
-@Entity(primaryKeys = {"pp_p_id", "pp_played"})
+@Entity
 public class PlaylistPlayed {
+
+    @NonNull
+    @ColumnInfo(name = "pp_id")
+    @PrimaryKey(autoGenerate = true)
+    private Integer ppId;
 
     @NonNull
     @ColumnInfo(name = "pp_p_id")
@@ -14,10 +20,6 @@ public class PlaylistPlayed {
     @NonNull
     @ColumnInfo(name = "pp_played")
     private String ppPlayed;
-
-    @NonNull
-    @ColumnInfo(name = "pp_time_played")
-    private Long ppTimePlayed;
 
     @NonNull
     public Integer getPpPId() {
@@ -38,11 +40,11 @@ public class PlaylistPlayed {
     }
 
     @NonNull
-    public Long getPpTimePlayed() {
-        return ppTimePlayed;
+    public Integer getPpId() {
+        return ppId;
     }
 
-    public void setPpTimePlayed(@NonNull Long ppTimePlayed) {
-        this.ppTimePlayed = ppTimePlayed;
+    public void setPpId(@NonNull Integer ppId) {
+        this.ppId = ppId;
     }
 }

@@ -18,7 +18,8 @@ import kotlinx.coroutines.CoroutineScope
 @Database(
     entities = [AdvancedReverbPreset::class, EqualizerPreset::class, Playlist::class, PlaylistItem::class,
         PlaylistTagMtc::class, Tag::class, Track::class, TrackTagMtc::class, Album::class,
-        AlbumPlayed::class, PlaylistPlayed::class, TrackPlayed::class, Preference::class],
+        AlbumPlayed::class, PlaylistPlayed::class, TrackPlayed::class, Preference::class,
+        AlbumTrackPlayed::class, PlaylistTrackPlayed::class],
     version = 1
 )
 abstract class MusicplayerDatabase : RoomDatabase() {

@@ -1,15 +1,9 @@
 package com.lohni.musicplayer.database.dao
 
 import androidx.room.*
-import androidx.room.OnConflictStrategy.REPLACE
-import com.lohni.musicplayer.database.dto.AlbumTrackDTO
-import com.lohni.musicplayer.database.dto.StatisticDTO
-import com.lohni.musicplayer.database.dto.TrackDTO
-import com.lohni.musicplayer.database.entity.Album
-import com.lohni.musicplayer.database.entity.AlbumPlayed
-import com.lohni.musicplayer.database.entity.Tag
-import com.lohni.musicplayer.database.entity.Track
-import com.lohni.musicplayer.database.entity.TrackPlayed
+import androidx.room.OnConflictStrategy.Companion.REPLACE
+import com.lohni.musicplayer.database.dto.*
+import com.lohni.musicplayer.database.entity.*
 import kotlinx.coroutines.flow.Flow
 
 
@@ -92,7 +86,7 @@ interface MusicplayerDataAccess {
             "WHERE t.t_deleted = 0 AND p1.pref_key = 'INCLUDE_DURATION_FROM' and p2.pref_key = 'INCLUDE_DURATION_TO' " +
             "and t_duration BETWEEN p1.pref_value AND p2.pref_value " +
             "GROUP BY t_id ORDER BY sum(tp_time_played) DESC")
-    fun getTracksbyTimePlayed(): Flow<List<TrackDTO>>
+    fun getTracksByTimePlayed(): Flow<List<TrackDTO>>
 
     @Transaction
     @Query("SELECT *, null FROM Track WHERE t_isFavourite = 1")
@@ -100,7 +94,6 @@ interface MusicplayerDataAccess {
 
     @Query("SELECT * FROM TrackPlayed ORDER BY tp_played DESC LIMIT 1")
     fun getLastTrackPlayed(): Flow<TrackPlayed>
-
     @Update
     fun updateTrackPlayed(trackPlayed: TrackPlayed)
 
@@ -136,6 +129,57 @@ interface MusicplayerDataAccess {
     @Insert
     fun insertAlbumPlayed(albumPlayed: AlbumPlayed)
 
-    @Update
-    fun updateAlbumPlayed(albumPlayed: AlbumPlayed)
+    @Query("SELECT * FROM AlbumPlayed ORDER BY ap_played DESC LIMIT 1")
+    fun getLastAlbumPlayed(): Flow<AlbumPlayed>
+
+    @Insert
+    fun insertPlaylistPlayed(playlistPlayed: PlaylistPlayed)
+
+    @Query("SELECT * FROM PlaylistPlayed ORDER BY pp_played DESC LIMIT 1")
+    fun getLastPlaylistPlayed(): Flow<PlaylistPlayed>
+
+    @Insert
+    fun insertAlbumTrackPlayed(albumTrackPlayed: AlbumTrackPlayed)
+
+    @Insert
+    fun insertPlaylistTrackPlayed(playlistPlayed: PlaylistTrackPlayed)
+
+    @Transaction
+    @Query("SELECT * FROM Album WHERE a_is_favourite = 1")
+    fun getFavouriteAlbums(): Flow<List<AlbumDTO>>
+
+    @Transaction
+    @Query("SELECT a.*, ap_played as size FROM Album a " +
+            "JOIN AlbumPlayed ap on ap_a_id = a.a_id " +
+            "GROUP BY a.a_id ORDER BY max(datetime(ap_played)) DESC")
+    fun getAlbumsByLastPlayed(): Flow<List<AlbumDTO>>
+
+    @Transaction
+    @Query("SELECT a.*, count(a.a_id) as size FROM Album a " +
+            "JOIN AlbumPlayed on ap_a_id = a.a_id " +
+            "GROUP BY a.a_id ORDER BY count(a.a_id) DESC")
+    fun getAlbumsByTimesPlayed(): Flow<List<AlbumDTO>>
+
+    @Transaction
+    @Query("SELECT a.*, sum(tp_time_played) as size FROM Album a " +
+            "JOIN AlbumPlayed ON ap_a_id = a_id " +
+            "JOIN AlbumTrackPlayed ON ap_id = atp_ap_id " +
+            "JOIN TrackPlayed ON tp_id = atp_tp_id " +
+            "GROUP BY ap_a_id " +
+            "ORDER BY sum(tp_time_played) DESC")
+    fun getAlbumsByTimePlayed(): Flow<List<AlbumDTO>>
+
+    @Transaction
+    @Query("SELECT *, null as size FROM Album a " +
+            "ORDER BY a.a_created DESC")
+    fun getAlbumsByLastCreated(): Flow<List<AlbumDTO>>
+
+    @Transaction
+    @Query("SELECT p.*, sum(tp_time_played) as size FROM Playlist p " +
+            "JOIN PlaylistPlayed ON pp_p_id = p_id " +
+            "JOIN PlaylistTrackPlayed ON pp_id = ptp_pp_id " +
+            "JOIN TrackPlayed ON tp_id = ptp_tp_id " +
+            "GROUP BY pp_p_id " +
+            "ORDER BY sum(tp_time_played) DESC")
+    fun getPlaylistsByTimePlayed(): Flow<List<PlaylistDTO>>
 }

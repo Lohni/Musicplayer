@@ -18,12 +18,13 @@ import android.widget.TextView;
 
 import com.lohni.musicplayer.R;
 import com.lohni.musicplayer.interfaces.PlaybackControlInterface;
+import com.lohni.musicplayer.interfaces.QueueControlInterface;
 import com.lohni.musicplayer.interfaces.ServiceTriggerInterface;
-import com.lohni.musicplayer.interfaces.SongInterface;
 import com.lohni.musicplayer.ui.queue.QueueFragment;
 import com.lohni.musicplayer.ui.views.AudioVisualizerView;
 import com.lohni.musicplayer.ui.views.PlaybackControlSeekbar;
 import com.lohni.musicplayer.utils.enums.PlaybackBehaviour;
+import com.lohni.musicplayer.utils.enums.PlaybackBehaviourState;
 import com.lohni.musicplayer.utils.images.ImageUtil;
 
 import androidx.annotation.NonNull;
@@ -44,13 +45,13 @@ public class PlaybackControl extends Fragment {
     private AudioVisualizerView audioVisualizerView;
     private ConstraintLayout parentLayout;
 
-    private PlaybackBehaviour.PlaybackBehaviourState pLaybackbehaviourState = PlaybackBehaviour.PlaybackBehaviourState.REPEAT_LIST;
+    private PlaybackBehaviourState pLaybackbehaviourState = PlaybackBehaviourState.REPEAT_LIST;
     private int newProgress, queueCount = 0, queueIndex = 0;
     private boolean seekbarUserAction = false, queueFragmentCommited = false, isPause = true, isPopupShown = false;
 
     private PlaybackControlInterface playbackControlInterface;
     private ServiceTriggerInterface serviceTriggerInterface;
-    private SongInterface songInterface;
+    private QueueControlInterface songInterface;
 
     public PlaybackControl() {
     }
@@ -70,7 +71,7 @@ public class PlaybackControl extends Fragment {
         try {
             playbackControlInterface = (PlaybackControlInterface) context;
             serviceTriggerInterface = (ServiceTriggerInterface) context;
-            songInterface = (SongInterface) context;
+            songInterface = (QueueControlInterface) context;
         } catch (ClassCastException e) {
             throw new ClassCastException(context + "must implement PlaybackControlInterface");
         }
@@ -155,7 +156,7 @@ public class PlaybackControl extends Fragment {
                         songInterface.onRemoveAllSongsListener();
                         queue.setBackground(ImageUtil.getDrawableFromVectorDrawable(requireContext(), R.drawable.ic_baseline_queue_music_24));
                         popupMenu.dismiss();
-                        isPopupShown =false;
+                        isPopupShown = false;
                     }
                     return true;
                 });

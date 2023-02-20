@@ -22,11 +22,11 @@ import java.util.HashMap;
 import java.util.List;
 
 public class AlbumDetailAdapter extends RecyclerView.Adapter<AlbumDetailAdapter.ViewHolder> {
-    private ArrayList<Track> albumSongList;
+    private final ArrayList<Track> albumSongList;
     private final Drawable customCoverDrawable;
     private final AlbumDetailAdapterListener albumDetailAdapterListener;
     private final Context context;
-    private final HashMap<Integer, Drawable> drawableHashMap = new HashMap<>();
+    private HashMap<Integer, Drawable> drawableHashMap = new HashMap<>();
 
     public interface AlbumDetailAdapterListener {
         void onItemClickListener(int position);
@@ -52,9 +52,7 @@ public class AlbumDetailAdapter extends RecyclerView.Adapter<AlbumDetailAdapter.
         holder.trackName.setText(track.getTTitle());
         holder.trackArtist.setText(track.getTArtist());
         holder.trackNr.setText(String.valueOf(track.getTTrackNr()));
-
         holder.trackCover.setForeground(drawableHashMap.getOrDefault(track.getTId(), customCoverDrawable));
-
         holder.constraintLayout.setOnClickListener(view -> albumDetailAdapterListener.onItemClickListener(position));
     }
 
@@ -63,8 +61,8 @@ public class AlbumDetailAdapter extends RecyclerView.Adapter<AlbumDetailAdapter.
         return albumSongList.size();
     }
 
-    public void getAllBackgroundImages(List<Track> newList, RecyclerView recyclerView) {
-        AdapterUtils.loadCoverImagesAsync(context, newList, recyclerView, drawableHashMap);
+    public void setDrawableHashMap(HashMap<Integer, Drawable> drawableHashMap) {
+        this.drawableHashMap = drawableHashMap;
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {
