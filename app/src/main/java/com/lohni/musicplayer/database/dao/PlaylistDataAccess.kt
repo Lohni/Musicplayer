@@ -1,11 +1,10 @@
 package com.lohni.musicplayer.database.dao
 
 import androidx.room.*
-import androidx.room.OnConflictStrategy.IGNORE
+import com.lohni.musicplayer.database.dto.PlaylistDTO
 import com.lohni.musicplayer.database.entity.Playlist
 import com.lohni.musicplayer.database.entity.PlaylistItem
 import com.lohni.musicplayer.database.entity.PlaylistPlayed
-import com.lohni.musicplayer.database.dto.PlaylistDTO
 import kotlinx.coroutines.flow.Flow
 
 /**
@@ -40,7 +39,7 @@ interface PlaylistDataAccess {
     @Update
     fun updatePlaylistItemList(playlistItemList: List<PlaylistItem>)
 
-    @Insert(onConflict = IGNORE)
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
     fun insertPlaylistItems(playlistItemList: List<PlaylistItem>)
 
     @Query("SELECT *, count(pi_p_id) as 'size' FROM Playlist LEFT JOIN PlaylistItem ON p_id = pi_p_id GROUP BY p_id")

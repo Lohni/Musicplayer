@@ -31,6 +31,9 @@ public class Album {
     @ColumnInfo(name = "a_num_songs")
     private Integer aNumSongs;
 
+    @ColumnInfo(name = "a_created")
+    private String aCreated;
+
     public Integer getAId() {
         return aId;
     }
@@ -85,5 +88,13 @@ public class Album {
 
     public void setANumSongs(Integer aNumSongs) {
         this.aNumSongs = aNumSongs;
+    }
+
+    public String getACreated() {
+        return aCreated;
+    }
+
+    public void setACreated(String aCreated) {
+        this.aCreated = aCreated;
     }
 }

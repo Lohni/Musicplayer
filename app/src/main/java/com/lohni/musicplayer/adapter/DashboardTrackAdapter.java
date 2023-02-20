@@ -20,9 +20,9 @@ import android.widget.TextView;
 import com.lohni.musicplayer.R;
 import com.lohni.musicplayer.database.dto.TrackDTO;
 import com.lohni.musicplayer.database.entity.Track;
-import com.lohni.musicplayer.interfaces.SongInterface;
+import com.lohni.musicplayer.interfaces.QueueControlInterface;
 import com.lohni.musicplayer.utils.GeneralUtils;
-import com.lohni.musicplayer.utils.enums.DashboardListType;
+import com.lohni.musicplayer.utils.enums.ListType;
 import com.lohni.musicplayer.utils.enums.ListFilterType;
 import com.lohni.musicplayer.utils.images.ImageUtil;
 
@@ -33,7 +33,6 @@ import java.util.List;
 
 import androidx.annotation.NonNull;
 import androidx.constraintlayout.widget.ConstraintLayout;
-import androidx.core.content.ContextCompat;
 import androidx.core.content.res.ResourcesCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -41,11 +40,11 @@ public class DashboardTrackAdapter extends RecyclerView.Adapter<DashboardTrackAd
     private final List<TrackDTO> trackList;
     private final Drawable customCoverDrawable, backgroundDrawable;
     private final Context context;
-    private SongInterface songInterface;
+    private QueueControlInterface songInterface;
     private ListFilterType listFilterType;
     private int imagesLoading = 0;
 
-    public DashboardTrackAdapter(Context context, List<TrackDTO> trackList, SongInterface songInterface, ListFilterType listFilterType) {
+    public DashboardTrackAdapter(Context context, List<TrackDTO> trackList, QueueControlInterface songInterface, ListFilterType listFilterType) {
         this.trackList = trackList;
         this.context = context;
         this.songInterface = songInterface;
@@ -71,11 +70,6 @@ public class DashboardTrackAdapter extends RecyclerView.Adapter<DashboardTrackAd
         holder.subTitle.setText(track.getTArtist());
         holder.description.setText(getDescription(trackList.get(position)));
 
-        if (!holder.isRefresh) {
-            holder.imageView.setBackground(backgroundDrawable);
-            holder.imageView.setForeground(customCoverDrawable);
-            holder.imageView.setForegroundTintList(ContextCompat.getColorStateList(context, R.color.colorOnSecondaryContainer));
-        }
 
         holder.description.postDelayed(() -> notifyItemChanged(holder.position, ""), 10000);
 
@@ -118,7 +112,7 @@ public class DashboardTrackAdapter extends RecyclerView.Adapter<DashboardTrackAd
             Track track1 = trackList.get(absPos).getTrack();
             ArrayList<Track> tracks = new ArrayList<>();
             tracks.add(track1);
-            songInterface.onSongListCreatedListener(tracks, DashboardListType.TRACK);
+            songInterface.onSongListCreatedListener(tracks, ListType.TRACK, false);
             songInterface.onSongSelectedListener(track);
         }));
 

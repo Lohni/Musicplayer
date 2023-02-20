@@ -29,6 +29,7 @@ import com.lohni.musicplayer.database.viewmodel.PlaylistViewModel;
 import com.lohni.musicplayer.interfaces.PlaylistInterface;
 import com.lohni.musicplayer.ui.views.CustomDividerItemDecoration;
 import com.lohni.musicplayer.interfaces.NavigationControlInterface;
+import com.lohni.musicplayer.utils.GeneralUtils;
 import com.lohni.musicplayer.utils.Permissions;
 import com.google.android.material.snackbar.BaseTransientBottomBar;
 import com.google.android.material.snackbar.Snackbar;
@@ -106,6 +107,7 @@ public class PlaylistFragment extends Fragment implements PlaylistInterface {
                 Playlist playlist = new Playlist();
                 playlist.setPName(input.getText().toString());
                 playlist.setPCustomOrdinal(playlistWithSize.size());
+                playlist.setPCreated(GeneralUtils.getCurrentUTCTimestamp());
                 playlistViewModel.insertPlaylist(playlist);
                 isInsert = true;
             });

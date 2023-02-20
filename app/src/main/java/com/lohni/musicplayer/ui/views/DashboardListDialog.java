@@ -13,7 +13,7 @@ import android.widget.Toast;
 
 import com.lohni.musicplayer.R;
 import com.lohni.musicplayer.utils.converter.DashboardEnumDeserializer;
-import com.lohni.musicplayer.utils.enums.DashboardListType;
+import com.lohni.musicplayer.utils.enums.ListType;
 import com.lohni.musicplayer.utils.enums.ListFilterType;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.chip.Chip;
@@ -29,7 +29,7 @@ public class DashboardListDialog extends AppCompatDialog implements View.OnClick
     private MaterialButton cancel;
     private TextInputEditText listSizeInput;
 
-    private DashboardListType selectedListType;
+    private ListType selectedListType;
     private ListFilterType selectedFilterType;
 
     private int listSize;
@@ -41,7 +41,7 @@ public class DashboardListDialog extends AppCompatDialog implements View.OnClick
 
     private View.OnClickListener onFinish;
 
-    public DashboardListDialog(@NonNull Context context, String title, DashboardListType selectedListType, ListFilterType selectedFilterType, int listSize) {
+    public DashboardListDialog(@NonNull Context context, String title, ListType selectedListType, ListFilterType selectedFilterType, int listSize) {
         super(context);
         this.title = title;
         this.selectedFilterType = selectedFilterType;
@@ -82,7 +82,7 @@ public class DashboardListDialog extends AppCompatDialog implements View.OnClick
             filterChips.addView(chip);
         }
 
-        for (DashboardListType listType : DashboardListType.values()) {
+        for (ListType listType : ListType.values()) {
             Chip chip = (Chip) getLayoutInflater().inflate(R.layout.chip_without_image, typeChips, false);
             chip.setText(DashboardEnumDeserializer.getTitleForListType(listType));
             chip.setTag(listType);
@@ -129,16 +129,16 @@ public class DashboardListDialog extends AppCompatDialog implements View.OnClick
         this.onFinish = onFinish;
     }
 
-    public DashboardListType getSelectedListType() {
+    public ListType getSelectedListType() {
         for (int i = 0; i < typeChips.getChildCount(); i++) {
             Chip chip = (Chip) typeChips.getChildAt(i);
 
             if (chip.isChecked()) {
-                return (DashboardListType) chip.getTag();
+                return (ListType) chip.getTag();
             }
         }
 
-        return DashboardListType.TRACK;
+        return ListType.TRACK;
     }
 
     public ListFilterType getSelectedFilterType() {

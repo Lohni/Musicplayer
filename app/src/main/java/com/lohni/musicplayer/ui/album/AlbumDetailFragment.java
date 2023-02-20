@@ -3,9 +3,7 @@ package com.lohni.musicplayer.ui.album;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
-import android.net.Uri;
 import android.os.Bundle;
-import android.provider.MediaStore;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,17 +13,20 @@ import android.widget.TextView;
 
 import com.lohni.musicplayer.R;
 import com.lohni.musicplayer.adapter.AlbumDetailAdapter;
+import com.lohni.musicplayer.core.ApplicationDataViewModel;
 import com.lohni.musicplayer.database.MusicplayerApplication;
 import com.lohni.musicplayer.database.dao.MusicplayerDataAccess;
+import com.lohni.musicplayer.database.entity.Album;
 import com.lohni.musicplayer.database.entity.Track;
 import com.lohni.musicplayer.database.viewmodel.MusicplayerViewModel;
 import com.lohni.musicplayer.interfaces.NavigationControlInterface;
 import com.lohni.musicplayer.interfaces.PlaybackControlInterface;
-import com.lohni.musicplayer.interfaces.SongInterface;
-import com.lohni.musicplayer.utils.enums.DashboardListType;
-import com.lohni.musicplayer.utils.enums.PlaybackBehaviour;
+import com.lohni.musicplayer.interfaces.QueueControlInterface;
+import com.lohni.musicplayer.utils.enums.ListType;
+import com.lohni.musicplayer.utils.enums.PlaybackBehaviourState;
 import com.lohni.musicplayer.utils.images.ImageUtil;
 
+import java.util.AbstractMap;
 import java.util.ArrayList;
 
 import androidx.annotation.NonNull;
@@ -41,10 +42,12 @@ public class AlbumDetailFragment extends Fragment implements AlbumDetailAdapter.
     private Drawable albumCoverDrawable;
 
     private MusicplayerViewModel musicplayerViewModel;
+    private ApplicationDataViewModel applicationDataViewModel;
     private final ArrayList<Track> albumSongs = new ArrayList<>();
     private Integer albumId;
+    private Album album;
 
-    private SongInterface songInterface;
+    private QueueControlInterface songInterface;
     private PlaybackControlInterface playbackControlInterface;
     private NavigationControlInterface navigationControlInterface;
 
@@ -52,7 +55,7 @@ public class AlbumDetailFragment extends Fragment implements AlbumDetailAdapter.
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
         navigationControlInterface = (NavigationControlInterface) context;
-        songInterface = (SongInterface) context;
+        songInterface = (QueueControlInterface) context;
         playbackControlInterface = (PlaybackControlInterface) context;
     }
 
@@ -67,6 +70,7 @@ public class AlbumDetailFragment extends Fragment implements AlbumDetailAdapter.
         navigationControlInterface.isDrawerEnabledListener(false);
         navigationControlInterface.setHomeAsUpEnabled(true);
         navigationControlInterface.setHomeAsUpIndicator(R.drawable.ic_baseline_arrow_back_24);
+        navigationControlInterface.setToolbarTitle("");
 
         albumId = getArguments().getInt("ALBUM_ID");
         if (getArguments().containsKey("COVER")) {
@@ -78,6 +82,7 @@ public class AlbumDetailFragment extends Fragment implements AlbumDetailAdapter.
 
         MusicplayerDataAccess mda = ((MusicplayerApplication) requireActivity().getApplication()).getDatabase().musicplayerDao();
         musicplayerViewModel = new ViewModelProvider(this, new MusicplayerViewModel.MusicplayerViewModelFactory(mda)).get(MusicplayerViewModel.class);
+        applicationDataViewModel = new ViewModelProvider(requireActivity()).get(ApplicationDataViewModel.class);
     }
 
     @Override
@@ -95,36 +100,43 @@ public class AlbumDetailFragment extends Fragment implements AlbumDetailAdapter.
 
         albumDetailList.setLayoutManager(new LinearLayoutManager(requireContext()));
         albumDetailList.setHasFixedSize(true);
-        albumDetailList.setAdapter(new AlbumDetailAdapter(requireContext(), this.albumSongs, this));
 
 
-        musicplayerViewModel.getAlbumByAlbumId(albumId).observe(getViewLifecycleOwner(), album -> {
-            musicplayerViewModel.getAlbumByAlbumId(albumId).removeObservers(getViewLifecycleOwner());
-            albumName.setText(album.getAName());
-            albumSize.setText(album.getANumSongs() + " songs");
-            albumArtist.setText(album.getAArtistName());
+        applicationDataViewModel.getTrackImages().observe(getViewLifecycleOwner(), drawableHashMap -> {
+            applicationDataViewModel.getTrackImages().removeObservers(getViewLifecycleOwner());
+            AlbumDetailAdapter albumDetailAdapter = new AlbumDetailAdapter(requireContext(), this.albumSongs, this);
+            albumDetailAdapter.setDrawableHashMap(drawableHashMap);
+            albumDetailList.setAdapter(albumDetailAdapter);
 
-            Drawable customCoverBackground = ResourcesCompat.getDrawable(requireContext().getResources(), R.drawable.background_button_secondary, null);
-            albumCover.setBackground(customCoverBackground);
-            albumCover.setForeground(albumCoverDrawable);
+            musicplayerViewModel.getAlbumByAlbumId(albumId).observe(getViewLifecycleOwner(), album -> {
+                musicplayerViewModel.getAlbumByAlbumId(albumId).removeObservers(getViewLifecycleOwner());
+                this.album = album;
+                albumName.setText(album.getAName());
+                albumSize.setText(album.getANumSongs() + " songs");
+                albumArtist.setText(album.getAArtistName());
 
-            musicplayerViewModel.getTracksByAlbumId(albumId).observe(getViewLifecycleOwner(), tracks -> {
-                musicplayerViewModel.getTracksByAlbumId(albumId).removeObservers(getViewLifecycleOwner());
-                this.albumSongs.clear();
-                this.albumSongs.addAll(tracks);
-                albumDetailList.getAdapter().notifyItemRangeInserted(0, tracks.size());
-                ((AlbumDetailAdapter) albumDetailList.getAdapter()).getAllBackgroundImages(tracks, albumDetailList);
+                Drawable customCoverBackground = ResourcesCompat.getDrawable(requireContext().getResources(), R.drawable.background_button_secondary, null);
+                albumCover.setBackground(customCoverBackground);
+                albumCover.setForeground(albumCoverDrawable);
+
+                musicplayerViewModel.getTracksByAlbumId(albumId).observe(getViewLifecycleOwner(), tracks -> {
+                    musicplayerViewModel.getTracksByAlbumId(albumId).removeObservers(getViewLifecycleOwner());
+                    this.albumSongs.clear();
+                    this.albumSongs.addAll(tracks);
+                    albumDetailList.getAdapter().notifyItemRangeInserted(0, tracks.size());
+                });
             });
         });
 
+
         albumDetailPlay.setOnClickListener((button -> {
-            songInterface.onSongListCreatedListener(albumSongs, DashboardListType.ALBUM);
-            playbackControlInterface.onPlaybackBehaviourChangeListener(PlaybackBehaviour.PlaybackBehaviourState.REPEAT_LIST);
+            playbackControlInterface.onPlaybackBehaviourChangeListener(PlaybackBehaviourState.REPEAT_LIST);
+            songInterface.onSongListCreatedListener(albumSongs, album, true);
         }));
 
         albumDetailShuffle.setOnClickListener((button) -> {
-            songInterface.onSongListCreatedListener(albumSongs, DashboardListType.ALBUM);
-            playbackControlInterface.onPlaybackBehaviourChangeListener(PlaybackBehaviour.PlaybackBehaviourState.SHUFFLE);
+            playbackControlInterface.onPlaybackBehaviourChangeListener(PlaybackBehaviourState.SHUFFLE);
+            songInterface.onSongListCreatedListener(albumSongs, album, true);
         });
 
         return view;
@@ -138,7 +150,8 @@ public class AlbumDetailFragment extends Fragment implements AlbumDetailAdapter.
 
     @Override
     public void onItemClickListener(int position) {
-        songInterface.onSongListCreatedListener(albumSongs, DashboardListType.ALBUM);
+        playbackControlInterface.onPlaybackBehaviourChangeListener(PlaybackBehaviourState.REPEAT_LIST);
+        songInterface.onSongListCreatedListener(albumSongs, album, false);
         songInterface.onSongSelectedListener(albumSongs.get(position));
     }
 }

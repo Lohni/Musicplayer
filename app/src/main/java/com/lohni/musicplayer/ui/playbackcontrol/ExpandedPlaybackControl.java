@@ -27,6 +27,7 @@ import com.lohni.musicplayer.ui.views.AudioVisualizerView;
 import com.lohni.musicplayer.utils.GeneralUtils;
 import com.lohni.musicplayer.utils.Permissions;
 import com.lohni.musicplayer.utils.enums.PlaybackBehaviour;
+import com.lohni.musicplayer.utils.enums.PlaybackBehaviourState;
 
 import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
@@ -49,7 +50,7 @@ public class ExpandedPlaybackControl extends Fragment {
     private ImageButton expanded_add;
     private AudioVisualizerView audioVisualizerView;
     private SeekBar expanded_seekbar;
-    private PlaybackBehaviour.PlaybackBehaviourState playbackBehaviour;
+    private PlaybackBehaviourState playbackBehaviour;
     private MotionLayout parentContainer;
     private ViewPager2 viewPager;
     private PlaybackControlViewPagerAdapter viewPagerAdapter;

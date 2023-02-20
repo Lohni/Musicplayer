@@ -4,10 +4,6 @@ import com.lohni.musicplayer.R;
 
 public class PlaybackBehaviour {
 
-    public enum PlaybackBehaviourState {
-        SHUFFLE, REPEAT_LIST, REPEAT_SONG
-    }
-
     public static PlaybackBehaviourState getNextState(PlaybackBehaviourState state) {
         switch (state) {
             case SHUFFLE: {

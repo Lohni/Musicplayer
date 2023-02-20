@@ -20,6 +20,7 @@ import androidx.core.graphics.drawable.RoundedBitmapDrawableFactory;
 
 import com.lohni.musicplayer.R;
 
+import java.net.ConnectException;
 import java.util.List;
 import java.util.Optional;
 
@@ -48,6 +49,10 @@ public class ImageUtil {
 
     public static Bitmap getBitmapFromVectorDrawable(Context context, int drawableId) {
         Drawable drawable = ContextCompat.getDrawable(context, drawableId);
+        return getBitmapFromDrawable(context, drawable);
+    }
+
+    public static Bitmap getBitmapFromDrawable(Context context, Drawable drawable) {
         Bitmap bitmap = Bitmap.createBitmap(drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight(), Bitmap.Config.ARGB_8888);
         Canvas canvas = new Canvas(bitmap);
         drawable.setBounds(0, 0, canvas.getWidth(), canvas.getHeight());

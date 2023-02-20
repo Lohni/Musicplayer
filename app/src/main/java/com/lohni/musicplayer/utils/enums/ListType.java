@@ -1,13 +1,13 @@
 package com.lohni.musicplayer.utils.enums;
 
-public enum DashboardListType {
+public enum ListType {
     TRACK(0),
     PLAYLIST(1),
     ALBUM(2);
 
     private final int typeId;
 
-    DashboardListType(int typeId) {
+    ListType(int typeId) {
         this.typeId = typeId;
     }
 

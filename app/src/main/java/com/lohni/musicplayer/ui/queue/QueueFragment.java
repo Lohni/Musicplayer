@@ -25,8 +25,9 @@ import com.lohni.musicplayer.helper.DragItemTouchHelper;
 import com.lohni.musicplayer.interfaces.NavigationControlInterface;
 import com.lohni.musicplayer.interfaces.PlaybackControlInterface;
 import com.lohni.musicplayer.interfaces.ServiceTriggerInterface;
-import com.lohni.musicplayer.interfaces.SongInterface;
+import com.lohni.musicplayer.interfaces.QueueControlInterface;
 import com.lohni.musicplayer.utils.enums.PlaybackBehaviour;
+import com.lohni.musicplayer.utils.enums.PlaybackBehaviourState;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -46,11 +47,11 @@ public class QueueFragment extends Fragment {
     private View menuLayout;
     private LinearLayoutManager linearLayoutManager;
 
-    private SongInterface songInterface;
+    private QueueControlInterface songInterface;
     private PlaybackControlInterface playbackControlInterface;
     private ServiceTriggerInterface serviceTriggerInterface;
     private NavigationControlInterface navigationControlInterface;
-    private PlaybackBehaviour.PlaybackBehaviourState playbackBehaviour;
+    private PlaybackBehaviourState playbackBehaviour;
     private int queuePosition = -1;
     private boolean scrolling = false;
 
@@ -88,7 +89,7 @@ public class QueueFragment extends Fragment {
                 builder.show();
             });
 
-            if (playbackBehaviour == PlaybackBehaviour.PlaybackBehaviourState.REPEAT_LIST) {
+            if (playbackBehaviour == PlaybackBehaviourState.REPEAT_LIST) {
                 menuLayout.findViewById(R.id.queue_delete_menu_played).setOnClickListener((view) -> {
                     filterMenu.dismiss();
                     AlertDialog.Builder builder = new AlertDialog.Builder(requireContext()).setTitle("Clear played songs");
@@ -136,7 +137,7 @@ public class QueueFragment extends Fragment {
         try {
             serviceTriggerInterface = (ServiceTriggerInterface) context;
             navigationControlInterface = (NavigationControlInterface) context;
-            songInterface = (SongInterface) context;
+            songInterface = (QueueControlInterface) context;
             playbackControlInterface = (PlaybackControlInterface) context;
         } catch (ClassCastException e) {
             throw new ClassCastException(context + "must implement PlaybackControlInterface");

@@ -1,14 +1,14 @@
 package com.lohni.musicplayer.utils.converter;
 
-import com.lohni.musicplayer.utils.enums.DashboardListType;
+import com.lohni.musicplayer.utils.enums.ListType;
 import com.lohni.musicplayer.utils.enums.ListFilterType;
 
 public class DashboardEnumDeserializer {
-    public static DashboardListType getDashboardListType(int type) {
+    public static ListType getDashboardListType(int type) {
         switch (type) {
-            case 1: return DashboardListType.PLAYLIST;
-            case 2: return DashboardListType.ALBUM;
-            default: return DashboardListType.TRACK;
+            case 1: return ListType.PLAYLIST;
+            case 2: return ListType.ALBUM;
+            default: return ListType.TRACK;
         }
     }
 
@@ -34,7 +34,7 @@ public class DashboardEnumDeserializer {
         }
     }
 
-    public static String getTitleForListType(DashboardListType type) {
+    public static String getTitleForListType(ListType type) {
         switch (type) {
             case ALBUM: return "Album";
             case PLAYLIST: return "Playlist";

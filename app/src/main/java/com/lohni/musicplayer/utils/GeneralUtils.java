@@ -1,5 +1,6 @@
 package com.lohni.musicplayer.utils;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneOffset;
@@ -29,18 +30,20 @@ public class GeneralUtils {
     }
 
     public static String convertTimeWithUnit(int duration) {
-        long dur = duration * 1000000L;
-        LocalTime lt = LocalTime.ofNanoOfDay(dur);
+        long seconds = duration / 1000;
+        LocalDateTime lt = LocalDateTime.ofEpochSecond(seconds, 0, ZoneOffset.UTC);
 
+        int day = lt.getDayOfYear() - 1;
         int hour = lt.getHour();
         int minute = lt.getMinute();
         int second = lt.getSecond();
 
+        String dayString = (day > 0) ? day + "d" : "";
         String hourString = (hour > 0) ? hour + "h" : "";
         String minuteString = (minute > 0) ? minute + "m" : "";
-        String secondString = (second > 0 || hourString.isEmpty() && minuteString.isEmpty()) ? second + "s" : "";
+        String secondString = (second > 0 || (hourString.isEmpty() && minuteString.isEmpty())) ? second + "s" : "";
 
-        return hourString + minuteString + secondString;
+        return dayString + hourString + minuteString + secondString;
     }
 
     public static String getTimeDiffAsText(LocalDateTime dbTime){

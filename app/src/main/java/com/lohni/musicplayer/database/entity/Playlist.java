@@ -22,6 +22,9 @@ public class Playlist {
     @ColumnInfo(name = "p_favourite", defaultValue = "0")
     private Integer pFavourite;
 
+    @ColumnInfo(name = "p_created")
+    private String pCreated;
+
     public Integer getPId() {
         return pId;
     }
@@ -52,5 +55,13 @@ public class Playlist {
 
     public void setPFavourite(Integer pFavourite) {
         this.pFavourite = pFavourite;
+    }
+
+    public String getPCreated() {
+        return pCreated;
+    }
+
+    public void setPCreated(String pCreated) {
+        this.pCreated = pCreated;
     }
 }

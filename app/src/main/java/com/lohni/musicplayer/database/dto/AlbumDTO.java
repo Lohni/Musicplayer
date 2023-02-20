@@ -1,28 +1,26 @@
 package com.lohni.musicplayer.database.dto;
 
-import com.lohni.musicplayer.database.entity.Playlist;
-
 import androidx.room.ColumnInfo;
 import androidx.room.Embedded;
 
-public class PlaylistDTO extends DashboardDTO {
+public class AlbumDTO extends DashboardDTO {
     @Embedded
-    private Playlist playlist;
+    private AlbumTrackDTO album;
 
     @ColumnInfo(name = "size")
     private String size;
 
-    public PlaylistDTO(Playlist playlist, String size) {
-        this.playlist = playlist;
+    public AlbumDTO(AlbumTrackDTO album, String size) {
+        this.album = album;
         this.size = size;
     }
 
-    public Playlist getPlaylist() {
-        return playlist;
+    public AlbumTrackDTO getAlbum() {
+        return album;
     }
 
-    public void setPlaylist(Playlist playlist) {
-        this.playlist = playlist;
+    public void setAlbum(AlbumTrackDTO album) {
+        this.album = album;
     }
 
     public String getSize() {
@@ -35,6 +33,6 @@ public class PlaylistDTO extends DashboardDTO {
 
     @Override
     public Integer getId() {
-        return playlist.getPId();
+        return getAlbum().album.getAId();
     }
 }

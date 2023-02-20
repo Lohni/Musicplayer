@@ -1,12 +1,18 @@
 package com.lohni.musicplayer.database.entity;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import androidx.annotation.NonNull;
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
 
 @Entity
-public class EqualizerPreset {
+public class EqualizerPreset implements Parcelable {
+
+    public EqualizerPreset() {
+    }
 
     @ColumnInfo(name = "eq_id")
     @PrimaryKey(autoGenerate = true)
@@ -98,9 +104,65 @@ public class EqualizerPreset {
         this.eqLevel5 = eqLevel5;
     }
 
+    public EqualizerPreset(Parcel in) {
+        in.readByte();
+        eqId = in.readInt();
+        in.readByte();
+        eqName = in.readString();
+        in.readByte();
+        eqActive = in.readInt();
+        in.readByte();
+        eqLevel1 = in.readInt();
+        in.readByte();
+        eqLevel2 = in.readInt();
+        in.readByte();
+        eqLevel3 = in.readInt();
+        in.readByte();
+        eqLevel4 = in.readInt();
+        in.readByte();
+        eqLevel5 = in.readInt();
+    }
+
+    public static final Creator<EqualizerPreset> CREATOR = new Creator<EqualizerPreset>() {
+        @Override
+        public EqualizerPreset createFromParcel(Parcel source) {
+            return new EqualizerPreset(source);
+        }
+
+        @Override
+        public EqualizerPreset[] newArray(int size) {
+            return new EqualizerPreset[size];
+        }
+    };
+
     @NonNull
     @Override
     public String toString() {
         return this.eqName;
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(@NonNull Parcel parcel, int flags) {
+        parcel.writeByte((byte) 1);
+        parcel.writeInt(eqId);
+        parcel.writeByte((byte) 1);
+        parcel.writeString(eqName);
+        parcel.writeByte((byte) 1);
+        parcel.writeInt(eqActive);
+        parcel.writeByte((byte) 1);
+        parcel.writeInt(eqLevel1);
+        parcel.writeByte((byte) 1);
+        parcel.writeInt(eqLevel2);
+        parcel.writeByte((byte) 1);
+        parcel.writeInt(eqLevel3);
+        parcel.writeByte((byte) 1);
+        parcel.writeInt(eqLevel4);
+        parcel.writeByte((byte) 1);
+        parcel.writeInt(eqLevel5);
     }
 }

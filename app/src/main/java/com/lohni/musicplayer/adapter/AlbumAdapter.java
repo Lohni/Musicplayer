@@ -1,14 +1,9 @@
 package com.lohni.musicplayer.adapter;
 
-import android.content.ContentUris;
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
-import android.media.MediaMetadataRetriever;
-import android.net.Uri;
-import android.provider.MediaStore;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,14 +13,12 @@ import android.widget.LinearLayout;
 import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
 import androidx.core.content.res.ResourcesCompat;
-import androidx.core.graphics.drawable.RoundedBitmapDrawableFactory;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.textview.MaterialTextView;
 import com.lohni.musicplayer.R;
 import com.lohni.musicplayer.database.dto.AlbumTrackDTO;
 import com.lohni.musicplayer.database.entity.Album;
-import com.lohni.musicplayer.database.entity.Track;
 import com.lohni.musicplayer.utils.images.ImageUtil;
 
 import java.util.ArrayList;
@@ -131,48 +124,15 @@ public class AlbumAdapter extends RecyclerView.Adapter<AlbumAdapter.ViewHolder> 
         this.onItemOptionClickedListener = onItemOptionClickedListener;
     }
 
-    public void getAllBackgroundImages(List<AlbumTrackDTO> newList, RecyclerView recyclerView) {
-        new Thread(() -> {
-            MediaMetadataRetriever mmr = new MediaMetadataRetriever();
-            int count = 0;
-            for (AlbumTrackDTO albumTrackDTO : newList) {
-                List<Bitmap> coverList = new ArrayList<>();
-                for (Track track : albumTrackDTO.trackList) {
-                    Integer trackId = track.getTId();
-                    Uri trackUri = ContentUris.withAppendedId(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, trackId);
-                    try {
-                        mmr.setDataSource(context, trackUri);
-                        byte[] thumbnail = mmr.getEmbeddedPicture();
-                        if (thumbnail != null) {
-                            Bitmap cover = BitmapFactory.decodeByteArray(thumbnail, 0, thumbnail.length);
-                            if (coverList.stream().noneMatch(bmp -> ImageUtil.calSimilarity(bmp, cover) > 0.90)) {
-                                coverList.add(cover);
-                            }
-                        }
-                    } catch (IllegalArgumentException ignored) {
-                    }
-
-                    if (coverList.size() >= 4) {
-                        break;
-                    }
-                }
-                ImageUtil.createBitmapCollection(coverList, context)
-                        .ifPresent(coll -> drawableHashMap.put(albumTrackDTO.album.getAId(), coll));
-
-                int finalCount = count;
-                recyclerView.post(() -> notifyItemChanged(finalCount, "RELOAD_IMAGES"));
-                count++;
-            }
-        }).start();
+    public void setDrawableHashMap(HashMap<Integer, Drawable> albumCovers) {
+        this.drawableHashMap.clear();
+        this.drawableHashMap.putAll(albumCovers);
     }
 
     public Optional<Bitmap> getBitmapForAlbum(Integer aId){
         if (drawableHashMap.containsKey(aId)) {
             Drawable d = drawableHashMap.get(aId);
-            Bitmap cover = Bitmap.createBitmap(d.getBounds().width(), d.getBounds().height(), Bitmap.Config.ARGB_8888);
-            Canvas canvas = new Canvas(cover);
-            d.draw(canvas);
-            return Optional.of(cover);
+            return Optional.of(ImageUtil.getBitmapFromDrawable(context, d));
         }
         return Optional.empty();
     }

@@ -19,29 +19,31 @@ import androidx.transition.Fade;
 
 import com.lohni.musicplayer.R;
 import com.lohni.musicplayer.adapter.AlbumAdapter;
+import com.lohni.musicplayer.core.ApplicationDataViewModel;
 import com.lohni.musicplayer.database.MusicplayerApplication;
 import com.lohni.musicplayer.database.dao.MusicplayerDataAccess;
 import com.lohni.musicplayer.database.dto.AlbumTrackDTO;
 import com.lohni.musicplayer.database.viewmodel.MusicplayerViewModel;
 import com.lohni.musicplayer.interfaces.NavigationControlInterface;
 import com.lohni.musicplayer.interfaces.PlaybackControlInterface;
-import com.lohni.musicplayer.interfaces.SongInterface;
+import com.lohni.musicplayer.interfaces.QueueControlInterface;
 import com.lohni.musicplayer.transition.AlbumDetailTransition;
 import com.lohni.musicplayer.ui.views.SideIndex;
-import com.lohni.musicplayer.utils.enums.DashboardListType;
-import com.lohni.musicplayer.utils.enums.PlaybackBehaviour;
+import com.lohni.musicplayer.utils.enums.ListType;
+import com.lohni.musicplayer.utils.enums.PlaybackBehaviourState;
 
 import java.util.ArrayList;
 
 public class AlbumFragment extends Fragment {
     private RecyclerView albumList;
-    private ArrayList<AlbumTrackDTO> albumItems = new ArrayList<>();
+    private final ArrayList<AlbumTrackDTO> albumItems = new ArrayList<>();
     private LinearLayoutManager layoutManager;
     private SideIndex sideIndex;
 
     private MusicplayerViewModel musicplayerViewModel;
+    private ApplicationDataViewModel applicationDataViewModel;
     private NavigationControlInterface navigationControlInterface;
-    private SongInterface songInterface;
+    private QueueControlInterface songInterface;
     private PlaybackControlInterface playbackControlInterface;
 
     private boolean scrolling = false;
@@ -54,6 +56,7 @@ public class AlbumFragment extends Fragment {
         super.onCreate(savedInstanceState);
         MusicplayerDataAccess mda = ((MusicplayerApplication) requireActivity().getApplication()).getDatabase().musicplayerDao();
         musicplayerViewModel = new ViewModelProvider(this, new MusicplayerViewModel.MusicplayerViewModelFactory(mda)).get(MusicplayerViewModel.class);
+        applicationDataViewModel = new ViewModelProvider(requireActivity()).get(ApplicationDataViewModel.class);
     }
 
     @Override
@@ -61,7 +64,7 @@ public class AlbumFragment extends Fragment {
         super.onAttach(context);
         try {
             navigationControlInterface = (NavigationControlInterface) context;
-            songInterface = (SongInterface) context;
+            songInterface = (QueueControlInterface) context;
             playbackControlInterface = (PlaybackControlInterface) context;
         } catch (ClassCastException ignored) {
         }
@@ -119,22 +122,20 @@ public class AlbumFragment extends Fragment {
                     .addToBackStack("ALBUM_FRAGMENT")
                     .commit();
         });
+
         adapter.setOnItemOptionClickedListener((optionsView, position) -> {
             PopupMenu popupMenu = new PopupMenu(requireContext(), optionsView);
             popupMenu.getMenuInflater().inflate(R.menu.album_item_menu, popupMenu.getMenu());
             popupMenu.setOnMenuItemClickListener(item -> {
                 if (item.getItemId() == R.id.menu_album_play) {
-                    songInterface.onRemoveAllSongsListener();
-                    songInterface.onSongListCreatedListener(albumItems.get(position).trackList, DashboardListType.ALBUM);
-                    playbackControlInterface.onPlaybackBehaviourChangeListener(PlaybackBehaviour.PlaybackBehaviourState.REPEAT_LIST);
+                    playbackControlInterface.onPlaybackBehaviourChangeListener(PlaybackBehaviourState.REPEAT_LIST);
+                    songInterface.onSongListCreatedListener(albumItems.get(position).trackList, albumItems.get(position).album, true);
                     songInterface.onSongSelectedListener(albumItems.get(position).trackList.get(0));
                 } else if (item.getItemId() == R.id.menu_album_queue) {
                     songInterface.onAddSongsToSonglistListener(albumItems.get(position).trackList, false);
                 } else if (item.getItemId() == R.id.menu_album_shuffle) {
-                    songInterface.onRemoveAllSongsListener();
-                    songInterface.onSongListCreatedListener(albumItems.get(position).trackList, DashboardListType.ALBUM);
-                    playbackControlInterface.onPlaybackBehaviourChangeListener(PlaybackBehaviour.PlaybackBehaviourState.SHUFFLE);
-                    playbackControlInterface.onNextClickListener();
+                    songInterface.onSongListCreatedListener(albumItems.get(position).trackList, albumItems.get(position).album, true);
+                    playbackControlInterface.onPlaybackBehaviourChangeListener(PlaybackBehaviourState.SHUFFLE);
                 }
                 return false;
             });
@@ -148,7 +149,6 @@ public class AlbumFragment extends Fragment {
             musicplayerViewModel.getAllAlbumsWithTracks().removeObservers(getViewLifecycleOwner());
             if (albumItems.size() == 0) {
                 albumItems.addAll(albums);
-                adapter.getAllBackgroundImages(albums, albumList);
                 adapter.notifyItemRangeInserted(0, albumItems.size());
             }
             sideIndex.setIndexList(albumItems).displayIndex();
@@ -168,6 +168,11 @@ public class AlbumFragment extends Fragment {
             }
         });
 
+        applicationDataViewModel.getAlbumCovers().observe(getViewLifecycleOwner(), albumCovers -> {
+            adapter.setDrawableHashMap(albumCovers);
+            adapter.notifyItemRangeChanged(0, albumItems.size());
+        });
+
         return view;
     }
 
@@ -175,13 +180,5 @@ public class AlbumFragment extends Fragment {
     public void onDestroy() {
         albumList.setAdapter(null);
         super.onDestroy();
-    }
-
-    @Override
-    public void onResume() {
-        if (albumList.getAdapter() != null) {
-            ((AlbumAdapter) albumList.getAdapter()).getAllBackgroundImages(albumItems, albumList);
-        }
-        super.onResume();
     }
 }

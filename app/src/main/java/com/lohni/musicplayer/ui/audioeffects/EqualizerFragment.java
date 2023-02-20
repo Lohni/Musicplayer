@@ -2,6 +2,8 @@ package com.lohni.musicplayer.ui.audioeffects;
 
 import android.app.AlertDialog;
 import android.content.Context;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.res.ColorStateList;
 import android.content.res.Resources;
 import android.os.Bundle;
@@ -20,16 +22,15 @@ import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
+import com.google.android.material.switchmaterial.SwitchMaterial;
+import com.google.android.material.textfield.MaterialAutoCompleteTextView;
+import com.google.android.material.textfield.TextInputLayout;
 import com.lohni.musicplayer.R;
 import com.lohni.musicplayer.database.MusicplayerApplication;
 import com.lohni.musicplayer.database.dao.AudioEffectDataAccess;
 import com.lohni.musicplayer.database.entity.EqualizerPreset;
 import com.lohni.musicplayer.database.viewmodel.AudioEffectViewModel;
-import com.lohni.musicplayer.interfaces.AudioEffectInterface;
-import com.lohni.musicplayer.utils.enums.EqualizerProperties;
-import com.google.android.material.switchmaterial.SwitchMaterial;
-import com.google.android.material.textfield.MaterialAutoCompleteTextView;
-import com.google.android.material.textfield.TextInputLayout;
+import com.lohni.musicplayer.dto.EqualizerProperties;
 
 import java.util.ArrayList;
 import java.util.Optional;
@@ -41,34 +42,23 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
 public class EqualizerFragment extends Fragment {
+    private SharedPreferences sharedPreferences;
     private EqualizerProperties equalizerProperties;
     private short[] bandlevel = new short[5];
     private View view;
     private MaterialAutoCompleteTextView mACT;
     private TextInputLayout textInputLayout;
-    private SwitchMaterial enableSwitchMenu;
     private ImageButton presetDelete, presetAdd;
 
-    private AudioEffectInterface audioEffectInterface;
     private AudioEffectViewModel audioEffectViewModel;
     private ArrayAdapter<EqualizerPreset> arrayAdapter;
 
-    private ArrayList<EqualizerPreset> equalizerPresets = new ArrayList<>();
+    private final ArrayList<EqualizerPreset> equalizerPresets = new ArrayList<>();
 
     private int selectedIndex = -1;
     private boolean equalizerEnabled = false;
 
     public EqualizerFragment() {
-    }
-
-    @Override
-    public void onAttach(@NonNull Context context) {
-        super.onAttach(context);
-        try {
-            audioEffectInterface = (AudioEffectInterface) context;
-        } catch (ClassCastException e) {
-            throw new ClassCastException(context + "must implement AudioEffectInterface");
-        }
     }
 
     @Override
@@ -78,16 +68,19 @@ public class EqualizerFragment extends Fragment {
 
         AudioEffectDataAccess mda = ((MusicplayerApplication) requireActivity().getApplication()).getDatabase().audioEffectDao();
         audioEffectViewModel = new ViewModelProvider(this, new AudioEffectViewModel.AudioEffectViewModelFactory(mda)).get(AudioEffectViewModel.class);
+        sharedPreferences = getActivity().getPreferences(Context.MODE_PRIVATE);
+        equalizerEnabled = sharedPreferences.getBoolean(getString(R.string.preference_equalizer_isenabled), false);
     }
 
     @Override
     public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
         inflater.inflate(R.menu.audioeffect_enable, menu);
-        enableSwitchMenu = menu.findItem(R.id.audioeffect_enable).getActionView().findViewById(R.id.audioeffect_enable_switch);
+        SwitchMaterial enableSwitchMenu = menu.findItem(R.id.audioeffect_enable).getActionView().findViewById(R.id.audioeffect_enable_switch);
 
         enableSwitchMenu.setOnCheckedChangeListener((compoundButton, b) -> {
-            audioEffectInterface.onEqualizerStatusChanged(b);
+            sharedPreferences.edit().putBoolean(getResources().getString(R.string.preference_equalizer_isenabled), b).apply();
+            requireActivity().sendBroadcast(new Intent(getString(R.string.musicservice_equalizer_enabled)).putExtra("ENABLED", b));
             equalizerEnabled = b;
             setViewsEnabled();
         });
@@ -111,9 +104,7 @@ public class EqualizerFragment extends Fragment {
             if (list != null) {
                 equalizerPresets.clear();
                 equalizerPresets.addAll(list);
-
                 arrayAdapter.notifyDataSetChanged();
-
                 getCurrentActive();
             }
         });
@@ -148,15 +139,15 @@ public class EqualizerFragment extends Fragment {
         }));
 
         presetDelete.setOnClickListener(button -> {
-            if (equalizerEnabled && !equalizerPresets.get(selectedIndex).getEqActive().equals(2)) showPresetDeleteDialog();
+            if (equalizerEnabled && !equalizerPresets.get(selectedIndex).getEqActive().equals(2))
+                showPresetDeleteDialog();
         });
 
         return view;
     }
 
-    public void initEqualizerFragment(short[] equalizerBandLevels, boolean equalizerEnabled, EqualizerProperties equalizerProperties) {
+    public void initEqualizerFragment(short[] equalizerBandLevels, EqualizerProperties equalizerProperties) {
         this.bandlevel = equalizerBandLevels;
-        this.equalizerEnabled = equalizerEnabled;
         this.equalizerProperties = equalizerProperties;
     }
 
@@ -178,6 +169,7 @@ public class EqualizerFragment extends Fragment {
                 bandlevel[4] = equalizerSettings.getEqLevel5().shortValue();
 
                 updateSeekbars();
+                requireActivity().sendBroadcast(new Intent(getString(R.string.musicservice_equalizer_values)).putExtra("VALUES", equalizerSettings));
 
                 presetDelete.setEnabled(targetActive.equals(1));
                 break;
@@ -303,6 +295,7 @@ public class EqualizerFragment extends Fragment {
                         equalizerSettings.setEqLevel5((int) bandlevel[4]);
 
                         audioEffectViewModel.updateEqualizerPreset(equalizerSettings);
+                        requireActivity().sendBroadcast(new Intent(getString(R.string.musicservice_equalizer_values)).putExtra("VALUES", equalizerSettings));
                     }
                 }
             });
@@ -359,7 +352,6 @@ public class EqualizerFragment extends Fragment {
         });
 
         builder.setNegativeButton("Cancel", (dialogInterface, i) -> dialogInterface.cancel());
-
         builder.show();
     }
 

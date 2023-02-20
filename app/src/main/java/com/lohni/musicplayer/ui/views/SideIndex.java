@@ -17,6 +17,7 @@ import com.lohni.musicplayer.database.entity.Track;
 import com.lohni.musicplayer.utils.images.ImageUtil;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -32,7 +33,7 @@ public class SideIndex {
     private FrameLayout indexZoomHolder;
     private TextView indexZoom;
     private LinearLayoutManager listViewManager;
-    private Map<String, Integer> mapIndex;
+    private Map<String, Integer> mapIndex = new HashMap<>();
 
     public SideIndex(Context context, LinearLayout sideIndex, FrameLayout indexZoomHolder, TextView indexZoom, LinearLayoutManager listViewManager) {
         this.sideIndex = sideIndex;

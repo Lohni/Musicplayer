@@ -5,7 +5,7 @@ import com.lohni.musicplayer.database.entity.Track;
 import androidx.room.ColumnInfo;
 import androidx.room.Embedded;
 
-public class TrackDTO {
+public class TrackDTO extends DashboardDTO {
     @Embedded
     private Track track;
 
@@ -31,5 +31,10 @@ public class TrackDTO {
 
     public void setSize(String size) {
         this.size = size;
+    }
+
+    @Override
+    public Integer getId() {
+        return track.getTId();
     }
 }

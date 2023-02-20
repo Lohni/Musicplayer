@@ -1,46 +1,32 @@
 package com.lohni.musicplayer.ui.audioeffects;
 
 import android.content.Context;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.lohni.musicplayer.R;
-import com.lohni.musicplayer.interfaces.AudioEffectInterface;
-import com.lohni.musicplayer.ui.views.ControlKnob;
 import com.google.android.material.switchmaterial.SwitchMaterial;
+import com.lohni.musicplayer.R;
+import com.lohni.musicplayer.ui.views.ControlKnob;
 
-import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 
 public class EffectFragment extends Fragment {
-
-    private View view;
     private ControlKnob bassBoost, virtualizer, loudnessEnhancer;
-    private AudioEffectInterface audioEffectInterface;
     private SwitchMaterial bassBoostSwitch, virtualizerSwitch, loudnessEnhancerSwitch;
     private int bassBoostStrength, virtualizerStrength, loudnessEnhancerStrength;
-    private boolean bassBoostEnabled, virtualizerEnabled, loudnessEnhancerEnabled;
 
     public EffectFragment() {
-    }
-
-    @Override
-    public void onAttach(@NonNull Context context) {
-        super.onAttach(context);
-        try {
-            audioEffectInterface = (AudioEffectInterface) context;
-        } catch (ClassCastException e) {
-            throw new ClassCastException(context + "must implement EqualizerInterface");
-        }
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
-        view = inflater.inflate(R.layout.fragment_effect, container, false);
+        View view = inflater.inflate(R.layout.fragment_effect, container, false);
         bassBoost = view.findViewById(R.id.effects_bass_boost);
         virtualizer = view.findViewById(R.id.effects_virtualizer);
         loudnessEnhancer = view.findViewById(R.id.effects_loudnessEnhancer);
@@ -66,6 +52,7 @@ public class EffectFragment extends Fragment {
     }
 
     private void initListener() {
+        SharedPreferences sharedPreferences = requireActivity().getPreferences(Context.MODE_PRIVATE);
         bassBoost.setOnControlKnobChangeListener((view, value) -> {
             bassBoostStrength = value;
         });
@@ -78,25 +65,31 @@ public class EffectFragment extends Fragment {
         });
 
         bassBoost.setOnControlKnobActionUpListener(() -> {
-            audioEffectInterface.onBassBoostChanged(bassBoostStrength, bassBoost.isEnabled());
+            requireActivity().sendBroadcast(new Intent(getString(R.string.musicservice_bassboost_strength)).putExtra("STRENGTH", bassBoostStrength));
+            sharedPreferences.edit().putInt(getString(R.string.preference_bassboost_strength), bassBoostStrength).apply();
         });
         virtualizer.setOnControlKnobActionUpListener(() -> {
-            audioEffectInterface.onVirtualizerChanged(virtualizerStrength, virtualizer.isEnabled());
+            requireActivity().sendBroadcast(new Intent(getString(R.string.musicservice_virtualizer_strength)).putExtra("STRENGTH", virtualizerStrength));
+            sharedPreferences.edit().putInt(getString(R.string.preference_virtualizer_strength), virtualizerStrength).apply();
         });
         loudnessEnhancer.setOnControlKnobActionUpListener(() -> {
-            audioEffectInterface.onLoudnessEnhancerChanged(loudnessEnhancerStrength, loudnessEnhancer.isEnabled());
+            requireActivity().sendBroadcast(new Intent(getString(R.string.musicservice_loudness_enhancer_strength)).putExtra("STRENGTH", loudnessEnhancerStrength));
+            sharedPreferences.edit().putInt(getString(R.string.preference_loudnessenhancer_strength), loudnessEnhancerStrength).apply();
         });
 
         bassBoostSwitch.setOnCheckedChangeListener((compoundButton, b) -> {
-            audioEffectInterface.onBassBoostChanged(bassBoostStrength, b);
+            requireActivity().sendBroadcast(new Intent(getString(R.string.musicservice_bassboost_enabled)).putExtra("ENABLED", b));
+            sharedPreferences.edit().putBoolean(getString(R.string.preference_bassboost_isenabled), b).apply();
             bassBoost.isEnabled(b);
         });
         virtualizerSwitch.setOnCheckedChangeListener((compoundButton, b) -> {
-            audioEffectInterface.onVirtualizerChanged(virtualizerStrength, b);
+            requireActivity().sendBroadcast(new Intent(getString(R.string.musicservice_virtualizer_enabled)).putExtra("ENABLED", b));
+            sharedPreferences.edit().putBoolean(getString(R.string.preference_virtualizer_isenabled), b).apply();
             virtualizer.isEnabled(b);
         });
         loudnessEnhancerSwitch.setOnCheckedChangeListener((compoundButton, b) -> {
-            audioEffectInterface.onLoudnessEnhancerChanged(loudnessEnhancerStrength, b);
+            requireActivity().sendBroadcast(new Intent(getString(R.string.musicservice_loudness_enhancer_enabled)).putExtra("ENABLED", b));
+            sharedPreferences.edit().putBoolean(getString(R.string.preference_loudnessenhancer_isenabled), b).apply();
             loudnessEnhancer.isEnabled(b);
         });
     }
@@ -105,23 +98,5 @@ public class EffectFragment extends Fragment {
         bassBoost.setCurrentValue(bassBoostStrength);
         virtualizer.setCurrentValue(virtualizerStrength);
         loudnessEnhancer.setCurrentValue(loudnessEnhancerStrength);
-
-        bassBoost.isEnabled(bassBoostEnabled);
-        virtualizer.isEnabled(virtualizerEnabled);
-        loudnessEnhancer.isEnabled(loudnessEnhancerEnabled);
-
-        bassBoostSwitch.setChecked(bassBoostEnabled);
-        virtualizerSwitch.setChecked(virtualizerEnabled);
-        loudnessEnhancerSwitch.setChecked(loudnessEnhancerEnabled);
     }
-
-    public void setEffectStartingValues(int bassBoostStrength, boolean bassBoostEnabled, int virtualizerStrength, boolean virtualizerEnabled, int loudnessEnhancerStrength, boolean loudnessEnhancerEnabled) {
-        this.bassBoostStrength = bassBoostStrength;
-        this.virtualizerStrength = virtualizerStrength;
-        this.loudnessEnhancerStrength = loudnessEnhancerStrength;
-        this.bassBoostEnabled = bassBoostEnabled;
-        this.virtualizerEnabled = virtualizerEnabled;
-        this.loudnessEnhancerEnabled = loudnessEnhancerEnabled;
-    }
-
 }

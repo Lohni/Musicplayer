@@ -13,18 +13,13 @@ import android.widget.Filterable;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
-import androidx.annotation.NonNull;
-import androidx.core.content.ContextCompat;
-import androidx.core.content.res.ResourcesCompat;
-import androidx.recyclerview.widget.RecyclerView;
-
 import com.lohni.musicplayer.R;
 import com.lohni.musicplayer.database.dto.TrackDTO;
 import com.lohni.musicplayer.database.entity.Track;
 import com.lohni.musicplayer.utils.AdapterUtils;
 import com.lohni.musicplayer.utils.GeneralUtils;
 import com.lohni.musicplayer.utils.enums.ListFilterType;
-import com.lohni.musicplayer.utils.enums.PlaybackBehaviour;
+import com.lohni.musicplayer.utils.enums.PlaybackBehaviourState;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -33,15 +28,20 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
+import androidx.core.content.res.ResourcesCompat;
+import androidx.recyclerview.widget.RecyclerView;
+
 public class SongListAdapter extends RecyclerView.Adapter<SongListAdapter.ViewHolder> implements Filterable {
 
     private ArrayList<TrackDTO> songList, mDisplayedValues;
     private final ArrayList<Track> queue = new ArrayList<>();
-    private final HashMap<Integer, Drawable> drawableHashMap = new HashMap<>();
+    private HashMap<Integer, Drawable> drawableHashMap = new HashMap<>();
     private final Drawable customCoverImage, customCoverBackground;
     private final Context context;
     private ListFilterType listFilterType;
-    private PlaybackBehaviour.PlaybackBehaviourState playbackBehaviour = PlaybackBehaviour.PlaybackBehaviourState.REPEAT_LIST;
+    private PlaybackBehaviourState playbackBehaviour = PlaybackBehaviourState.REPEAT_LIST;
     private int currPlayingSongIndex = -1;
     private boolean isScrolling = false;
 
@@ -63,11 +63,6 @@ public class SongListAdapter extends RecyclerView.Adapter<SongListAdapter.ViewHo
         this.listFilterType = listFilterType;
         this.customCoverImage = ResourcesCompat.getDrawable(c.getResources(), R.drawable.ic_baseline_music_note_24, null);
         this.customCoverBackground = ResourcesCompat.getDrawable(context.getResources(), R.drawable.background_button_secondary, null);
-    }
-
-    public void getAllBackgroundImages(List<TrackDTO> newList, RecyclerView recyclerView) {
-        List<Track> newTrackList = newList.stream().map(TrackDTO::getTrack).collect(Collectors.toList());
-        AdapterUtils.loadCoverImagesAsync(context, newTrackList, recyclerView, drawableHashMap);
     }
 
     @NonNull
@@ -147,7 +142,7 @@ public class SongListAdapter extends RecyclerView.Adapter<SongListAdapter.ViewHo
         holder.more.setBackgroundTintList(ContextCompat.getColorStateList(context, colorMore));
 
         int currQueueIndex = queue.indexOf(currPlaying);
-        if (playbackBehaviour == PlaybackBehaviour.PlaybackBehaviourState.REPEAT_LIST
+        if (playbackBehaviour == PlaybackBehaviourState.REPEAT_LIST
                 && currPlaying != null
                 && currQueueIndex >= 0 && currQueueIndex + 1 < queue.size()
                 && track.equals(queue.get(currQueueIndex + 1))) {
@@ -247,11 +242,15 @@ public class SongListAdapter extends RecyclerView.Adapter<SongListAdapter.ViewHo
         notifyItemRangeChanged(0, getItemCount(), "");
     }
 
-    public void setPlaybackBehaviour(PlaybackBehaviour.PlaybackBehaviourState newState) {
+    public void setPlaybackBehaviour(PlaybackBehaviourState newState) {
         this.playbackBehaviour = newState;
         if (currPlayingSongIndex >= 0) {
             notifyItemChanged(currPlayingSongIndex + 1);
         }
+    }
+
+    public void setDrawableHashMap(HashMap<Integer, Drawable> drawableHashMap) {
+        this.drawableHashMap = drawableHashMap;
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {
