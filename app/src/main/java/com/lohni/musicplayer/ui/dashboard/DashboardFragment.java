@@ -12,6 +12,7 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
@@ -95,6 +96,8 @@ public class DashboardFragment extends Fragment implements DashboardListAdapter.
         View secondEdit = root.findViewById(R.id.dashboard_second_element_edit);
         View firstGoto = root.findViewById(R.id.dashboard_first_element_goto);
         View secondGoto = root.findViewById(R.id.dashboard_second_element_goto);
+        View firstTypeImage = root.findViewById(R.id.dashboard_first_element_type);
+        View secondTypeImage = root.findViewById(R.id.dashboard_second_element_type);
 
         statTitle = root.findViewById(R.id.dashboard_stat_title);
         stat = root.findViewById(R.id.dashboard_statistics);
@@ -112,8 +115,8 @@ public class DashboardFragment extends Fragment implements DashboardListAdapter.
         int firstListSize = sharedPreferences.getInt(getString(R.string.preference_dashboard_first_list_size), 10);
         int secondListSize = sharedPreferences.getInt(getString(R.string.preference_dashboard_second_list_size), 10);
 
-        firstListConfiguration = new ListConfiguration(requireContext(), firstList, firstListSize, firstFilterType, firstListType, firstTitle, this);
-        secondListConfiguration = new ListConfiguration(requireContext(), secondList, secondListSize, secondFilterType, secondlistType, secondTitle, this);
+        firstListConfiguration = new ListConfiguration(requireContext(), firstList, firstListSize, firstFilterType, firstListType, firstTitle, firstTypeImage, this);
+        secondListConfiguration = new ListConfiguration(requireContext(), secondList, secondListSize, secondFilterType, secondlistType, secondTitle, secondTypeImage, this);
 
         musicplayerViewModel.getAllTrackPlayedInDaySteps().observe(getViewLifecycleOwner(), list -> {
             musicplayerViewModel.getAllTrackPlayedInDaySteps().removeObservers(getViewLifecycleOwner());
@@ -303,18 +306,20 @@ public class DashboardFragment extends Fragment implements DashboardListAdapter.
         private final List<DashboardDTO> itemList = new ArrayList<>();
         private final RecyclerView recyclerView;
         private final TextView title;
+        private final View typeImage;
         private int listSize;
         private final DashboardListAdapter.OnItemClickListener<DashboardDTO> onItemClickListener;
 
         private Observer currentObserver;
 
-        public ListConfiguration(Context context, RecyclerView recyclerView, int listSize, ListFilterType filterType, ListType listType, TextView title, DashboardListAdapter.OnItemClickListener<DashboardDTO> onItemClickListener) {
+        public ListConfiguration(Context context, RecyclerView recyclerView, int listSize, ListFilterType filterType, ListType listType, TextView title, View typeImage, DashboardListAdapter.OnItemClickListener<DashboardDTO> onItemClickListener) {
             this.recyclerView = recyclerView;
             this.listSize = listSize;
             this.title = title;
             this.filterType = filterType;
             this.listType = listType;
             this.onItemClickListener = onItemClickListener;
+            this.typeImage = typeImage;
             init(context);
         }
 
@@ -324,6 +329,7 @@ public class DashboardFragment extends Fragment implements DashboardListAdapter.
             recyclerView.setHasFixedSize(true);
             recyclerView.setLayoutManager(layoutManager);
             title.setText(DashboardEnumDeserializer.getTitleForFilterType(filterType));
+            typeImage.setBackground(ContextCompat.getDrawable(requireContext(), DashboardEnumDeserializer.getDrawableIdForListType(listType)));
             updateAdapter();
         }
 
@@ -355,7 +361,7 @@ public class DashboardFragment extends Fragment implements DashboardListAdapter.
         public void setListType(ListType listType) {
             removeObserver(currentObserver, filterType);
             this.listType = listType;
-
+            typeImage.setBackground(ContextCompat.getDrawable(requireContext(), DashboardEnumDeserializer.getDrawableIdForListType(listType)));
         }
 
         public void setFilterType(ListFilterType filterType) {
