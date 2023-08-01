@@ -1,5 +1,6 @@
 package com.lohni.musicplayer.utils.converter;
 
+import com.lohni.musicplayer.R;
 import com.lohni.musicplayer.utils.enums.ListType;
 import com.lohni.musicplayer.utils.enums.ListFilterType;
 
@@ -39,6 +40,14 @@ public class DashboardEnumDeserializer {
             case ALBUM: return "Album";
             case PLAYLIST: return "Playlist";
             default: return "Track";
+        }
+    }
+
+    public static int getDrawableIdForListType(ListType type) {
+        switch (type) {
+            case ALBUM: return R.drawable.ic_album_black_24dp;
+            case PLAYLIST: return R.drawable.ic_playlist_play_black_24dp;
+            default: return R.drawable.ic_baseline_music_note_24;
         }
     }
 }

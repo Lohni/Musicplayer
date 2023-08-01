@@ -27,7 +27,7 @@ import java.util.Optional;
 public class ImageUtil {
     public static RoundedBitmapDrawable roundCorners(Bitmap drawable, Resources resources) {
         RoundedBitmapDrawable rbd = RoundedBitmapDrawableFactory.create(resources, drawable);
-        rbd.setCornerRadius(convertDpToPixel(5, resources));
+        rbd.setCornerRadius(convertDpToPixel(8, resources));
         return rbd;
     }
 

@@ -72,9 +72,9 @@ public class DashboardListAdapter<T extends DashboardDTO> extends RecyclerView.A
 
     private void setDefaultBackground(ViewHolder holder) {
         holder.imageView.setBackground(backgroundDrawable);
-        holder.imageView.setBackgroundTintList(ContextCompat.getColorStateList(context, R.color.colorSecondaryContainer));
+        holder.imageView.setBackgroundTintList(ContextCompat.getColorStateList(context, R.color.colorSurfaceLevel4));
         holder.imageView.setForeground(customCoverDrawable);
-        holder.imageView.setForegroundTintList(ContextCompat.getColorStateList(context, R.color.colorOnSecondaryContainer));
+        holder.imageView.setForegroundTintList(ContextCompat.getColorStateList(context, R.color.colorOnSurface));
     }
 
     @Override
@@ -139,8 +139,6 @@ public class DashboardListAdapter<T extends DashboardDTO> extends RecyclerView.A
             onBindViewHolder(holder, position);
         }
     }
-
-
 
     @Override
     public int getItemCount() {
