@@ -5,4 +5,8 @@ public class PlaybackControlQueueFragment extends PlaybackControlDetailFragment 
     public PlaybackControlQueueFragment() {
     }
 
+    @Override
+    void onTrackChange() {
+
+    }
 }

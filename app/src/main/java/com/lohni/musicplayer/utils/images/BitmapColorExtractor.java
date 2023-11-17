@@ -20,7 +20,7 @@ public class BitmapColorExtractor {
     private static final int LIGHTNESS_TEXT_DIFFERENCE_LIGHT = 20;
     private static final int LIGHTNESS_TEXT_DIFFERENCE_DARK = -10;
     private static final float POPULATION_FRACTION_FOR_DOMINANT = 0.01f;
-    private int RESIZE_BITMAP_AREA = 150 * 150;
+    private final int RESIZE_BITMAP_AREA = 150 * 150;
     private static final float BLACK_MAX_LIGHTNESS = 0.08f;
     private static final float WHITE_MIN_LIGHTNESS = 0.90f;
     private static final float POPULATION_FRACTION_FOR_WHITE_OR_BLACK = 2.5f;

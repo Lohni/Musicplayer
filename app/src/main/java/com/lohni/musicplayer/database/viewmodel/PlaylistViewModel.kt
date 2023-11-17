@@ -41,6 +41,10 @@ class PlaylistViewModel(private val dao: PlaylistDataAccess) : ViewModel() {
         dao.deletePlaylistItem(playlistItem)
     }
 
+    fun deletePlaylistItemList(playlistItemList: List<PlaylistItem>) = viewModelScope.launch(Dispatchers.IO) {
+        dao.deletePlaylistItems(playlistItemList)
+    }
+
     fun updatePlaylistItemList(playlistItemList: List<PlaylistItem>) =
         viewModelScope.launch(Dispatchers.IO) {
             dao.updatePlaylistItemList(playlistItemList)

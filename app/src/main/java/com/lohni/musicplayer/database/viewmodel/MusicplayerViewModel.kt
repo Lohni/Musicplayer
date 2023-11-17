@@ -13,7 +13,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlin.streams.toList
 
-class MusicplayerViewModel(private val dao: MusicplayerDataAccess) : ViewModel() {
+class MusicplayerViewModel(private val dao: MusicplayerDataAccess) : ExtendedBaseViewModel() {
     val allTracks: LiveData<List<Track>> = dao.getAllTracks().asLiveData()
     val allAlbums: LiveData<List<Album>> = dao.getAllAbums().asLiveData()
     val deletedTracks: LiveData<List<Track>> = dao.getDeletedTracks().asLiveData()

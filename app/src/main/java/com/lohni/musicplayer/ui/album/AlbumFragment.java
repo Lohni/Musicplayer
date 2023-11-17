@@ -29,8 +29,7 @@ import com.lohni.musicplayer.interfaces.PlaybackControlInterface;
 import com.lohni.musicplayer.interfaces.QueueControlInterface;
 import com.lohni.musicplayer.transition.AlbumDetailTransition;
 import com.lohni.musicplayer.ui.views.SideIndex;
-import com.lohni.musicplayer.utils.enums.ListType;
-import com.lohni.musicplayer.utils.enums.PlaybackBehaviourState;
+import com.lohni.musicplayer.utils.enums.PlaybackBehaviour;
 
 import java.util.ArrayList;
 
@@ -47,9 +46,6 @@ public class AlbumFragment extends Fragment {
     private PlaybackControlInterface playbackControlInterface;
 
     private boolean scrolling = false;
-
-    public AlbumFragment() {
-    }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -128,14 +124,14 @@ public class AlbumFragment extends Fragment {
             popupMenu.getMenuInflater().inflate(R.menu.album_item_menu, popupMenu.getMenu());
             popupMenu.setOnMenuItemClickListener(item -> {
                 if (item.getItemId() == R.id.menu_album_play) {
-                    playbackControlInterface.onPlaybackBehaviourChangeListener(PlaybackBehaviourState.REPEAT_LIST);
+                    playbackControlInterface.onPlaybackBehaviourChangeListener(PlaybackBehaviour.REPEAT_LIST);
                     songInterface.onSongListCreatedListener(albumItems.get(position).trackList, albumItems.get(position).album, true);
                     songInterface.onSongSelectedListener(albumItems.get(position).trackList.get(0));
                 } else if (item.getItemId() == R.id.menu_album_queue) {
                     songInterface.onAddSongsToSonglistListener(albumItems.get(position).trackList, false);
                 } else if (item.getItemId() == R.id.menu_album_shuffle) {
                     songInterface.onSongListCreatedListener(albumItems.get(position).trackList, albumItems.get(position).album, true);
-                    playbackControlInterface.onPlaybackBehaviourChangeListener(PlaybackBehaviourState.SHUFFLE);
+                    playbackControlInterface.onPlaybackBehaviourChangeListener(PlaybackBehaviour.SHUFFLE);
                 }
                 return false;
             });

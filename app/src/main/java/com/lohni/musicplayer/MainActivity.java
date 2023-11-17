@@ -4,29 +4,25 @@ import android.Manifest;
 import android.animation.ArgbEvaluator;
 import android.animation.ObjectAnimator;
 import android.animation.ValueAnimator;
-import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.database.Cursor;
-import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
-import android.provider.MediaStore;
 import android.view.MenuItem;
 import android.view.View;
 
 import com.google.android.material.appbar.AppBarLayout;
 import com.google.android.material.navigation.NavigationView;
 import com.lohni.musicplayer.core.ApplicationDataViewModel;
+import com.lohni.musicplayer.core.MediaStoreSync;
 import com.lohni.musicplayer.core.MusicService;
 import com.lohni.musicplayer.core.MusicplayerServiceConnection;
 import com.lohni.musicplayer.database.MusicplayerApplication;
 import com.lohni.musicplayer.database.dao.AudioEffectDataAccess;
 import com.lohni.musicplayer.database.dao.MusicplayerDataAccess;
-import com.lohni.musicplayer.database.dto.AlbumTrackDTO;
 import com.lohni.musicplayer.database.entity.Album;
 import com.lohni.musicplayer.database.entity.Track;
 import com.lohni.musicplayer.database.viewmodel.AudioEffectViewModel;
@@ -45,17 +41,15 @@ import com.lohni.musicplayer.ui.playbackcontrol.PlaybackControl;
 import com.lohni.musicplayer.ui.playlist.PlaylistFragment;
 import com.lohni.musicplayer.ui.settings.SettingFragment;
 import com.lohni.musicplayer.ui.songlist.SongList;
-import com.lohni.musicplayer.ui.tagEditor.TagEditorFragment;
 import com.lohni.musicplayer.utils.AdapterUtils;
-import com.lohni.musicplayer.utils.GeneralUtils;
 import com.lohni.musicplayer.utils.Permissions;
+import com.lohni.musicplayer.utils.enums.AudioEffectType;
 import com.lohni.musicplayer.utils.enums.PlaybackAction;
-import com.lohni.musicplayer.utils.enums.PlaybackBehaviourState;
+import com.lohni.musicplayer.utils.enums.PlaybackBehaviour;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import androidx.annotation.NonNull;
@@ -80,7 +74,6 @@ public class MainActivity extends AppCompatActivity implements PlaybackControlIn
     private AudioEffectViewModel audioEffectViewModel;
     private MusicplayerViewModel musicplayerViewModel;
 
-    private MotionLayout motionLayout;
     private ActionBarDrawerToggle toggle;
     private MusicplayerServiceConnection serviceConnection;
 
@@ -94,7 +87,7 @@ public class MainActivity extends AppCompatActivity implements PlaybackControlIn
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         drawer = findViewById(R.id.drawer_layout);
-        motionLayout = findViewById(R.id.parentContainer);
+        MotionLayout motionLayout = findViewById(R.id.parentContainer);
         Toolbar toolbar = findViewById(R.id.toolbar);
         appBarLayout = findViewById(R.id.appbar);
         NavigationView navigationView = findViewById(R.id.nav_view);
@@ -142,11 +135,6 @@ public class MainActivity extends AppCompatActivity implements PlaybackControlIn
             @Override
             public void onDrawerClosed(@NonNull View drawerView) {
                 if (selectedDrawerFragment != null) {
-                    if (selectedDrawerFragment instanceof SongList && musicService.getCurrSong() != null) {
-                        Bundle bundle = new Bundle();
-                        bundle.putInt("ID", musicService.getCurrSong().getTId());
-                        selectedDrawerFragment.setArguments(bundle);
-                    }
                     getSupportFragmentManager().beginTransaction().replace(R.id.nav_host_fragment, selectedDrawerFragment).commit();
                 }
             }
@@ -176,108 +164,18 @@ public class MainActivity extends AppCompatActivity implements PlaybackControlIn
     }
 
     private void compareTracksToDatabase(ArrayList<Track> tracks) {
-        ArrayList<Track> toInsert = new ArrayList<>();
-
-        Uri musicUri = (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
-                ? MediaStore.Audio.Media.getContentUri(MediaStore.VOLUME_EXTERNAL)
-                : MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
-
-        Cursor musicCursor = getApplicationContext().getContentResolver().query(musicUri, null, null, null, null);
-        if (musicCursor != null && musicCursor.moveToFirst()) {
-            int titleColumn = musicCursor.getColumnIndex(android.provider.MediaStore.Audio.Media.TITLE);
-            int idColumn = musicCursor.getColumnIndex(MediaStore.Audio.Media._ID);
-            int artistColumn = musicCursor.getColumnIndex(android.provider.MediaStore.Audio.Media.ARTIST);
-            int albumid = musicCursor.getColumnIndex(MediaStore.Audio.Media.ALBUM_ID);
-            int durationColumn = musicCursor.getColumnIndex(MediaStore.Audio.Media.DURATION);
-            int trackIdColumn = musicCursor.getColumnIndex(MediaStore.Audio.Media.TRACK);
-
-            do {
-                long thisalbumid = musicCursor.getLong(albumid);
-                long thisId = musicCursor.getLong(idColumn);
-                long duration = musicCursor.getLong(durationColumn);
-                String thisTitle = musicCursor.getString(titleColumn);
-                String thisArtist = musicCursor.getString(artistColumn);
-                int trackId = musicCursor.getInt(trackIdColumn);
-
-                Track track = new Track();
-                track.setTId((int) thisId);
-                track.setTAlbumId((int) thisalbumid);
-                track.setTTitle(thisTitle);
-                track.setTArtist(thisArtist);
-                track.setTDuration((int) duration);
-                track.setTTrackNr(trackId);
-                track.setTIsFavourite(0);
-                track.setTDeleted(0);
-                track.setTCreated(GeneralUtils.getCurrentUTCTimestamp());
-
-                Optional<Track> optionalTrackDB = tracks.stream().filter(trackDB -> trackDB.getTId().equals((int) thisId)).findFirst();
-                if (optionalTrackDB.isPresent()) {
-                    Track trackDB = optionalTrackDB.get();
-                    track.setTIsFavourite(trackDB.getTIsFavourite());
-                    track.setTCreated(trackDB.getTCreated());
-                    track.setTDeleted(trackDB.getTDeleted());
-                }
-
-                toInsert.add(track);
-            } while (musicCursor.moveToNext());
-        }
-
-        if (musicCursor != null) musicCursor.close();
+        ArrayList<Track> toInsert = MediaStoreSync.Companion.syncMediaStoreTracks(getApplicationContext(), tracks);
 
         AdapterUtils.loadCoverImagesAsync(getBaseContext(), toInsert, new ViewModelProvider(this).get(ApplicationDataViewModel.class));
 
-        ArrayList<Integer> insertIds = toInsert.stream().map(Track::getTId).collect(Collectors.toCollection(ArrayList::new));
-        ArrayList<Track> toDelete = tracks.stream().filter(track -> !insertIds.contains(track.getTId())).collect(Collectors.toCollection(ArrayList::new));
-
-        if (!toDelete.isEmpty()) {
-            musicplayerViewModel.deleteTracks(toDelete);
-        }
+        ArrayList<Track> toDelete = tracks.stream().filter(track -> !toInsert.contains(track)).collect(Collectors.toCollection(ArrayList::new));
+        if (!toDelete.isEmpty()) musicplayerViewModel.deleteTracks(toDelete);
 
         musicplayerViewModel.insertTracks(toInsert);
     }
 
     private void compareAlbumsToDatabase(ArrayList<Album> albums) {
-        ArrayList<Integer> idsFromDatabase = albums.stream().map(Album::getAId).collect(Collectors.toCollection(ArrayList::new));
-        ArrayList<Album> toInsert = new ArrayList<>();
-        ArrayList<Integer> toDelete = new ArrayList<>();
-
-        ContentResolver contentResolver = getApplication().getContentResolver();
-        Uri musicUri = MediaStore.Audio.Albums.EXTERNAL_CONTENT_URI;
-
-        final String _id = MediaStore.Audio.Albums._ID;
-        final String album_name = MediaStore.Audio.Albums.ALBUM;
-        final String totSongs = MediaStore.Audio.Albums.NUMBER_OF_SONGS;
-        final String artist_Name = MediaStore.Audio.Albums.ARTIST;
-        final String albumArt = MediaStore.Audio.Albums.ALBUM_ART;
-
-        Cursor cursor = contentResolver.query(musicUri, null, null, null, null);
-        if (cursor != null && cursor.moveToFirst()) {
-            int albumIdColum = cursor.getColumnIndex(_id);
-            int albumArtistColumn = cursor.getColumnIndex(artist_Name);
-            int albumNameColumn = cursor.getColumnIndex(album_name);
-            int albumTotSongsColumn = cursor.getColumnIndex(totSongs);
-            int artUriColumn = cursor.getColumnIndex(albumArt);
-
-            do {
-                long albumId = cursor.getLong(albumIdColum);
-                String albumName = cursor.getString(albumNameColumn);
-                String albumArtist = cursor.getString(albumArtistColumn);
-                int totalSongs = cursor.getInt(albumTotSongsColumn);
-                String artUri = cursor.getString(artUriColumn);
-
-                Album album = new Album();
-                album.setAId((int) albumId);
-                album.setAArtUri(artUri);
-                album.setANumSongs(totalSongs);
-                album.setAArtistName(albumArtist);
-                album.setAName(albumName);
-                album.setACreated(GeneralUtils.getCurrentUTCTimestamp());
-
-                toInsert.add(album);
-
-            } while (cursor.moveToNext());
-        }
-        if (cursor != null) cursor.close();
+        ArrayList<Album> toInsert = MediaStoreSync.Companion.syncMediaStoreAlbums(getApplicationContext(), albums);
         musicplayerViewModel.insertAlbums(toInsert);
 
         musicplayerViewModel.getAllAlbumsWithTracks().observe(this, albumWithTracks -> {
@@ -285,7 +183,6 @@ public class MainActivity extends AppCompatActivity implements PlaybackControlIn
             AdapterUtils.loadAlbumCoverImagesAsync(getBaseContext(), albumWithTracks, new ViewModelProvider(this).get(ApplicationDataViewModel.class));
         });
     }
-
 
     private void loadDashboard(Fragment fragment) {
         FragmentManager fm = getSupportFragmentManager();
@@ -330,26 +227,41 @@ public class MainActivity extends AppCompatActivity implements PlaybackControlIn
     private void initialiseAudioEffects() {
         audioEffectViewModel.getActiveAdvancedReverbPreset().observe(this, reverbSettings -> {
             audioEffectViewModel.getActiveAdvancedReverbPreset().removeObservers(this);
-            if (reverbSettings != null)
-                sendBroadcast(new Intent(getString(R.string.musicservice_reverb_values)).putExtra("VALUES", reverbSettings));
+            if (reverbSettings != null) {
+                sendBroadcast(new Intent(getString(R.string.musicservice_audioeffect))
+                        .putExtra("VALUES", reverbSettings)
+                        .putExtra("EFFECT_TYPE", AudioEffectType.Companion.getIntFromAudioEffectType(AudioEffectType.ENV_REVERB)));
+            }
         });
         audioEffectViewModel.getActiveEqualizerPreset().observe(this, equalizerPreset -> {
             audioEffectViewModel.getActiveEqualizerPreset().removeObservers(this);
             if (equalizerPreset != null)
-                sendBroadcast(new Intent(getString(R.string.musicservice_equalizer_values)).putExtra("VALUES", equalizerPreset));
+                sendBroadcast(new Intent(getString(R.string.musicservice_audioeffect))
+                        .putExtra("VALUES", equalizerPreset)
+                        .putExtra("EFFECT_TYPE", AudioEffectType.Companion.getIntFromAudioEffectType(AudioEffectType.EQUALIZER)));
         });
 
         SharedPreferences sharedPreferences = getPreferences(Context.MODE_PRIVATE);
         boolean eqEnabled = sharedPreferences.getBoolean(getString(R.string.preference_equalizer_isenabled), false);
-        sendBroadcast(new Intent(getString(R.string.musicservice_equalizer_enabled)).putExtra("ENABLED", eqEnabled));
+        sendBroadcast(new Intent(getString(R.string.musicservice_audioeffect))
+                .putExtra("EFFECT_TYPE", AudioEffectType.Companion.getIntFromAudioEffectType(AudioEffectType.EQUALIZER))
+                .putExtra("ENABLED", eqEnabled));
         boolean bbEnabled = sharedPreferences.getBoolean(getString(R.string.preference_bassboost_isenabled), false);
-        sendBroadcast(new Intent(getString(R.string.musicservice_bassboost_enabled)).putExtra("ENABLED", bbEnabled));
+        sendBroadcast(new Intent(getString(R.string.musicservice_audioeffect))
+                .putExtra("EFFECT_TYPE", AudioEffectType.Companion.getIntFromAudioEffectType(AudioEffectType.BASSBOOST))
+                .putExtra("ENABLED", bbEnabled));
         boolean loudnessEnabled = sharedPreferences.getBoolean(getString(R.string.preference_loudnessenhancer_isenabled), false);
-        sendBroadcast(new Intent(getString(R.string.musicservice_loudness_enhancer_enabled)).putExtra("ENABLED", loudnessEnabled));
+        sendBroadcast(new Intent(getString(R.string.musicservice_audioeffect))
+                .putExtra("EFFECT_TYPE", AudioEffectType.Companion.getIntFromAudioEffectType(AudioEffectType.LOUDNESS_ENHANCER))
+                .putExtra("ENABLED", loudnessEnabled));
         boolean reverbEnabled = sharedPreferences.getBoolean(getString(R.string.preference_reverb_isenabled), false);
-        sendBroadcast(new Intent(getString(R.string.musicservice_reverb_enabled)).putExtra("ENABLED", reverbEnabled));
+        sendBroadcast(new Intent(getString(R.string.musicservice_audioeffect))
+                .putExtra("EFFECT_TYPE", AudioEffectType.Companion.getIntFromAudioEffectType(AudioEffectType.ENV_REVERB))
+                .putExtra("ENABLED", reverbEnabled));
         boolean virtualizerEnabled = sharedPreferences.getBoolean(getString(R.string.preference_virtualizer_isenabled), false);
-        sendBroadcast(new Intent(getString(R.string.musicservice_virtualizer_enabled)).putExtra("ENABLED", virtualizerEnabled));
+        sendBroadcast(new Intent(getString(R.string.musicservice_audioeffect))
+                .putExtra("EFFECT_TYPE", AudioEffectType.Companion.getIntFromAudioEffectType(AudioEffectType.VIRTUALIZER))
+                .putExtra("ENABLED", virtualizerEnabled));
     }
 
     @Override
@@ -406,41 +318,28 @@ public class MainActivity extends AppCompatActivity implements PlaybackControlIn
     }
 
     @Override
-    public void onPlaybackBehaviourChangeListener(@NonNull PlaybackBehaviourState newState) {
+    public void onPlaybackBehaviourChangeListener(@NonNull PlaybackBehaviour newState) {
         musicService.setPlaybackBehaviour(newState);
     }
 
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
         getSupportFragmentManager().popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
-        switch (item.getItemId()) {
-            case R.id.nav_tracklist: {
-                selectedDrawerFragment = new SongList();
-                break;
-            }
-            case R.id.nav_album: {
-                selectedDrawerFragment = new AlbumFragment();
-                break;
-            }
-            case R.id.nav_playlist: {
-                selectedDrawerFragment = new PlaylistFragment();
-                break;
-            }
-            case R.id.nav_equalizer: {
-                EqualizerViewPager equalizerFragment = new EqualizerViewPager();
-                equalizerFragment.setSettings(musicService.getEqualizerBandLevels(), musicService.getEqualizerProperties());
-                selectedDrawerFragment = equalizerFragment;
-                break;
-            }
-            case R.id.nav_tagEditor: {
-                selectedDrawerFragment = new TagEditorFragment();
-                break;
-            }
-            case R.id.nav_settings: {
-                selectedDrawerFragment = new SettingFragment();
-                break;
-            }
+
+        if (item.getItemId() == R.id.nav_tracklist) {
+            selectedDrawerFragment = new SongList();
+        } else if (item.getItemId() == R.id.nav_album) {
+            selectedDrawerFragment = new AlbumFragment();
+        } else if (item.getItemId() == R.id.nav_playlist) {
+            selectedDrawerFragment = new PlaylistFragment();
+        } else if (item.getItemId() == R.id.nav_equalizer) {
+            EqualizerViewPager equalizerFragment = new EqualizerViewPager();
+            equalizerFragment.setSettings(musicService.getEqualizerBandLevels(), musicService.getEqualizerProperties());
+            selectedDrawerFragment = equalizerFragment;
+        } else if (item.getItemId() == R.id.nav_settings) {
+            selectedDrawerFragment = new SettingFragment();
         }
+
         drawer.closeDrawer(GravityCompat.START);
         return true;
     }
@@ -536,14 +435,13 @@ public class MainActivity extends AppCompatActivity implements PlaybackControlIn
 
     @Override
     public void onOrderChangeListener(int fromPosition, int toPosition) {
-        musicService.changeOrder(fromPosition, toPosition, true);
+        musicService.changeOrder(fromPosition, toPosition);
     }
 
     @Override
     public void onServiceConnected(@NonNull MusicService musicService) {
         this.musicService = musicService;
         initialiseAudioEffects();
-        musicService.sendCurrentStateToPlaybackControl();
 
         runnable = () -> {
             PlaybackControl pc = (PlaybackControl) getSupportFragmentManager().findFragmentByTag(getString(R.string.fragment_playbackControl));

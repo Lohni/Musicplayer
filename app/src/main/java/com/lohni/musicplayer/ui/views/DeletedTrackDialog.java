@@ -8,10 +8,10 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.google.android.material.button.MaterialButton;
 import com.lohni.musicplayer.R;
 import com.lohni.musicplayer.adapter.TrackSelectionAdapter;
 import com.lohni.musicplayer.database.entity.Track;
-import com.google.android.material.button.MaterialButton;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -40,11 +40,6 @@ public class DeletedTrackDialog extends DialogFragment {
     @Override
     public int getTheme() {
         return R.style.DialogAnim;
-    }
-
-    @Override
-    public void onStart() {
-        super.onStart();
     }
 
     @Nullable

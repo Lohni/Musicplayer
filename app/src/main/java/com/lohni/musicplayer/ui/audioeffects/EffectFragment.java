@@ -11,6 +11,7 @@ import android.view.ViewGroup;
 import com.google.android.material.switchmaterial.SwitchMaterial;
 import com.lohni.musicplayer.R;
 import com.lohni.musicplayer.ui.views.ControlKnob;
+import com.lohni.musicplayer.utils.enums.AudioEffectType;
 
 import androidx.fragment.app.Fragment;
 
@@ -65,30 +66,42 @@ public class EffectFragment extends Fragment {
         });
 
         bassBoost.setOnControlKnobActionUpListener(() -> {
-            requireActivity().sendBroadcast(new Intent(getString(R.string.musicservice_bassboost_strength)).putExtra("STRENGTH", bassBoostStrength));
+            requireActivity().sendBroadcast(new Intent(getString(R.string.musicservice_audioeffect))
+                    .putExtra("EFFECT_TYPE", AudioEffectType.Companion.getIntFromAudioEffectType(AudioEffectType.BASSBOOST))
+                    .putExtra("STRENGTH", bassBoostStrength));
             sharedPreferences.edit().putInt(getString(R.string.preference_bassboost_strength), bassBoostStrength).apply();
         });
         virtualizer.setOnControlKnobActionUpListener(() -> {
-            requireActivity().sendBroadcast(new Intent(getString(R.string.musicservice_virtualizer_strength)).putExtra("STRENGTH", virtualizerStrength));
+            requireActivity().sendBroadcast(new Intent(getString(R.string.musicservice_audioeffect))
+                    .putExtra("EFFECT_TYPE", AudioEffectType.Companion.getIntFromAudioEffectType(AudioEffectType.VIRTUALIZER))
+                    .putExtra("STRENGTH", virtualizerStrength));
             sharedPreferences.edit().putInt(getString(R.string.preference_virtualizer_strength), virtualizerStrength).apply();
         });
         loudnessEnhancer.setOnControlKnobActionUpListener(() -> {
-            requireActivity().sendBroadcast(new Intent(getString(R.string.musicservice_loudness_enhancer_strength)).putExtra("STRENGTH", loudnessEnhancerStrength));
+            requireActivity().sendBroadcast(new Intent(getString(R.string.musicservice_audioeffect))
+                    .putExtra("EFFECT_TYPE", AudioEffectType.Companion.getIntFromAudioEffectType(AudioEffectType.LOUDNESS_ENHANCER))
+                    .putExtra("STRENGTH", loudnessEnhancerStrength));
             sharedPreferences.edit().putInt(getString(R.string.preference_loudnessenhancer_strength), loudnessEnhancerStrength).apply();
         });
 
         bassBoostSwitch.setOnCheckedChangeListener((compoundButton, b) -> {
-            requireActivity().sendBroadcast(new Intent(getString(R.string.musicservice_bassboost_enabled)).putExtra("ENABLED", b));
+            requireActivity().sendBroadcast(new Intent(getString(R.string.musicservice_audioeffect))
+                    .putExtra("EFFECT_TYPE", AudioEffectType.Companion.getIntFromAudioEffectType(AudioEffectType.BASSBOOST))
+                    .putExtra("ENABLED", b));
             sharedPreferences.edit().putBoolean(getString(R.string.preference_bassboost_isenabled), b).apply();
             bassBoost.isEnabled(b);
         });
         virtualizerSwitch.setOnCheckedChangeListener((compoundButton, b) -> {
-            requireActivity().sendBroadcast(new Intent(getString(R.string.musicservice_virtualizer_enabled)).putExtra("ENABLED", b));
+            requireActivity().sendBroadcast(new Intent(getString(R.string.musicservice_audioeffect))
+                    .putExtra("EFFECT_TYPE", AudioEffectType.Companion.getIntFromAudioEffectType(AudioEffectType.VIRTUALIZER))
+                    .putExtra("ENABLED", b));
             sharedPreferences.edit().putBoolean(getString(R.string.preference_virtualizer_isenabled), b).apply();
             virtualizer.isEnabled(b);
         });
         loudnessEnhancerSwitch.setOnCheckedChangeListener((compoundButton, b) -> {
-            requireActivity().sendBroadcast(new Intent(getString(R.string.musicservice_loudness_enhancer_enabled)).putExtra("ENABLED", b));
+            requireActivity().sendBroadcast(new Intent(getString(R.string.musicservice_audioeffect))
+                    .putExtra("EFFECT_TYPE", AudioEffectType.Companion.getIntFromAudioEffectType(AudioEffectType.LOUDNESS_ENHANCER))
+                    .putExtra("ENABLED", b));
             sharedPreferences.edit().putBoolean(getString(R.string.preference_loudnessenhancer_isenabled), b).apply();
             loudnessEnhancer.isEnabled(b);
         });

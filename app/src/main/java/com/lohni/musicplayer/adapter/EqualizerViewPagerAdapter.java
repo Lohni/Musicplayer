@@ -11,8 +11,8 @@ import androidx.viewpager2.adapter.FragmentStateAdapter;
 
 public class EqualizerViewPagerAdapter extends FragmentStateAdapter {
 
-    private short[] equalizerBandLevels;
-    private EqualizerProperties equalizerProperties;
+    private final short[] equalizerBandLevels;
+    private final EqualizerProperties equalizerProperties;
 
     public EqualizerViewPagerAdapter(@NonNull Fragment fragment,
                                      short[] equalizerBandLevels,

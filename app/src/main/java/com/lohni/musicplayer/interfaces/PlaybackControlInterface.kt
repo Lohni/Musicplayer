@@ -1,11 +1,11 @@
 package com.lohni.musicplayer.interfaces
 
-import com.lohni.musicplayer.utils.enums.PlaybackBehaviourState
+import com.lohni.musicplayer.utils.enums.PlaybackBehaviour
 
 interface PlaybackControlInterface {
     fun onNextClickListener()
     fun onPreviousClickListener()
     fun onProgressChangeListener(progress: Int)
-    fun onPlaybackBehaviourChangeListener(behaviour: PlaybackBehaviourState)
+    fun onPlaybackBehaviourChangeListener(behaviour: PlaybackBehaviour)
     fun onStateChangeListener()
 }

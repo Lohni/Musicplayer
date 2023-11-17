@@ -6,14 +6,14 @@ import com.lohni.musicplayer.database.entity.Preference
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-class PreferenceViewModel(private val dao: PreferenceDataAccess) : ViewModel() {
+class PreferenceViewModel(private val dao: PreferenceDataAccess) : ExtendedBaseViewModel() {
 
     fun getAllPreferences(): LiveData<List<Preference>> {
         return dao.getAllPreferences().asLiveData()
     }
 
-    fun getPreferenceByKey(key: String): LiveData<Preference> {
-        return dao.getPreferenceByKey(key).asLiveData()
+    fun getPreferenceById(id: Int): LiveData<Preference> {
+        return dao.getPreferenceById(id).asLiveData()
     }
 
     fun updatePreference(preference: Preference) = viewModelScope.launch(Dispatchers.IO) {

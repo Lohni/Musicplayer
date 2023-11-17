@@ -62,13 +62,15 @@ public class NotificationControl {
     }
 
     private void updateNotification(Context context, Track track) {
-        Uri trackUri = ContentUris.withAppendedId(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, track != null ? track.getTId() : 0);
         byte[] thumbnail = null;
-        try (MediaMetadataRetriever mmr = new MediaMetadataRetriever()) {
-            mmr.setDataSource(context, trackUri);
-            thumbnail = mmr.getEmbeddedPicture();
-        } catch (Exception e) {
-            e.printStackTrace();
+        if (track != null) {
+            Uri trackUri = ContentUris.withAppendedId(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, track.getTId());
+            try (MediaMetadataRetriever mmr = new MediaMetadataRetriever()) {
+                mmr.setDataSource(context, trackUri);
+                thumbnail = mmr.getEmbeddedPicture();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
 
         if (thumbnail != null) {

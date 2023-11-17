@@ -5,11 +5,9 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Paint;
-import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.text.InputType;
 import android.transition.Slide;
-import android.util.DisplayMetrics;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -22,30 +20,31 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.android.material.snackbar.BaseTransientBottomBar;
-import com.google.android.material.snackbar.Snackbar;
 import com.lohni.musicplayer.R;
 import com.lohni.musicplayer.adapter.PlaylistDetailAdapter;
+import com.lohni.musicplayer.core.ApplicationDataViewModel;
+import com.lohni.musicplayer.core.DeleteSnackbar;
 import com.lohni.musicplayer.database.MusicplayerApplication;
-import com.lohni.musicplayer.database.dao.MusicplayerDataAccess;
 import com.lohni.musicplayer.database.dao.PlaylistDataAccess;
+import com.lohni.musicplayer.database.dto.PlaylistItemDTO;
 import com.lohni.musicplayer.database.entity.Playlist;
-import com.lohni.musicplayer.database.entity.PlaylistItem;
 import com.lohni.musicplayer.database.entity.PlaylistPlayed;
 import com.lohni.musicplayer.database.entity.Track;
-import com.lohni.musicplayer.database.viewmodel.MusicplayerViewModel;
+import com.lohni.musicplayer.database.viewmodel.PlaylistDetailViewModel;
 import com.lohni.musicplayer.database.viewmodel.PlaylistViewModel;
 import com.lohni.musicplayer.interfaces.NavigationControlInterface;
 import com.lohni.musicplayer.interfaces.OnStartDragListener;
 import com.lohni.musicplayer.interfaces.PlaybackControlInterface;
 import com.lohni.musicplayer.interfaces.QueueControlInterface;
-import com.lohni.musicplayer.ui.views.CustomDividerItemDecoration;
 import com.lohni.musicplayer.utils.GeneralUtils;
-import com.lohni.musicplayer.utils.enums.PlaybackBehaviourState;
+import com.lohni.musicplayer.utils.enums.PlaybackBehaviour;
+import com.lohni.musicplayer.utils.images.ImageUtil;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Optional;
+import java.util.Comparator;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import androidx.annotation.NonNull;
 import androidx.constraintlayout.widget.ConstraintLayout;
@@ -59,46 +58,30 @@ import androidx.recyclerview.widget.RecyclerView;
 
 public class PlaylistDetail extends Fragment implements OnStartDragListener, PlaylistDetailAdapter.PlaylistClickListener {
 
-    private RecyclerView list;
-    private RecyclerView.LayoutManager layoutManager;
     private PlaylistDetailAdapter playlistDetailAdapter;
     private NavigationControlInterface navigationControlInterface;
-    private TextView info;
-    private ConstraintLayout shuffle;
-    private View snackbar_anchor;
-    private Snackbar snackbar;
+    private DeleteSnackbar<PlaylistItemDTO> snackbar;
     private ItemTouchHelper itemTouchhelper;
-    private boolean isSnackbarActive = false, undo = false, isSecondDelete = false;
-
-    private int deleteID, oldDeleteID = -1;
-    private Track deletedSong;
-
     private PlaylistViewModel playlistViewModel;
-    private MusicplayerViewModel musicplayerViewModel;
-
-    private Playlist playlist;
-    private ArrayList<PlaylistItem> playlistItems;
-    private ArrayList<Track> trackList = new ArrayList<>();
-
+    private PlaylistDetailViewModel playlistDetailViewModel;
+    private ApplicationDataViewModel applicationDataViewModel;
     private QueueControlInterface songInterface;
     protected PlaybackControlInterface playbackControlInterface;
-
-    private int playlistId;
-
-    public PlaylistDetail() {
-    }
+    private final ArrayList<PlaylistItemDTO> playlistItemList = new ArrayList<>();
+    private int deleteID = -1;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        playlistId = getArguments().getInt("PLAYLIST_ID");
+        int playlistId = getArguments().getInt("PLAYLIST_ID");
 
-        PlaylistDataAccess aod = ((MusicplayerApplication) requireActivity().getApplication()).getDatabase().playlistDao();
-        playlistViewModel = new ViewModelProvider(requireActivity(), new PlaylistViewModel.PlaylistViewModelFactory(aod)).get(PlaylistViewModel.class);
+        PlaylistDataAccess pda = ((MusicplayerApplication) requireActivity().getApplication()).getDatabase().playlistDao();
+        playlistViewModel = new ViewModelProvider(requireActivity(), new PlaylistViewModel.PlaylistViewModelFactory(pda)).get(PlaylistViewModel.class);
+        playlistDetailViewModel = new ViewModelProvider(requireActivity(), new PlaylistDetailViewModel.PlaylistDetailViewModelFactory(pda)).get(PlaylistDetailViewModel.class);
+        applicationDataViewModel = new ViewModelProvider(requireActivity()).get(ApplicationDataViewModel.class);
 
-        MusicplayerDataAccess mda = ((MusicplayerApplication) requireActivity().getApplication()).getDatabase().musicplayerDao();
-        musicplayerViewModel = new ViewModelProvider(this, new MusicplayerViewModel.MusicplayerViewModelFactory(mda)).get(MusicplayerViewModel.class);
+        playlistDetailViewModel.setPlaylistById(playlistId);
     }
 
     @Override
@@ -111,6 +94,12 @@ public class PlaylistDetail extends Fragment implements OnStartDragListener, Pla
         } catch (ClassCastException e) {
             throw new ClassCastException(context + "must implement interface");
         }
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        recalcOrdinal();
     }
 
     @Override
@@ -127,7 +116,6 @@ public class PlaylistDetail extends Fragment implements OnStartDragListener, Pla
     public void onResume() {
         super.onResume();
         recalcOrdinal();
-        this.trackList.clear();
     }
 
     @Override
@@ -138,40 +126,43 @@ public class PlaylistDetail extends Fragment implements OnStartDragListener, Pla
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        if (item.getItemId() == R.id.action_playlist_detail_add) {
-            PlaylistDetailAdd playlistDetailAdd = new PlaylistDetailAdd();
+        playlistDetailViewModel.observeOnce(playlistDetailViewModel.getPlaylist(), getViewLifecycleOwner(), playlist -> {
+            playlistDetailViewModel.getPlaylist().removeObservers(this);
 
-            Bundle bundle = new Bundle();
-            bundle.putString("PLAYLIST_NAME", playlist.getPName());
-            bundle.putInt("PLAYLIST_ID", playlistId);
-            bundle.putInt("PLAYLIST_SIZE", playlistItems.size());
-            playlistDetailAdd.setArguments(bundle);
+            if (item.getItemId() == R.id.action_playlist_detail_add) {
+                PlaylistDetailAdd playlistDetailAdd = new PlaylistDetailAdd();
 
-            Slide anim = new Slide();
-            anim.setSlideEdge(Gravity.RIGHT);
-            anim.setDuration(200);
+                Bundle bundle = new Bundle();
+                bundle.putInt("PLAYLIST_ID", playlist.getPId());
+                bundle.putInt("PLAYLIST_SIZE", playlistDetailAdapter.getItemCount());
+                playlistDetailAdd.setArguments(bundle);
 
-            playlistDetailAdd.setEnterTransition(anim);
-            requireActivity().getSupportFragmentManager().beginTransaction().replace(R.id.nav_host_fragment, playlistDetailAdd, "FRAGMENT_PLAYLISTDETAILADD").addToBackStack(null).commit();
-        } else if (item.getItemId() == R.id.action_playlist_detail_edit) {
-            AlertDialog.Builder builder = new AlertDialog.Builder(requireContext()).setTitle("Rename playlist");
+                Slide anim = new Slide();
+                anim.setSlideEdge(Gravity.END);
+                anim.setDuration(200);
 
-            final EditText input = new EditText(requireContext());
-            input.setInputType(InputType.TYPE_CLASS_TEXT);
-            input.setText(playlist.getPName());
-            builder.setView(input);
+                playlistDetailAdd.setEnterTransition(anim);
+                requireActivity().getSupportFragmentManager().beginTransaction().replace(R.id.nav_host_fragment, playlistDetailAdd, "FRAGMENT_PLAYLISTDETAILADD").addToBackStack(null).commit();
+            } else if (item.getItemId() == R.id.action_playlist_detail_edit) {
+                AlertDialog.Builder builder = new AlertDialog.Builder(requireContext()).setTitle("Rename playlist");
+                final EditText input = new EditText(requireContext());
+                input.setInputType(InputType.TYPE_CLASS_TEXT);
+                input.setText(playlist.getPName());
+                builder.setView(input);
 
-            builder.setPositiveButton("Rename", (dialogInterface, i) -> {
-                playlist.setPName(input.getText().toString());
-                playlistViewModel.renamePlaylist(playlist);
+                builder.setPositiveButton("Rename", (dialogInterface, i) -> {
+                    playlist.setPName(input.getText().toString());
+                    playlistViewModel.renamePlaylist(playlist);
 
-                navigationControlInterface.setToolbarTitle(playlist.getPName());
-                Toast.makeText(requireContext(), "Renamed playlist to: " + playlist.getPName(), Toast.LENGTH_SHORT).show();
+                    navigationControlInterface.setToolbarTitle(playlist.getPName());
+                    Toast.makeText(requireContext(), "Renamed playlist to: " + playlist.getPName(), Toast.LENGTH_SHORT).show();
 
-            });
-            builder.setNegativeButton("Cancel", (dialogInterface, i) -> dialogInterface.cancel());
-            builder.show();
-        }
+                });
+                builder.setNegativeButton("Cancel", (dialogInterface, i) -> dialogInterface.cancel());
+                builder.show();
+
+            }
+        });
         return super.onOptionsItemSelected(item);
     }
 
@@ -180,48 +171,43 @@ public class PlaylistDetail extends Fragment implements OnStartDragListener, Pla
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_playlist_detail, container, false);
-        list = view.findViewById(R.id.playlistdetail_list);
-        snackbar_anchor = view.findViewById(R.id.playlist_detail_snackbar_anchor);
-        info = view.findViewById(R.id.playlistdetail_duration);
-        shuffle = view.findViewById(R.id.playlistdetail_shuffle);
+        RecyclerView list = view.findViewById(R.id.playlistdetail_list);
+        View snackbar_anchor = view.findViewById(R.id.playlist_detail_snackbar_anchor);
+        TextView info = view.findViewById(R.id.playlistdetail_duration);
+        ConstraintLayout shuffle = view.findViewById(R.id.playlistdetail_shuffle);
         list.setHasFixedSize(true);
         list.setLayoutAnimation(AnimationUtils.loadLayoutAnimation(requireContext(), R.anim.layout_animation_fall_down));
 
-        CustomDividerItemDecoration dividerItemDecoration = new CustomDividerItemDecoration(requireContext(), R.drawable.recyclerview_divider);
-        list.addItemDecoration(dividerItemDecoration);
-        list.setAdapter(playlistDetailAdapter = new PlaylistDetailAdapter(requireContext(), this.trackList, this, this));
+        list.setAdapter(playlistDetailAdapter = new PlaylistDetailAdapter(requireContext(), playlistItemList, this, this));
 
-        playlistViewModel.getPlaylistById(playlistId).observe(getViewLifecycleOwner(), target -> {
-            this.playlist = target;
+        playlistDetailViewModel.getPlaylist().observe(getViewLifecycleOwner(), playlist -> {
             navigationControlInterface.setToolbarTitle(playlist.getPName());
         });
 
-        playlistViewModel.getPlaylistItemsByPlaylistId(playlistId).observe(getViewLifecycleOwner(), items -> {
-            this.playlistItems = new ArrayList<>();
-            this.playlistItems.addAll(items);
-
-            musicplayerViewModel.getTracksByIdsOrderByPlaylistItemOrdinal(playlistId).observe(getViewLifecycleOwner(), tracks -> {
-                if (playlistDetailAdapter.getItemCount() == 0) {
-                    this.trackList.clear();
-                    this.trackList.addAll(tracks);
-                    playlistDetailAdapter.notifyItemRangeInserted(0, tracks.size());
-                }
-
-                long time = tracks.stream().map(Track::getTDuration).reduce(0, Integer::sum).longValue();
-                String infoText = tracks.size() + " songs - " + convertTime(time);
-                info.setText(infoText);
-            });
+        applicationDataViewModel.getTrackImages().observe(getViewLifecycleOwner(), drawables -> {
+            playlistDetailAdapter.setDrawableHashMap(drawables);
         });
 
-        layoutManager = new LinearLayoutManager(requireContext());
+        playlistDetailViewModel.getPlaylistItems().observe(getViewLifecycleOwner(), playlistItemDtos -> {
+            int sizePreClear = playlistItemList.size();
+            playlistItemList.clear();
+            playlistDetailAdapter.notifyItemRangeRemoved(0, sizePreClear);
+            playlistItemList.addAll(playlistItemDtos);
+            playlistDetailAdapter.notifyItemRangeInserted(0, playlistItemDtos.size());
+
+            int time = playlistItemDtos.stream().map(PlaylistItemDTO::getTrack).map(Track::getTDuration).reduce(0, Integer::sum);
+            String infoText = playlistItemDtos.size() + " songs - " + GeneralUtils.convertTime(time);
+            info.setText(infoText);
+        });
+
+        RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(requireContext());
         list.setLayoutManager(layoutManager);
         list.setItemAnimator(null);
 
         Paint p = new Paint();
         p.setColor(ContextCompat.getColor(requireContext(), R.color.colorSecondary));
-        Bitmap icon = getBitmapFromVectorDrawable(requireContext(), R.drawable.ic_delete_sweep_black_24dp);
+        Bitmap icon = ImageUtil.getBitmapFromVectorDrawable(requireContext(), R.drawable.ic_delete_sweep_black_24dp);
 
-        //Todo: Drag/ change order
         ItemTouchHelper.SimpleCallback simpleCallback = new ItemTouchHelper.SimpleCallback(ItemTouchHelper.UP | ItemTouchHelper.DOWN, ItemTouchHelper.LEFT) {
             @Override
             public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, @NonNull RecyclerView.ViewHolder target) {
@@ -230,40 +216,28 @@ public class PlaylistDetail extends Fragment implements OnStartDragListener, Pla
 
                 if (fromPosition < toPosition) {
                     for (int i = fromPosition; i < toPosition; i++) {
-                        Collections.swap(trackList, i, i + 1);
-                        Collections.swap(playlistItems, i, i + 1);
+                        Collections.swap(playlistItemList, i, i + 1);
                     }
                 } else {
                     for (int i = fromPosition; i > toPosition; i--) {
-                        Collections.swap(trackList, i, i - 1);
-                        Collections.swap(playlistItems, i, i - 1);
+                        Collections.swap(playlistItemList, i, i - 1);
                     }
                 }
 
                 playlistDetailAdapter.notifyItemMoved(fromPosition, toPosition);
-                recalcOrdinal();
                 return false;
             }
 
             @Override
             public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
                 if (direction == ItemTouchHelper.LEFT) {
-                    if (isSnackbarActive && snackbar != null) {
-                        isSecondDelete = true;
-                        snackbar.dismiss();
-                    }
-                    if (!isSecondDelete) {
-                        removeTrack();
-                        createSnackbar();
-                        isSnackbarActive = true;
-                    }
+                    addToSnackbar(snackbar_anchor);
                 }
             }
 
             @Override
             public boolean isLongPressDragEnabled() {
                 return true;
-                //return super.isLongPressDragEnabled();
             }
 
             @Override
@@ -277,11 +251,9 @@ public class PlaylistDetail extends Fragment implements OnStartDragListener, Pla
                         c.drawRect((float) itemView.getRight() + dX, (float) itemView.getTop(),
                                 (float) itemView.getRight(), (float) itemView.getBottom(), p);
 
-
                         if (-dX > icon.getWidth() * 2) {
-                            c.drawBitmap(icon, (float) itemView.getRight() - convertDpToPx(16) - icon.getWidth(),
-                                    (float) itemView.getTop() + ((float) itemView.getBottom() - (float) itemView.getTop() - icon.getHeight()) / 2,
-                                    p);
+                            c.drawBitmap(icon, (float) itemView.getRight() - ImageUtil.convertDpToPixel(16f, getResources()) - icon.getWidth(),
+                                    (float) itemView.getTop() + ((float) itemView.getBottom() - (float) itemView.getTop() - icon.getHeight()) / 2, p);
                         }
                     }
                 }
@@ -293,86 +265,42 @@ public class PlaylistDetail extends Fragment implements OnStartDragListener, Pla
         itemTouchhelper.attachToRecyclerView(list);
 
         shuffle.setOnClickListener(shuffleView -> {
-            playbackControlInterface.onPlaybackBehaviourChangeListener(PlaybackBehaviourState.SHUFFLE);
-            playbackControlInterface.onNextClickListener();
-            onPlaylistPlayed();
+            playlistDetailViewModel.observeOnce(playlistDetailViewModel.getPlaylist(), getViewLifecycleOwner(), playlist -> {
+                playbackControlInterface.onPlaybackBehaviourChangeListener(PlaybackBehaviour.SHUFFLE);
+                playbackControlInterface.onNextClickListener();
+                onPlaylistPlayed(playlist);
+            });
         });
+
+        snackbar = new DeleteSnackbar<>(5000);
+        snackbar.setOnUndoListener(toUndo -> {
+            toUndo.stream().sorted((Comparator.comparing(o -> o.getPlaylistItem().getPiCustomOrdinal())))
+                    .forEach(item -> {
+                        playlistItemList.add(item.getPlaylistItem().getPiCustomOrdinal(), item);
+                        playlistDetailAdapter.notifyItemInserted(item.getPlaylistItem().getPiCustomOrdinal());
+                    });
+        });
+
+        snackbar.setOnDissmissedListener(toDelete -> {
+            playlistViewModel.deletePlaylistItemList(toDelete.stream().map(PlaylistItemDTO::getPlaylistItem).collect(Collectors.toList()));
+            recalcOrdinal();
+        });
+
         return view;
     }
 
     private void recalcOrdinal() {
-        if (playlistItems != null) {
-            for (int i = 0; i < playlistItems.size(); i++) {
-                playlistItems.get(i).setPiCustomOrdinal(i);
-            }
-
-            playlistViewModel.updatePlaylistItemList(playlistItems);
+        for (int i = 0; i < playlistItemList.size(); i++) {
+            playlistItemList.get(i).getPlaylistItem().setPiCustomOrdinal(i);
         }
+
+        playlistViewModel.updatePlaylistItemList(playlistItemList.stream().map(PlaylistItemDTO::getPlaylistItem).collect(Collectors.toList()));
     }
 
-    private void createSnackbar() {
-        snackbar = Snackbar.make(snackbar_anchor, "song will be deleted!", Snackbar.LENGTH_LONG)
-                .setAction("Undo", view -> undo = true).addCallback(new BaseTransientBottomBar.BaseCallback<>() {
-                    @Override
-                    public void onDismissed(Snackbar transientBottomBar, int event) {
-                        super.onDismissed(transientBottomBar, event);
-                        if (undo) {
-                            trackList.add(oldDeleteID, deletedSong);
-                            playlistDetailAdapter.notifyItemInserted(oldDeleteID);
-                        } else {
-                            Optional<PlaylistItem> itemToDelete = playlistItems.stream()
-                                    .filter(item -> item.getPiTId().equals(deletedSong.getTId()))
-                                    .findFirst();
-
-                            itemToDelete.ifPresent(playlistItem -> playlistViewModel.deletePlaylistItem(playlistItem));
-                        }
-                        undo = false;
-                        if (isSecondDelete) {
-                            isSecondDelete = false;
-                            removeTrack();
-                            createSnackbar();
-                        }
-                    }
-                }).setDuration(5000);
-        snackbar.show();
-    }
-
-    private void removeTrack() {
-        deletedSong = trackList.get(deleteID);
-        trackList.remove(deleteID);
+    private void addToSnackbar(View anchor) {
+        snackbar.addToDelete(playlistItemList.get(deleteID), anchor);
+        playlistItemList.remove(deleteID);
         playlistDetailAdapter.notifyItemRemoved(deleteID);
-        oldDeleteID = deleteID;
-    }
-
-    public static Bitmap getBitmapFromVectorDrawable(Context context, int drawableId) {
-        Drawable drawable = ContextCompat.getDrawable(context, drawableId);
-
-        Bitmap bitmap = Bitmap.createBitmap(drawable.getIntrinsicWidth(),
-                drawable.getIntrinsicHeight(), Bitmap.Config.ARGB_8888);
-        Canvas canvas = new Canvas(bitmap);
-        drawable.setBounds(0, 0, canvas.getWidth(), canvas.getHeight());
-        drawable.draw(canvas);
-
-        return bitmap;
-    }
-
-    private int convertDpToPx(int dp) {
-        return Math.round(dp * (getResources().getDisplayMetrics().xdpi / DisplayMetrics.DENSITY_DEFAULT));
-    }
-
-    public String getTable() {
-        return playlist.getPName();
-    }
-
-    private String convertTime(long duration) {
-        float d = (float) duration / (1000 * 60);
-        int min = (int) d;
-        float seconds = (d - min) * 60;
-        int sec = (int) seconds;
-        String minute = min + "", second = sec + "";
-        if (min < 10) minute = "0" + minute;
-        if (sec < 10) second = "0" + second;
-        return minute + ":" + second;
     }
 
     @Override
@@ -380,15 +308,17 @@ public class PlaylistDetail extends Fragment implements OnStartDragListener, Pla
         itemTouchhelper.startDrag(viewHolder);
     }
 
-
     @Override
     public void onAdapterItemClickListener(int position) {
-        songInterface.onSongListCreatedListener(trackList, playlist, false);
-        songInterface.onSongSelectedListener(trackList.get(position));
-        onPlaylistPlayed();
+        playlistDetailViewModel.observeOnce(playlistDetailViewModel.getPlaylist(), getViewLifecycleOwner(), playlist -> {
+            List<Track> trackList = playlistItemList.stream().map(PlaylistItemDTO::getTrack).collect(Collectors.toList());
+            songInterface.onSongListCreatedListener(trackList, playlist, false);
+            songInterface.onSongSelectedListener(trackList.get(position));
+            onPlaylistPlayed(playlist);
+        });
     }
 
-    private void onPlaylistPlayed() {
+    private void onPlaylistPlayed(Playlist playlist) {
         PlaylistPlayed playlistPlayed = new PlaylistPlayed();
         playlistPlayed.setPpPId(playlist.getPId());
         playlistPlayed.setPpPlayed(GeneralUtils.getCurrentUTCTimestamp());

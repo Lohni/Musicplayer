@@ -97,7 +97,7 @@ public class SideIndex {
         sideIndex.addView(indexLayout);
     }
 
-    public SideIndex setIndexList(ArrayList<?> dtos) {
+    public SideIndex setIndexList(List<?> dtos) {
         if (!dtos.isEmpty()) {
             Object type = dtos.get(0);
             if (type instanceof Track) {

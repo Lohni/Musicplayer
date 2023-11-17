@@ -20,8 +20,9 @@ import androidx.recyclerview.widget.RecyclerView;
 
 public class TrackSelectionAdapter extends RecyclerView.Adapter<TrackSelectionAdapter.ViewHolder> implements Filterable {
 
-    private ArrayList<Track> trackList, mDisplayedvalues, selected;
-    private ArrayList<Integer> originalIndex;
+    private ArrayList<Track> trackList;
+    private ArrayList<Track> mDisplayedvalues;
+    private final ArrayList<Track> selected;
     private final Context context;
     private OnTrackSelectedListener onTrackSelectedListener;
 
@@ -60,9 +61,7 @@ public class TrackSelectionAdapter extends RecyclerView.Adapter<TrackSelectionAd
             }
 
             viewHolder.checkBox.setChecked(!viewHolder.checkBox.isChecked());
-            if (onTrackSelectedListener != null) {
-                onTrackSelectedListener.onSongSelected(position);
-            }
+            if (onTrackSelectedListener != null) onTrackSelectedListener.onSongSelected(position);
         });
 
         if (viewHolder.checkBox.isChecked()) {
@@ -106,14 +105,11 @@ public class TrackSelectionAdapter extends RecyclerView.Adapter<TrackSelectionAd
             protected FilterResults performFiltering(CharSequence constraint) {
                 FilterResults filterResults = new FilterResults();
                 ArrayList<Track> filteredList = new ArrayList<>();
-                originalIndex = new ArrayList<>();
 
                 if (trackList == null) {
-                    trackList = new ArrayList<Track>(mDisplayedvalues);
+                    trackList = new ArrayList<>(mDisplayedvalues);
                 }
                 if (constraint == null || constraint.length() == 0) {
-
-                    // set the Original result to return
                     filterResults.count = trackList.size();
                     filterResults.values = trackList;
                 } else {
@@ -122,10 +118,8 @@ public class TrackSelectionAdapter extends RecyclerView.Adapter<TrackSelectionAd
                         String data = trackList.get(i).getTTitle();
                         if (data.toLowerCase().startsWith(constraint.toString())) {
                             filteredList.add(trackList.get(i));
-                            originalIndex.add(i);
                         }
                     }
-                    // set the Filtered result to return
                     filterResults.count = filteredList.size();
                     filterResults.values = filteredList;
                 }

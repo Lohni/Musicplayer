@@ -48,10 +48,6 @@ public class ReverbFragment extends Fragment {
     private SharedPreferences sharedPreferences;
     private boolean enabled = false;
 
-    public ReverbFragment() {
-        // Required empty public constructor
-    }
-
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -193,7 +189,7 @@ public class ReverbFragment extends Fragment {
     private void persistControlKnobChanged() {
         if (selectedIndex >= 0) {
             audioEffectViewModel.updateAdvancedReverbPreset(currentState);
-            requireActivity().sendBroadcast(new Intent(getString(R.string.musicservice_reverb_values)).putExtra("VALUES", currentState));
+            requireActivity().sendBroadcast(new Intent(getString(R.string.musicservice_audioeffect)).putExtra("REVERB", currentState));
         }
     }
 

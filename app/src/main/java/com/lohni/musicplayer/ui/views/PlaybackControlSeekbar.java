@@ -121,7 +121,8 @@ public class PlaybackControlSeekbar extends View {
 
     public void onStopTrackingTouch() {
         mIsDragged = false;
-        if (onSeekbarChangeListener != null) onSeekbarChangeListener.onStopTrackingTouch(this);
+        if (onSeekbarChangeListener != null)
+            onSeekbarChangeListener.onStopTrackingTouch(this, progress);
     }
 
     private void trackingTouch(MotionEvent event) {
@@ -138,10 +139,13 @@ public class PlaybackControlSeekbar extends View {
     }
 
     public interface OnSeekbarChangeListener {
-        void onProgressChanged(PlaybackControlSeekbar seekbar, int progress, boolean fromUser);
+        default void onProgressChanged(PlaybackControlSeekbar seekbar, int progress, boolean fromUser) {
+        }
+
+        ;
 
         void onStartTrackingTouch(PlaybackControlSeekbar seekbar);
 
-        void onStopTrackingTouch(PlaybackControlSeekbar seekbar);
+        void onStopTrackingTouch(PlaybackControlSeekbar seekbar, int progress);
     }
 }

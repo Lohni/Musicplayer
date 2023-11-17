@@ -20,14 +20,14 @@ import android.widget.Toast;
 
 import com.lohni.musicplayer.R;
 import com.lohni.musicplayer.adapter.QueueAdapter;
+import com.lohni.musicplayer.core.ApplicationDataViewModel;
 import com.lohni.musicplayer.database.entity.Track;
 import com.lohni.musicplayer.helper.DragItemTouchHelper;
 import com.lohni.musicplayer.interfaces.NavigationControlInterface;
 import com.lohni.musicplayer.interfaces.PlaybackControlInterface;
-import com.lohni.musicplayer.interfaces.ServiceTriggerInterface;
 import com.lohni.musicplayer.interfaces.QueueControlInterface;
+import com.lohni.musicplayer.interfaces.ServiceTriggerInterface;
 import com.lohni.musicplayer.utils.enums.PlaybackBehaviour;
-import com.lohni.musicplayer.utils.enums.PlaybackBehaviourState;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,33 +36,30 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 public class QueueFragment extends Fragment {
-    private ArrayList<Track> queueTracks = new ArrayList<>();
-    private RecyclerView queueList;
+    private final ArrayList<Track> queueTracks = new ArrayList<>();
     private QueueAdapter adapter;
     private View menuLayout;
     private LinearLayoutManager linearLayoutManager;
-
     private QueueControlInterface songInterface;
     private PlaybackControlInterface playbackControlInterface;
     private ServiceTriggerInterface serviceTriggerInterface;
     private NavigationControlInterface navigationControlInterface;
-    private PlaybackBehaviourState playbackBehaviour;
+    private PlaybackBehaviour playbackBehaviour;
+    private ApplicationDataViewModel applicationDataViewModel;
     private int queuePosition = -1;
     private boolean scrolling = false;
-
-    public QueueFragment() {
-    }
 
     @Override
     public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
         inflater.inflate(R.menu.queue_menu, menu);
-        menu.getItem(0).setIcon(PlaybackBehaviour.getDrawableResourceIdForState(playbackBehaviour));
+        menu.getItem(0).setIcon(PlaybackBehaviour.Companion.getDrawableResourceIdForState(playbackBehaviour));
         menu.getItem(0).setIconTintList(ContextCompat.getColorStateList(requireContext(), R.color.colorOnSurface));
         menu.getItem(1).setIconTintList(ContextCompat.getColorStateList(requireContext(), R.color.colorOnSurface));
         menu.getItem(2).setIconTintList(ContextCompat.getColorStateList(requireContext(), R.color.colorOnSurface));
@@ -89,7 +86,7 @@ public class QueueFragment extends Fragment {
                 builder.show();
             });
 
-            if (playbackBehaviour == PlaybackBehaviourState.REPEAT_LIST) {
+            if (playbackBehaviour == PlaybackBehaviour.REPEAT_LIST) {
                 menuLayout.findViewById(R.id.queue_delete_menu_played).setOnClickListener((view) -> {
                     filterMenu.dismiss();
                     AlertDialog.Builder builder = new AlertDialog.Builder(requireContext()).setTitle("Clear played songs");
@@ -118,8 +115,8 @@ public class QueueFragment extends Fragment {
             filterMenu.setOutsideTouchable(true);
             filterMenu.showAsDropDown(requireActivity().findViewById(R.id.toolbar), 0, 0, Gravity.END);
         } else if (item.getItemId() == R.id.action_queue_behaviour) {
-            playbackBehaviour = PlaybackBehaviour.getNextState(playbackBehaviour);
-            item.setIcon(PlaybackBehaviour.getDrawableResourceIdForState(playbackBehaviour));
+            playbackBehaviour = PlaybackBehaviour.Companion.getNextState(playbackBehaviour);
+            item.setIcon(PlaybackBehaviour.Companion.getDrawableResourceIdForState(playbackBehaviour));
             adapter.updatePlaybackBehaviourState(playbackBehaviour);
             playbackControlInterface.onPlaybackBehaviourChangeListener(playbackBehaviour);
         } else if (item.getItemId() == R.id.action_queue_jumpto) {
@@ -149,10 +146,8 @@ public class QueueFragment extends Fragment {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
         postponeEnterTransition();
-        if (getArguments() != null) {
-            queuePosition = getArguments().getInt("QUEUE_POS", -1);
-            playbackBehaviour = PlaybackBehaviour.getStateFromInteger(getArguments().getInt("BEHAVIOUR_STATE", 3));
-        }
+
+        applicationDataViewModel = new ViewModelProvider(requireActivity()).get(ApplicationDataViewModel.class);
 
         IntentFilter intentFilter = new IntentFilter(getResources().getString(R.string.playback_control_values));
         intentFilter.addAction(getResources().getString(R.string.musicservice_song_prepared));
@@ -163,7 +158,7 @@ public class QueueFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_queue, container, false);
-        queueList = view.findViewById(R.id.queue_list);
+        RecyclerView queueList = view.findViewById(R.id.queue_list);
         View anchor = view.findViewById(R.id.queue_snackbar_anchor);
         menuLayout = inflater.inflate(R.layout.queue_delete_menu, null);
 
@@ -176,6 +171,11 @@ public class QueueFragment extends Fragment {
         queueList.setLayoutManager(linearLayoutManager);
         queueList.setHasFixedSize(true);
         queueList.setAdapter(adapter);
+
+        applicationDataViewModel.getTrackImages().observe(getViewLifecycleOwner(), drawableHashMap -> {
+            adapter.setDrawableHashMap(drawableHashMap);
+            adapter.notifyItemRangeChanged(0, adapter.getItemCount());
+        });
 
         DragItemTouchHelper dragItemCallback = new DragItemTouchHelper(ItemTouchHelper.UP | ItemTouchHelper.DOWN, ItemTouchHelper.LEFT, requireContext(), adapter, anchor);
         dragItemCallback.setTargetList(queueTracks);
@@ -225,25 +225,24 @@ public class QueueFragment extends Fragment {
         super.onDetach();
     }
 
-    private BroadcastReceiver receiver = new BroadcastReceiver() {
+    private final BroadcastReceiver receiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             if (intent.getAction().equals(getResources().getString(R.string.playback_control_values))) {
                 Bundle bundle = intent.getExtras();
                 queuePosition = bundle.getInt("QUEUE_INDEX", -1);
+                playbackBehaviour = PlaybackBehaviour.Companion.getStateFromInteger(bundle.getInt("BEHAVIOUR_STATE", 3));
+
                 if (queueTracks.isEmpty()) {
-                    playbackBehaviour = PlaybackBehaviour.getStateFromInteger(bundle.getInt("BEHAVIOUR_STATE", 3));
                     queueTracks.addAll(bundle.getParcelableArrayList(getString(R.string.parcelable_track_list)));
-                    adapter.getAllBackgroundImages(queueTracks);
                     adapter.notifyItemRangeInserted(0, queueTracks.size());
                     startPostponedEnterTransition();
                     linearLayoutManager.scrollToPosition(queuePosition);
+                    requireActivity().invalidateOptionsMenu();
+                    adapter.updatePlaybackBehaviourState(playbackBehaviour);
                 }
                 adapter.setNewQueuePosition(queuePosition);
-            } else if (intent.getAction().equals(getResources().getString(R.string.musicservice_song_prepared))) {
-                Bundle bundle = intent.getExtras();
-                queuePosition = bundle.getInt("LIST_INDEX", -1);
-                adapter.setNewQueuePosition(queuePosition);
+
             }
         }
     };

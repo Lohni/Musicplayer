@@ -12,6 +12,7 @@ import com.lohni.musicplayer.database.dao.MusicplayerDataAccess;
 import com.lohni.musicplayer.database.dao.PreferenceDataAccess;
 import com.lohni.musicplayer.database.entity.Preference;
 import com.lohni.musicplayer.database.entity.Track;
+import com.lohni.musicplayer.database.enums.PreferenceEnum;
 import com.lohni.musicplayer.database.viewmodel.MusicplayerViewModel;
 import com.lohni.musicplayer.database.viewmodel.PreferenceViewModel;
 import com.lohni.musicplayer.ui.views.DeletedTrackDialog;
@@ -30,9 +31,6 @@ public class SettingFragment extends Fragment {
     private PreferenceViewModel preferenceViewModel;
     private MusicplayerViewModel musicplayerViewModel;
     private List<Preference> preferenceList;
-
-    public SettingFragment() {
-    }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -53,12 +51,12 @@ public class SettingFragment extends Fragment {
         init();
 
         rangeSeekbar.setOnValueChangedListener((value, dragHandle) -> {
-            String key = (dragHandle == RangeSeekbar.DragHandle.FROM)
-                    ? requireContext().getString(R.string.db_preference_include_from)
-                    : requireContext().getString(R.string.db_preference_include_to);
+            PreferenceEnum targetPref = (dragHandle == RangeSeekbar.DragHandle.FROM)
+                    ? PreferenceEnum.INCLUDE_DURATION_FROM
+                    : PreferenceEnum.INCLUDE_DURATION_TO;
 
             Optional<Preference> toUpdate = preferenceList.stream()
-                    .filter(pref -> pref.getPrefKey().equals(key))
+                    .filter(pref -> pref.getPrefId().equals(targetPref.getId()))
                     .findFirst();
 
             toUpdate.ifPresent(pref -> {
@@ -78,10 +76,6 @@ public class SettingFragment extends Fragment {
                         musicplayerViewModel.updateTrack(track);
                     }
                 });
-                Slide slide = new Slide();
-                slide.setDuration(500);
-                slide.setSlideEdge(Gravity.END);
-                dialog.setEnterTransition(slide);
                 dialog.show(getParentFragmentManager(), "DELETE_DIALOG");
             });
         });
@@ -90,20 +84,16 @@ public class SettingFragment extends Fragment {
     }
 
     private void init() {
-        preferenceViewModel.getAllPreferences().observe(getViewLifecycleOwner(), preferences -> {
-            preferenceViewModel.getAllPreferences().removeObservers(getViewLifecycleOwner());
+        preferenceViewModel.observeOnce(preferenceViewModel.getAllPreferences(), getViewLifecycleOwner(), preferences -> {
             preferenceList = preferences;
 
-            String includeKeyFrom = requireContext().getString(R.string.db_preference_include_from);
-            String includeKeyTo = requireContext().getString(R.string.db_preference_include_to);
-
             Optional<String> includeFrom = preferenceList.stream()
-                    .filter(pref -> pref.getPrefKey().equals(includeKeyFrom))
+                    .filter(pref -> pref.getPrefId().equals(PreferenceEnum.INCLUDE_DURATION_FROM.getId()))
                     .map(Preference::getPrefValue)
                     .findFirst();
 
             Optional<String> includeTo = preferenceList.stream()
-                    .filter(pref -> pref.getPrefKey().equals(includeKeyTo))
+                    .filter(pref -> pref.getPrefId().equals(PreferenceEnum.INCLUDE_DURATION_TO.getId()))
                     .map(Preference::getPrefValue)
                     .findFirst();
 

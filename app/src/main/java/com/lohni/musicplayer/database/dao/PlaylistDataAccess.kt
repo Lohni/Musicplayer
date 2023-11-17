@@ -2,9 +2,11 @@ package com.lohni.musicplayer.database.dao
 
 import androidx.room.*
 import com.lohni.musicplayer.database.dto.PlaylistDTO
+import com.lohni.musicplayer.database.dto.PlaylistItemDTO
 import com.lohni.musicplayer.database.entity.Playlist
 import com.lohni.musicplayer.database.entity.PlaylistItem
 import com.lohni.musicplayer.database.entity.PlaylistPlayed
+import com.lohni.musicplayer.database.entity.Track
 import kotlinx.coroutines.flow.Flow
 
 /**
@@ -35,6 +37,9 @@ interface PlaylistDataAccess {
 
     @Delete
     fun deletePlaylistItem(playlistMtc: PlaylistItem)
+
+    @Delete
+    fun deletePlaylistItems(playlistItemList: List<PlaylistItem>)
 
     @Update
     fun updatePlaylistItemList(playlistItemList: List<PlaylistItem>)
@@ -69,5 +74,9 @@ interface PlaylistDataAccess {
     @Query("SELECT p.* FROM Playlist p JOIN PlaylistItem on pi_p_id = p_id WHERE pi_t_id = :id")
     fun getPlaylistsByTrackId(id: Int): Flow<List<Playlist>>
 
+    @Query("SELECT t.* FROM PlaylistItem JOIN TRACK as t on pi_t_id = t_id WHERE pi_p_id = :playlistId ORDER BY pi_custom_ordinal ASC")
+    fun getTracksByIdsOrderByPlaylistItemOrdinal(playlistId: Int): Flow<List<Track>>
 
+    @Query("SELECT * FROM PlaylistItem JOIN TRACK on pi_t_id = t_id WHERE pi_p_id = :playlistId ORDER BY pi_custom_ordinal ASC")
+    fun getPlaylistItemsWithTrackByPlaylistItemOrdinal(playlistId: Int): Flow<List<PlaylistItemDTO>>
 }

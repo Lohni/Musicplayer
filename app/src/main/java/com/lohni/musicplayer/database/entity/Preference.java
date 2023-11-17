@@ -12,10 +12,6 @@ public class Preference {
     @ColumnInfo(name = "pref_id")
     private Integer prefId;
 
-    @NonNull
-    @ColumnInfo(name = "pref_key")
-    private String prefKey;
-
     @ColumnInfo(name = "pref_value")
     private String prefValue;
 
@@ -26,15 +22,6 @@ public class Preference {
 
     public void setPrefId(@NonNull Integer prefId) {
         this.prefId = prefId;
-    }
-
-    @NonNull
-    public String getPrefKey() {
-        return prefKey;
-    }
-
-    public void setPrefKey(@NonNull String prefKey) {
-        this.prefKey = prefKey;
     }
 
     public String getPrefValue() {

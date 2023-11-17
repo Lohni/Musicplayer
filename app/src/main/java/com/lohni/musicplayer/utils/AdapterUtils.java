@@ -22,42 +22,47 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
+
+import androidx.recyclerview.widget.RecyclerView;
 
 public class AdapterUtils {
-    public synchronized static void loadCoverImagesAsync(Context context, List<Track> newList, ApplicationDataViewModel vm) {
-        new Thread(() -> {
-            MediaMetadataRetriever mmr = new MediaMetadataRetriever();
-            HashMap<Integer, Drawable> drawableHashMap = new HashMap<>();
+    public static void loadCoverImagesAsync(Context context, List<Track> newList, ApplicationDataViewModel vm) {
+        int numThreads = (newList.size() < 50) ? 1 : Math.min(10, newList.size() / 50);
+        Executor executor = Executors.newFixedThreadPool(numThreads);
+        int batch = (int) Math.ceil((float) newList.size() / numThreads);
+        for (int i = 0; i < numThreads; i++) {
+            List<Track> subList = newList.subList(i * batch, Math.min((i + 1) * batch, newList.size() - 1));
+            executor.execute(() -> {
+                MediaMetadataRetriever mmr = new MediaMetadataRetriever();
+                HashMap<Integer, Drawable> drawableHashMap = new HashMap<>(newList.size());
 
-            int batch = 20;
-            int count = 0;
-            for (Track track : newList) {
-                Integer trackId = track.getTId();
-                Uri trackUri = ContentUris.withAppendedId(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, trackId);
-                try {
-                    mmr.setDataSource(context, trackUri);
-                    byte[] thumbnail = mmr.getEmbeddedPicture();
-                    if (thumbnail != null) {
-                        Bitmap cover = BitmapFactory.decodeByteArray(thumbnail, 0, thumbnail.length);
-                        Drawable drawable = ImageUtil.roundCorners(cover, context.getResources());
-                        drawableHashMap.put(trackId, drawable);
-                        count++;
+                for (Track track : subList) {
+                    Integer trackId = track.getTId();
+                    Uri trackUri = ContentUris.withAppendedId(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, trackId);
+                    try {
+                        mmr.setDataSource(context, trackUri);
+                        byte[] thumbnail = mmr.getEmbeddedPicture();
+                        if (thumbnail != null) {
+                            Bitmap cover = BitmapFactory.decodeByteArray(thumbnail, 0, thumbnail.length);
+                            Drawable drawable = ImageUtil.roundCorners(cover, context.getResources());
+                            drawableHashMap.put(trackId, drawable);
+                        }
+                    } catch (IllegalArgumentException ignored) {
                     }
-                } catch (IllegalArgumentException ignored) {
                 }
-                if (count % batch == 0) vm.addImageDrawables(drawableHashMap);
-            }
-
-            try {
-                vm.addImageDrawables(drawableHashMap);
-                mmr.release();
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        }).start();
+                try {
+                    vm.addImageDrawables(drawableHashMap);
+                    mmr.release();
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            });
+        }
     }
 
-    public synchronized static void loadAlbumCoverImagesAsync(Context context, List<AlbumTrackDTO> newList, ApplicationDataViewModel vm) {
+    public static void loadAlbumCoverImagesAsync(Context context, List<AlbumTrackDTO> newList, ApplicationDataViewModel vm) {
         new Thread(() -> {
             HashMap<Integer, Drawable> drawableHashMap = new HashMap<>();
             MediaMetadataRetriever mmr = new MediaMetadataRetriever();
@@ -78,12 +83,9 @@ public class AdapterUtils {
                     } catch (IllegalArgumentException ignored) {
                     }
 
-                    if (coverList.size() >= 4) {
-                        break;
-                    }
+                    if (coverList.size() >= 4) break;
                 }
-                ImageUtil.createBitmapCollection(coverList, context)
-                        .ifPresent(coll -> drawableHashMap.put(albumTrackDTO.album.getAId(), coll));
+                ImageUtil.createBitmapCollection(coverList, context).ifPresent(coll -> drawableHashMap.put(albumTrackDTO.album.getAId(), coll));
             }
             vm.addAlbumDrawable(drawableHashMap);
             try {
@@ -131,5 +133,31 @@ public class AdapterUtils {
             }
         }
         return "";
+    }
+
+    public static int moveItemToNewPositionList(List<TrackDTO> oldList, List<TrackDTO> newList, RecyclerView.Adapter adapter) {
+        int toPos = 0, targetId = -1;
+        if (oldList.size() == newList.size()) {
+            for (int i = 0; i < oldList.size(); i++) {
+                if (!newList.get(i).getTrack().getTId().equals(oldList.get(i).getTrack().getTId())) {
+                    toPos = i;
+                    targetId = newList.get(i).getTrack().getTId();
+                    break;
+                }
+            }
+
+            if (targetId >= 0) {
+                int fromPos = 0;
+                for (int i = 0; i < oldList.size(); i++) {
+                    if (oldList.get(i).getTrack().getTId().equals(targetId)) {
+                        fromPos = i;
+                        break;
+                    }
+                }
+
+                adapter.notifyItemMoved(fromPos, toPos);
+            }
+        }
+        return toPos;
     }
 }
