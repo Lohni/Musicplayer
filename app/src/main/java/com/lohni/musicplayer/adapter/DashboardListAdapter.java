@@ -12,12 +12,6 @@ import android.view.animation.DecelerateInterpolator;
 import android.widget.FrameLayout;
 import android.widget.TextView;
 
-import androidx.annotation.NonNull;
-import androidx.constraintlayout.widget.ConstraintLayout;
-import androidx.core.content.ContextCompat;
-import androidx.core.content.res.ResourcesCompat;
-import androidx.recyclerview.widget.RecyclerView;
-
 import com.lohni.musicplayer.R;
 import com.lohni.musicplayer.database.dto.AlbumDTO;
 import com.lohni.musicplayer.database.dto.DashboardDTO;
@@ -30,10 +24,16 @@ import com.lohni.musicplayer.utils.enums.ListFilterType;
 import java.util.HashMap;
 import java.util.List;
 
+import androidx.annotation.NonNull;
+import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.core.content.ContextCompat;
+import androidx.core.content.res.ResourcesCompat;
+import androidx.recyclerview.widget.RecyclerView;
+
 public class DashboardListAdapter<T extends DashboardDTO> extends RecyclerView.Adapter<DashboardListAdapter<T>.ViewHolder> {
     private final List<T> list;
     private final Drawable customCoverDrawable, backgroundDrawable;
-    private final ListFilterType type;
+    private ListFilterType type;
     private final Context context;
     private final HashMap<Integer, Drawable> drawableHashMap = new HashMap<>();
 
@@ -50,7 +50,7 @@ public class DashboardListAdapter<T extends DashboardDTO> extends RecyclerView.A
         this.context = context;
         this.list = list;
         this.type = type;
-        
+
         customCoverDrawable = ResourcesCompat.getDrawable(context.getResources(), R.drawable.ic_baseline_music_note_24, null);
         backgroundDrawable = ResourcesCompat.getDrawable(context.getResources(), R.drawable.background_button_secondary, null);
 
@@ -106,7 +106,7 @@ public class DashboardListAdapter<T extends DashboardDTO> extends RecyclerView.A
             setViewHolderBackground(holder, albumDTO.getAlbum().album.getAId());
         }
 
-        holder.root.setOnClickListener((view) ->{
+        holder.root.setOnClickListener((view) -> {
             if (onItemClickListener != null) {
                 onItemClickListener.onItemClick(list.get(position));
             }
@@ -159,6 +159,10 @@ public class DashboardListAdapter<T extends DashboardDTO> extends RecyclerView.A
 
     public void setOnItemClickListener(OnItemClickListener<T> onItemClickListener) {
         this.onItemClickListener = onItemClickListener;
+    }
+
+    public void updateFilterType(ListFilterType filterType) {
+        this.type = filterType;
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {

@@ -26,11 +26,11 @@ public class XYGraphView extends View {
     private float textHeight = 0;
     private float padding = 0;
     float yScale = 0;
-    private Paint paint = new Paint();
+    private final Paint paint = new Paint();
 
     private float[] xScaledValues, yScaledValues;
     private String[] xDesc;
-    private StatisticType statisticType = StatisticType.PER_PERIOD;
+    private final StatisticType statisticType = StatisticType.PER_PERIOD;
 
     public XYGraphView(Context context) {
         super(context);

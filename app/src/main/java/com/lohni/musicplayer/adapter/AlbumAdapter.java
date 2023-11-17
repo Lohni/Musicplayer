@@ -139,7 +139,7 @@ public class AlbumAdapter extends RecyclerView.Adapter<AlbumAdapter.ViewHolder> 
 
     public class ViewHolder extends RecyclerView.ViewHolder {
         public MaterialTextView albumName, albumSize, albumArtist;
-        private ImageButton albumOptions;
+        private final ImageButton albumOptions;
         public View albumCover;
         public LinearLayout constraintLayout;
 

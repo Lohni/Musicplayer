@@ -4,15 +4,18 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.widget.Toast
 import com.lohni.musicplayer.R
 import com.lohni.musicplayer.database.MusicplayerDatabase
 import com.lohni.musicplayer.database.dao.MusicplayerDataAccess
 import com.lohni.musicplayer.database.entity.*
 import com.lohni.musicplayer.utils.GeneralUtils
+import com.lohni.musicplayer.utils.enums.ListType
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 
 class SystemBroadcastReceiver : BroadcastReceiver() {
@@ -27,27 +30,28 @@ class SystemBroadcastReceiver : BroadcastReceiver() {
             } else if (intent.action.equals(p0.resources.getString(R.string.musicservice_song_prepared))) {
                 val bundle: Bundle = intent.extras!!
                 val trackId: Int = bundle.getInt("ID")
-                val albumId: Int = bundle.getInt("ALBUM_ID", -1)
-                val playlistId: Int = bundle.getInt("PLAYLIST_ID", -1)
+                val listTypeId: Int = bundle.getInt("TYPE")
+                val listTypeObjectId: Int = bundle.getInt("TYPE_OBJECT_ID", -1)
                 CoroutineScope(Dispatchers.IO).launch {
                     createNewTrackPlayed(trackId, db)
-                    createListPlayed(albumId, playlistId, db)
+                    createListPlayed(listTypeId, listTypeObjectId, db)
                 }
-            } else if (intent.action.equals(p0.resources.getString(R.string.musicservice_album_play))) {
+            } else if (intent.action.equals(p0.resources.getString(R.string.musicservice_list_play))) {
                 val bundle: Bundle = intent.extras!!
-                val albumId = bundle.getInt("ALBUM_ID")
-                CoroutineScope(Dispatchers.IO).launch { createNewAlbumPlayed(albumId, db) }
-            } else if (intent.action.equals(p0.resources.getString(R.string.musicservice_playlist_play))) {
-                val bundle: Bundle = intent.extras!!
-                val playlistId = bundle.getInt("PLAYLIST_ID")
-                CoroutineScope(Dispatchers.IO).launch { createNewPlaylistPlayed(playlistId, db) }
+                val listObjectId = bundle.getInt("TYPE_OBJECT_ID")
+                val listType = ListType.getListTypeById(bundle.getInt("TYPE"))
+
+                CoroutineScope(Dispatchers.IO).launch {
+                    if (listType == ListType.ALBUM) createNewAlbumPlayed(listObjectId, db)
+                    else if (listType == ListType.PLAYLIST) createNewPlaylistPlayed(listObjectId, db)
+                }
             }
         }
     }
 
     private suspend fun updateTrackPlayedWithDuration(trackId: Int, duration: Long, db: MusicplayerDataAccess) {
-        val trackPlayed: TrackPlayed = db.getLastTrackPlayed().first()
-        if (trackPlayed.tpTId == trackId) {
+        val trackPlayed: TrackPlayed? = db.getLastTrackPlayed().firstOrNull()
+        if (trackPlayed?.tpTId == trackId) {
             trackPlayed.tpTimePlayed = duration
             db.updateTrackPlayed(trackPlayed)
         }
@@ -61,13 +65,14 @@ class SystemBroadcastReceiver : BroadcastReceiver() {
         db.insertTrackPlayed(trackPlayed)
     }
 
-    private suspend fun createListPlayed(albumId: Int, playlistId: Int, db: MusicplayerDataAccess) {
+    private suspend fun createListPlayed(listTypeId: Int, listTypeObjectId: Int, db: MusicplayerDataAccess) {
+        val listType = ListType.getListTypeById(listTypeId)
         val trackPlayed: TrackPlayed = db.getLastTrackPlayed().first()
-        if (albumId >= 0) {
-            createAlbumTrackPlayed(albumId, trackPlayed.tpId, db)
+        if (listType == ListType.ALBUM) {
+            createAlbumTrackPlayed(listTypeObjectId, trackPlayed.tpId, db)
         }
-        if (playlistId >= 0) {
-            createPlaylistTrackPlayed(playlistId, trackPlayed.tpId, db)
+        if (listType == ListType.PLAYLIST) {
+            createPlaylistTrackPlayed(listTypeObjectId, trackPlayed.tpId, db)
         }
     }
 

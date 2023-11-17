@@ -7,10 +7,9 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Paint;
-import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.text.InputType;
-import android.util.DisplayMetrics;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -19,6 +18,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
 
+import com.google.android.material.snackbar.BaseTransientBottomBar;
+import com.google.android.material.snackbar.Snackbar;
+import com.google.android.material.transition.MaterialElevationScale;
 import com.lohni.musicplayer.R;
 import com.lohni.musicplayer.adapter.PlaylistAdapter;
 import com.lohni.musicplayer.database.MusicplayerApplication;
@@ -26,14 +28,12 @@ import com.lohni.musicplayer.database.dao.PlaylistDataAccess;
 import com.lohni.musicplayer.database.dto.PlaylistDTO;
 import com.lohni.musicplayer.database.entity.Playlist;
 import com.lohni.musicplayer.database.viewmodel.PlaylistViewModel;
+import com.lohni.musicplayer.interfaces.NavigationControlInterface;
 import com.lohni.musicplayer.interfaces.PlaylistInterface;
 import com.lohni.musicplayer.ui.views.CustomDividerItemDecoration;
-import com.lohni.musicplayer.interfaces.NavigationControlInterface;
 import com.lohni.musicplayer.utils.GeneralUtils;
 import com.lohni.musicplayer.utils.Permissions;
-import com.google.android.material.snackbar.BaseTransientBottomBar;
-import com.google.android.material.snackbar.Snackbar;
-import com.google.android.material.transition.MaterialElevationScale;
+import com.lohni.musicplayer.utils.images.ImageUtil;
 
 import java.util.ArrayList;
 
@@ -45,6 +45,7 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.transition.Slide;
 
 
 public class PlaylistFragment extends Fragment implements PlaylistInterface {
@@ -64,9 +65,6 @@ public class PlaylistFragment extends Fragment implements PlaylistInterface {
 
     private boolean isInsert = false, isStartup = true;
 
-    public PlaylistFragment() {
-    }
-
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -83,7 +81,6 @@ public class PlaylistFragment extends Fragment implements PlaylistInterface {
     @Override
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
-
         navigationControlInterface = (NavigationControlInterface) context;
         playlistInterface = this;
     }
@@ -151,11 +148,9 @@ public class PlaylistFragment extends Fragment implements PlaylistInterface {
         layoutManager = new LinearLayoutManager(requireContext());
         playlist.setLayoutManager(layoutManager);
 
-        CustomDividerItemDecoration dividerItemDecoration = new CustomDividerItemDecoration(requireContext(), R.drawable.recyclerview_divider);
-        playlist.addItemDecoration(dividerItemDecoration);
         Paint p = new Paint();
         p.setColor(ContextCompat.getColor(requireContext(), R.color.colorSecondary));
-        Bitmap icon = getBitmapFromVectorDrawable(requireContext(), R.drawable.ic_delete_sweep_black_24dp);
+        Bitmap icon = ImageUtil.getBitmapFromVectorDrawable(requireContext(), R.drawable.ic_delete_sweep_black_24dp);
 
         ItemTouchHelper.SimpleCallback simpleCallback = new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT) {
             @Override
@@ -165,8 +160,7 @@ public class PlaylistFragment extends Fragment implements PlaylistInterface {
 
             @Override
             public int getSwipeDirs(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder) {
-                if (isSnackbarActive) return 0;
-                else return super.getSwipeDirs(recyclerView, viewHolder);
+                return (isSnackbarActive) ? 0 : super.getSwipeDirs(recyclerView, viewHolder);
             }
 
             @Override
@@ -212,7 +206,7 @@ public class PlaylistFragment extends Fragment implements PlaylistInterface {
                         c.drawRect((float) itemView.getRight() + dX, (float) itemView.getTop(),
                                 (float) itemView.getRight(), (float) itemView.getBottom(), p);
                         if (-dX > icon.getWidth() * 2) {
-                            c.drawBitmap(icon, (float) itemView.getRight() - convertDpToPx(16) - icon.getWidth(),
+                            c.drawBitmap(icon, (float) itemView.getRight() - ImageUtil.convertDpToPixel(16, getResources()) - icon.getWidth(),
                                     (float) itemView.getTop() + ((float) itemView.getBottom() - (float) itemView.getTop() - icon.getHeight()) / 2, p);
                         }
                     }
@@ -249,24 +243,13 @@ public class PlaylistFragment extends Fragment implements PlaylistInterface {
         bundle.putInt("PLAYLIST_ID", playlistID);
         playlistDetailFragment.setArguments(bundle);
 
+        Slide slide = new Slide();
+        slide.setSlideEdge(Gravity.END);
+        slide.setDuration(250);
+        playlistDetailFragment.setEnterTransition(slide);
+
         getParentFragmentManager().beginTransaction()
                 .replace(R.id.nav_host_fragment, playlistDetailFragment, getString(R.string.fragment_playlist_detail))
                 .addToBackStack(null).commit();
-    }
-
-    private static Bitmap getBitmapFromVectorDrawable(Context context, int drawableId) {
-        Drawable drawable = ContextCompat.getDrawable(context, drawableId);
-
-        Bitmap bitmap = Bitmap.createBitmap(drawable.getIntrinsicWidth(),
-                drawable.getIntrinsicHeight(), Bitmap.Config.ARGB_8888);
-        Canvas canvas = new Canvas(bitmap);
-        drawable.setBounds(0, 0, canvas.getWidth(), canvas.getHeight());
-        drawable.draw(canvas);
-
-        return bitmap;
-    }
-
-    private int convertDpToPx(int dp) {
-        return Math.round(dp * (getResources().getDisplayMetrics().xdpi / DisplayMetrics.DENSITY_DEFAULT));
     }
 }

@@ -1,46 +1,39 @@
 package com.lohni.musicplayer.adapter;
 
-import android.content.ContentUris;
 import android.content.Context;
-import android.graphics.BitmapFactory;
 import android.graphics.drawable.Drawable;
-import android.media.MediaMetadataRetriever;
-import android.net.Uri;
-import android.provider.MediaStore;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.lohni.musicplayer.R;
+import com.lohni.musicplayer.database.dto.PlaylistItemDTO;
 import com.lohni.musicplayer.database.entity.Track;
 import com.lohni.musicplayer.interfaces.OnStartDragListener;
 
-import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import androidx.annotation.NonNull;
 import androidx.core.content.res.ResourcesCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 public class PlaylistDetailAdapter extends RecyclerView.Adapter<PlaylistDetailAdapter.ViewHolder> {
-
     private final PlaylistClickListener playlistClickListener;
     private final OnStartDragListener onStartDragListener;
     private final Drawable customCover;
-    private final Context context;
-    private final ArrayList<Track> itemList;
+    private final ArrayList<PlaylistItemDTO> itemList;
+    private HashMap<Integer, Drawable> drawableHashMap = new HashMap<>();
 
     public interface PlaylistClickListener {
         void onAdapterItemClickListener(int position);
     }
 
-    public PlaylistDetailAdapter(Context c, ArrayList<Track> tracks, PlaylistClickListener playlistClickListener, OnStartDragListener onStartDragListener) {
-        this.itemList = tracks;
+    public PlaylistDetailAdapter(Context c, ArrayList<PlaylistItemDTO> playlistItemList, PlaylistClickListener playlistClickListener, OnStartDragListener onStartDragListener) {
+        this.itemList = playlistItemList;
         this.playlistClickListener = playlistClickListener;
         this.onStartDragListener = onStartDragListener;
-        this.context = c;
         this.customCover = ResourcesCompat.getDrawable(c.getResources(), R.drawable.ic_baseline_music_note_24, null);
     }
 
@@ -53,9 +46,10 @@ public class PlaylistDetailAdapter extends RecyclerView.Adapter<PlaylistDetailAd
 
     @Override
     public void onBindViewHolder(@NonNull PlaylistDetailAdapter.ViewHolder holder, int position) {
-        holder.title.setText(itemList.get(position).getTTitle());
-        holder.artist.setText(itemList.get(position).getTArtist());
-        holder.cover.setImageDrawable(customCover);
+        Track track = itemList.get(position).getTrack();
+        holder.title.setText(track.getTTitle());
+        holder.artist.setText(track.getTArtist());
+
         holder.itemView.setOnClickListener(view -> {
             playlistClickListener.onAdapterItemClickListener(position);
         });
@@ -65,20 +59,7 @@ public class PlaylistDetailAdapter extends RecyclerView.Adapter<PlaylistDetailAd
             return false;
         });
 
-        holder.cover.postDelayed(() -> {
-            Uri trackUri = ContentUris.withAppendedId(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, itemList.get(position).getTId());
-            MediaMetadataRetriever mmr = new MediaMetadataRetriever();
-            mmr.setDataSource(context, trackUri);
-            byte[] thumbnail = mmr.getEmbeddedPicture();
-            try {
-                mmr.release();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            if (thumbnail != null) {
-                holder.cover.setImageBitmap(BitmapFactory.decodeByteArray(thumbnail, 0, thumbnail.length));
-            }
-        }, 500);
+        holder.cover.setBackground(drawableHashMap.getOrDefault(track.getTId(), customCover));
     }
 
     @Override
@@ -91,9 +72,13 @@ public class PlaylistDetailAdapter extends RecyclerView.Adapter<PlaylistDetailAd
         return itemList.size();
     }
 
+    public void setDrawableHashMap(HashMap<Integer, Drawable> drawableHashMap) {
+        this.drawableHashMap = drawableHashMap;
+    }
+
     public static class ViewHolder extends RecyclerView.ViewHolder {
         TextView title, artist;
-        ImageView cover;
+        View cover;
 
         public ViewHolder(View itemView) {
             super(itemView);

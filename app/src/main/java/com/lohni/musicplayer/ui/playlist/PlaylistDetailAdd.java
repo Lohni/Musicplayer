@@ -13,6 +13,8 @@ import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.google.android.material.textfield.TextInputEditText;
+import com.google.android.material.textfield.TextInputLayout;
 import com.lohni.musicplayer.R;
 import com.lohni.musicplayer.adapter.TrackSelectionAdapter;
 import com.lohni.musicplayer.database.MusicplayerApplication;
@@ -42,8 +44,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 public class PlaylistDetailAdd extends Fragment {
     private RecyclerView selection;
-    private EditText search;
-    private ArrayList<Track> trackList = new ArrayList<>();
+    private final ArrayList<Track> trackList = new ArrayList<>();
     private TrackSelectionAdapter mAdapter;
     private ExtendedFloatingActionButton confirm;
     private NavigationControlInterface navigationControlInterface;
@@ -91,7 +92,7 @@ public class PlaylistDetailAdd extends Fragment {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_playlist_detail_add, container, false);
         selection = view.findViewById(R.id.selection_list);
-        search = view.findViewById(R.id.playlist_add_search);
+        TextInputEditText search = view.findViewById(R.id.playlist_add_search_text);
         confirm = view.findViewById(R.id.playlist_detail_add_confirm);
         TextView indexZoom = view.findViewById(R.id.playlist_detail_add_indexzoom);
         FrameLayout indexZoomHolder = view.findViewById(R.id.playlist_add_indexzoom_holder);

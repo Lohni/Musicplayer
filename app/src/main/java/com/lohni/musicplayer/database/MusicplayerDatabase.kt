@@ -4,7 +4,9 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import androidx.room.TypeConverters
 import androidx.sqlite.db.SupportSQLiteDatabase
+import com.lohni.musicplayer.database.converter.Converters
 import com.lohni.musicplayer.database.dao.AudioEffectDataAccess
 import com.lohni.musicplayer.database.dao.MusicplayerDataAccess
 import com.lohni.musicplayer.database.dao.PlaylistDataAccess
@@ -19,9 +21,10 @@ import kotlinx.coroutines.CoroutineScope
     entities = [AdvancedReverbPreset::class, EqualizerPreset::class, Playlist::class, PlaylistItem::class,
         PlaylistTagMtc::class, Tag::class, Track::class, TrackTagMtc::class, Album::class,
         AlbumPlayed::class, PlaylistPlayed::class, TrackPlayed::class, Preference::class,
-        AlbumTrackPlayed::class, PlaylistTrackPlayed::class],
+        AlbumTrackPlayed::class, PlaylistTrackPlayed::class, DashboardListConfiguration::class],
     version = 1
 )
+@TypeConverters(Converters::class)
 abstract class MusicplayerDatabase : RoomDatabase() {
     abstract fun playlistDao(): PlaylistDataAccess
     abstract fun musicplayerDao(): MusicplayerDataAccess

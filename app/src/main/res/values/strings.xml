@@ -24,20 +24,9 @@
     <string name="playback_control_values">PLAYBACK_CONTROL_VALUES</string>
     <string name="musicservice_song_prepared">MUSICSERVICE_SONG_PREPARED</string>
     <string name="musicservice_song_ended">MUSICSERVICE_SONG_ENDED</string>
-    <string name="musicservice_album_play">MUSICSERVICE_ALBUM_PLAY</string>
-    <string name="musicservice_playlist_play">MUSICSERVICE_PLAYLIST_PLAY</string>
+    <string name="musicservice_list_play">MUSICSERVICE_LIST_PLAY</string>
 
-    <string name="musicservice_bassboost_enabled">MUSICSERVICE_BASSBOOST_ENABLED</string>
-    <string name="musicservice_virtualizer_enabled">MUSICSERVICE_VIRTUALIZER_ENABLED</string>
-    <string name="musicservice_loudness_enhancer_enabled">MUSICSERVICE_LOUDNESS_ENHANCER_ENABLED</string>
-    <string name="musicservice_equalizer_enabled">MUSICSERVICE_EQUALIZER_ENABLED</string>
-    <string name="musicservice_reverb_enabled">MUSICSERVICE_REVERB_ENABLED</string>
-
-    <string name="musicservice_bassboost_strength">MUSICSERVICE_BASSBOOST_STRENGTH</string>
-    <string name="musicservice_virtualizer_strength">MUSICSERVICE_VIRTUALIZER_STRENGTH</string>
-    <string name="musicservice_loudness_enhancer_strength">MUSICSERVICE_LOUDNESS_ENHANCER_STRENGTH</string>
-    <string name="musicservice_reverb_values">MUSICSERVICE_REVERB_VALUES</string>
-    <string name="musicservice_equalizer_values">MUSICSERVICE_EQUALIZER_VALUES</string>
+    <string name="musicservice_audioeffect">MUSICSERVICE_AUDIOEFFECT</string>
 
     <string name="musicservice_play_list">MUSICSERVICE_PLAY_LIST</string>
 

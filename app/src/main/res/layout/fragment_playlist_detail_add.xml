@@ -8,27 +8,41 @@
     tools:context=".ui.playlist.PlaylistDetailAdd"
     android:background="@color/colorTransparent">
 
-    <EditText
+    <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/playlist_add_search"
-        android:layout_width="match_parent"
-        android:layout_height="48dp"
-        android:background="@drawable/search_background_rounded"
-        android:textColor="@color/colorSurfaceVariant"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+        android:layout_width="0dp"
+        android:layout_height="60dp"
+        android:textColorHint="@color/equalizer_background"
+        app:boxBackgroundColor="@color/autocomplete_textview_background"
+        app:boxStrokeColor="@color/equalizer_background"
+        app:endIconTint="@color/equalizer_background"
+        app:hintTextColor="@color/equalizer_background"
         android:hint="Search"
         android:maxLines="1"
-        android:paddingStart="32dp"
         android:textSize="20sp"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toTopOf="@id/selection_list"
-        android:layout_marginTop="8dp"
+        app:endIconMode="clear_text"
         android:layout_marginStart="16dp"
-        android:layout_marginEnd="16dp"
-        android:layout_marginBottom="8dp"/>
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="@id/selection_list"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/selection_list">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/playlist_add_search_text"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="@color/colorOnBackground"/>
+
+    </com.google.android.material.textfield.TextInputLayout>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/selection_list"
         android:layout_width="0dp"
         android:layout_height="0dp"
+        android:layout_marginTop="12dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="4dp"
         app:layout_constraintTop_toBottomOf="@id/playlist_add_search"
         app:layout_constraintRight_toLeftOf="@id/playlist_detail_add_side_index"
         app:layout_constraintLeft_toLeftOf="parent"
@@ -56,9 +70,10 @@
         android:layout_width="20dp"
         android:layout_height="0dp"
         android:layout_marginTop="8dp"
+        android:layout_marginEnd="1dp"
         android:orientation="vertical"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@id/playlist_add_search">
     </LinearLayout>
 

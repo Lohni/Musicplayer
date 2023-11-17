@@ -6,6 +6,5 @@ import kotlinx.coroutines.SupervisorJob
 
 class MusicplayerApplication : Application() {
     val applicationScope = CoroutineScope(SupervisorJob())
-
     val database by lazy { MusicplayerDatabase.getDatabase(this, applicationScope) }
 }

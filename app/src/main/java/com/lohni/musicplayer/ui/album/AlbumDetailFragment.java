@@ -22,11 +22,9 @@ import com.lohni.musicplayer.database.viewmodel.MusicplayerViewModel;
 import com.lohni.musicplayer.interfaces.NavigationControlInterface;
 import com.lohni.musicplayer.interfaces.PlaybackControlInterface;
 import com.lohni.musicplayer.interfaces.QueueControlInterface;
-import com.lohni.musicplayer.utils.enums.ListType;
-import com.lohni.musicplayer.utils.enums.PlaybackBehaviourState;
+import com.lohni.musicplayer.utils.enums.PlaybackBehaviour;
 import com.lohni.musicplayer.utils.images.ImageUtil;
 
-import java.util.AbstractMap;
 import java.util.ArrayList;
 
 import androidx.annotation.NonNull;
@@ -57,9 +55,6 @@ public class AlbumDetailFragment extends Fragment implements AlbumDetailAdapter.
         navigationControlInterface = (NavigationControlInterface) context;
         songInterface = (QueueControlInterface) context;
         playbackControlInterface = (PlaybackControlInterface) context;
-    }
-
-    public AlbumDetailFragment() {
     }
 
     @Override
@@ -101,7 +96,6 @@ public class AlbumDetailFragment extends Fragment implements AlbumDetailAdapter.
         albumDetailList.setLayoutManager(new LinearLayoutManager(requireContext()));
         albumDetailList.setHasFixedSize(true);
 
-
         applicationDataViewModel.getTrackImages().observe(getViewLifecycleOwner(), drawableHashMap -> {
             applicationDataViewModel.getTrackImages().removeObservers(getViewLifecycleOwner());
             AlbumDetailAdapter albumDetailAdapter = new AlbumDetailAdapter(requireContext(), this.albumSongs, this);
@@ -128,14 +122,14 @@ public class AlbumDetailFragment extends Fragment implements AlbumDetailAdapter.
             });
         });
 
-
         albumDetailPlay.setOnClickListener((button -> {
-            playbackControlInterface.onPlaybackBehaviourChangeListener(PlaybackBehaviourState.REPEAT_LIST);
+            playbackControlInterface.onPlaybackBehaviourChangeListener(PlaybackBehaviour.REPEAT_LIST);
             songInterface.onSongListCreatedListener(albumSongs, album, true);
+            songInterface.onSongSelectedListener(albumSongs.get(0));
         }));
 
         albumDetailShuffle.setOnClickListener((button) -> {
-            playbackControlInterface.onPlaybackBehaviourChangeListener(PlaybackBehaviourState.SHUFFLE);
+            playbackControlInterface.onPlaybackBehaviourChangeListener(PlaybackBehaviour.SHUFFLE);
             songInterface.onSongListCreatedListener(albumSongs, album, true);
         });
 
@@ -150,7 +144,7 @@ public class AlbumDetailFragment extends Fragment implements AlbumDetailAdapter.
 
     @Override
     public void onItemClickListener(int position) {
-        playbackControlInterface.onPlaybackBehaviourChangeListener(PlaybackBehaviourState.REPEAT_LIST);
+        playbackControlInterface.onPlaybackBehaviourChangeListener(PlaybackBehaviour.REPEAT_LIST);
         songInterface.onSongListCreatedListener(albumSongs, album, false);
         songInterface.onSongSelectedListener(albumSongs.get(position));
     }

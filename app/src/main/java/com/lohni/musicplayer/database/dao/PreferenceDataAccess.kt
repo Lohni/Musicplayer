@@ -1,8 +1,7 @@
 package com.lohni.musicplayer.database.dao
 
-import androidx.room.Dao
-import androidx.room.Query
-import androidx.room.Update
+import androidx.room.*
+import com.lohni.musicplayer.database.entity.DashboardListConfiguration
 import com.lohni.musicplayer.database.entity.Preference
 import kotlinx.coroutines.flow.Flow
 
@@ -11,12 +10,19 @@ import kotlinx.coroutines.flow.Flow
  */
 @Dao
 interface PreferenceDataAccess {
-    @Query("SELECT * FROM Preference WHERE pref_key = :key")
-    fun getPreferenceByKey(key: String): Flow<Preference>
+
+    @Query("SELECT * FROM Preference WHERE pref_id = :id")
+    fun getPreferenceById(id: Int): Flow<Preference>
 
     @Query("SELECT * FROM Preference ORDER BY pref_id ASC")
     fun getAllPreferences(): Flow<List<Preference>>
 
-    @Update
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun updatePreference(preference: Preference)
+
+    @Query("SELECT * FROM DashboardListConfiguration WHERE dlc_id = :id")
+    fun getDashboardListConfiguration(id: Int): Flow<DashboardListConfiguration>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    fun insertDashboardListConfiguration(listConfig: DashboardListConfiguration)
 }

@@ -1,13 +1,7 @@
 package com.lohni.musicplayer.ui.playbackcontrol;
 
-import android.content.ContentUris;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.drawable.Drawable;
-import android.media.MediaMetadataRetriever;
-import android.net.Uri;
 import android.os.Bundle;
-import android.provider.MediaStore;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,18 +10,17 @@ import android.view.animation.Animation;
 import android.view.animation.DecelerateInterpolator;
 import android.widget.TextView;
 
+import com.google.android.material.button.MaterialButton;
 import com.lohni.musicplayer.R;
+import com.lohni.musicplayer.core.ApplicationDataViewModel;
 import com.lohni.musicplayer.database.MusicplayerApplication;
 import com.lohni.musicplayer.database.dao.MusicplayerDataAccess;
 import com.lohni.musicplayer.database.dao.PlaylistDataAccess;
-import com.lohni.musicplayer.database.entity.Track;
 import com.lohni.musicplayer.database.viewmodel.MusicplayerViewModel;
 import com.lohni.musicplayer.database.viewmodel.PlaylistViewModel;
 import com.lohni.musicplayer.utils.GeneralUtils;
 import com.lohni.musicplayer.utils.images.ImageUtil;
-import com.google.android.material.button.MaterialButton;
 
-import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
@@ -42,21 +35,17 @@ public class PlaybackControlInfoFragment extends PlaybackControlDetailFragment {
     private View cover;
     private TextView info1, info2, info3, info4;
     private MaterialButton tags, playlists;
-    private MusicplayerViewModel musicplayerViewModel;
     private PlaylistViewModel playlistViewModel;
+    private ApplicationDataViewModel applicationDataViewModel;
     private Drawable customCoverImage;
-
-    public PlaybackControlInfoFragment() {
-    }
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        MusicplayerDataAccess mda = ((MusicplayerApplication) requireActivity().getApplication()).getDatabase().musicplayerDao();
-        musicplayerViewModel = new ViewModelProvider(this, new MusicplayerViewModel.MusicplayerViewModelFactory(mda)).get(MusicplayerViewModel.class);
         PlaylistDataAccess aod = ((MusicplayerApplication) requireActivity().getApplication()).getDatabase().playlistDao();
         playlistViewModel = new ViewModelProvider(requireActivity(), new PlaylistViewModel.PlaylistViewModelFactory(aod)).get(PlaylistViewModel.class);
+        applicationDataViewModel = new ViewModelProvider(requireActivity()).get(ApplicationDataViewModel.class);
     }
 
     @Nullable
@@ -80,32 +69,18 @@ public class PlaybackControlInfoFragment extends PlaybackControlDetailFragment {
 
     private void setCoverImage() {
         if (currentTrack != null && cover != null) {
-            Uri trackUri = ContentUris.withAppendedId(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, currentTrack.getTId());
-            byte[] thumbnail = null;
-            MediaMetadataRetriever mmr = new MediaMetadataRetriever();
-            try {
-                mmr.setDataSource(requireContext(), trackUri);
-                thumbnail = mmr.getEmbeddedPicture();
-            } catch (IllegalArgumentException e) {
-                System.out.println("MediaMetadataRetriever IllegalArgument");
-            } finally {
-                try {
-                    mmr.release();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                if (thumbnail != null) {
-                    Bitmap coverImage = BitmapFactory.decodeByteArray(thumbnail, 0, thumbnail.length);
-                    cover.setBackground(ImageUtil.roundCorners(coverImage, requireContext().getResources()));
-                    cover.setForeground(null);
-                    Animation fadeIn = new AlphaAnimation(0, 1);
-                    fadeIn.setInterpolator(new DecelerateInterpolator());
-                    fadeIn.setDuration(350);
-                    cover.setAnimation(fadeIn);
-                } else {
-                    cover.setBackground(customCoverImage);
-                    cover.setBackgroundTintList(ContextCompat.getColorStateList(requireContext(), R.color.colorOnSecondaryContainer));
-                }
+            Drawable drawable = applicationDataViewModel.getImageForTrack(currentTrack.getTId());
+
+            if (drawable != null) {
+                cover.setBackground(ImageUtil.roundCorners(ImageUtil.getBitmapFromDrawable(requireContext(), drawable), requireContext().getResources()));
+                cover.setForeground(null);
+                Animation fadeIn = new AlphaAnimation(0, 1);
+                fadeIn.setInterpolator(new DecelerateInterpolator());
+                fadeIn.setDuration(350);
+                cover.setAnimation(fadeIn);
+            } else {
+                cover.setBackground(customCoverImage);
+                cover.setBackgroundTintList(ContextCompat.getColorStateList(requireContext(), R.color.colorOnSecondaryContainer));
             }
         }
     }
@@ -148,8 +123,7 @@ public class PlaybackControlInfoFragment extends PlaybackControlDetailFragment {
     }
 
     @Override
-    public void setCurrentTrack(Track currentTrack) {
-        super.setCurrentTrack(currentTrack);
+    public void onTrackChange() {
         setCoverImage();
         setInformation();
     }

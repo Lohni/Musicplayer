@@ -4,7 +4,6 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -30,24 +29,26 @@ import com.lohni.musicplayer.adapter.SongListAdapter;
 import com.lohni.musicplayer.core.ApplicationDataViewModel;
 import com.lohni.musicplayer.database.MusicplayerApplication;
 import com.lohni.musicplayer.database.dao.MusicplayerDataAccess;
+import com.lohni.musicplayer.database.dao.PreferenceDataAccess;
 import com.lohni.musicplayer.database.dto.TrackDTO;
 import com.lohni.musicplayer.database.entity.Track;
 import com.lohni.musicplayer.database.viewmodel.MusicplayerViewModel;
+import com.lohni.musicplayer.database.viewmodel.SonglistViewModel;
 import com.lohni.musicplayer.interfaces.NavigationControlInterface;
 import com.lohni.musicplayer.interfaces.PlaybackControlInterface;
 import com.lohni.musicplayer.interfaces.QueueControlInterface;
 import com.lohni.musicplayer.interfaces.ServiceTriggerInterface;
 import com.lohni.musicplayer.ui.views.DeleteDialog;
 import com.lohni.musicplayer.ui.views.SideIndex;
+import com.lohni.musicplayer.utils.AdapterUtils;
 import com.lohni.musicplayer.utils.GeneralUtils;
-import com.lohni.musicplayer.utils.converter.DashboardEnumDeserializer;
-import com.lohni.musicplayer.utils.enums.ListType;
 import com.lohni.musicplayer.utils.enums.ListFilterType;
+import com.lohni.musicplayer.utils.enums.ListType;
 import com.lohni.musicplayer.utils.enums.PlaybackBehaviour;
-import com.lohni.musicplayer.utils.enums.PlaybackBehaviourState;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import androidx.annotation.NonNull;
@@ -61,7 +62,6 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 public class SongList extends Fragment {
-    private RecyclerView listView;
     private TextView shuffle_size, filterTitle;
     private ConstraintLayout shuffle, filter;
     private TextInputEditText search;
@@ -74,19 +74,13 @@ public class SongList extends Fragment {
 
     private SongListAdapter songListAdapter;
     private SideIndex sideIndex;
-    private ListFilterType listFilterType;
     private LinearLayoutManager listViewManager;
-
-    private SharedPreferences sharedPreferences;
     private MusicplayerViewModel musicplayerViewModel;
     private ApplicationDataViewModel applicationDataViewModel;
+    private SonglistViewModel songlistViewModel;
 
     private final ArrayList<TrackDTO> songList = new ArrayList<>();
-    private boolean isSearchModeActive = false, firstLoad = true, listChange = false;
-    private int currentPlayingSongId = -1, currentScrollingSpeed = 0;
-
-    public SongList() {
-    }
+    private boolean isSearchModeActive = false;
 
     @Override
     public void onAttach(@NonNull Context context) {
@@ -112,15 +106,9 @@ public class SongList extends Fragment {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
 
-        if (getArguments() != null) {
-            currentPlayingSongId = getArguments().getInt("ID", -1);
-            int filter = getArguments().getInt("FILTER", -1);
-            if (filter >= 0) {
-                listFilterType = DashboardEnumDeserializer.getListFilterTypeByInt(filter);
-            }
-        }
-
         MusicplayerDataAccess mda = ((MusicplayerApplication) requireActivity().getApplication()).getDatabase().musicplayerDao();
+        PreferenceDataAccess pda = ((MusicplayerApplication) requireActivity().getApplication()).getDatabase().preferenceDao();
+        songlistViewModel = new ViewModelProvider(this, new SonglistViewModel.SonglistViewModelFactory(mda, pda)).get(SonglistViewModel.class);
         musicplayerViewModel = new ViewModelProvider(this, new MusicplayerViewModel.MusicplayerViewModelFactory(mda)).get(MusicplayerViewModel.class);
         applicationDataViewModel = new ViewModelProvider(requireActivity()).get(ApplicationDataViewModel.class);
 
@@ -129,7 +117,9 @@ public class SongList extends Fragment {
         intentFilter.addAction(getResources().getString(R.string.playback_control_values));
         requireActivity().registerReceiver(receiver, intentFilter);
 
-        sharedPreferences = requireActivity().getPreferences(Context.MODE_PRIVATE);
+        if (getArguments() != null && getArguments().containsKey("FILTER")) {
+            songlistViewModel.setListFilterType(ListFilterType.Companion.getListFilterTypeByInt(getArguments().getInt("FILTER")));
+        }
     }
 
     @Override
@@ -156,7 +146,7 @@ public class SongList extends Fragment {
                 search_layout.setAnimation(animFallDown);
                 isSearchModeActive = true;
             } else {
-                if (!search.getText().toString().equals("")) {
+                if (!Objects.requireNonNull(search.getText()).toString().equals("")) {
                     songListAdapter.getFilter().filter("");
                 }
                 search.setText("");
@@ -184,89 +174,34 @@ public class SongList extends Fragment {
     }
 
     @Override
-    public void onResume() {
-        super.onResume();
-        applicationDataViewModel.getTrackImages().observe(getViewLifecycleOwner(), hashmap -> {
-            applicationDataViewModel.getTrackImages().removeObservers(getViewLifecycleOwner());
-            songListAdapter.setDrawableHashMap(hashmap);
-        });
-        int time = songList.stream().map(TrackDTO::getTrack).map(Track::getTDuration).reduce(0, Integer::sum);
-        shuffle_size.setText(songList.size() + " songs - " + GeneralUtils.convertTimeWithUnit(time));
-        serviceTriggerInterface.triggerCurrentDataBroadcast();
-    }
-
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        View view2 = inflater.inflate(R.layout.fragment_song_list, container, false);
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         navigationControlInterface.isDrawerEnabledListener(true);
         navigationControlInterface.setHomeAsUpEnabled(false);
         navigationControlInterface.setToolbarTitle("Tracklist");
-        listView = view2.findViewById(R.id.songList);
-        shuffle = view2.findViewById(R.id.songlist_shuffle);
-        search = view2.findViewById(R.id.songlist_search);
-        search_layout = view2.findViewById(R.id.songlist_search_layout);
-        shuffle_size = view2.findViewById(R.id.songlist_shuffle_size);
-        filter = view2.findViewById(R.id.songlist_filter_holder);
-        filterTitle = view2.findViewById(R.id.songlist_filter_title);
 
-        if (listFilterType == null) {
-            listFilterType = DashboardEnumDeserializer.getListFilterTypeByInt(sharedPreferences.getInt(getString(R.string.preference_songlist_filter_type), 3));
-        }
+        View mainView = inflater.inflate(R.layout.fragment_song_list, container, false);
+        RecyclerView listView = mainView.findViewById(R.id.songList);
+        shuffle = mainView.findViewById(R.id.songlist_shuffle);
+        search = mainView.findViewById(R.id.songlist_search);
+        search_layout = mainView.findViewById(R.id.songlist_search_layout);
+        shuffle_size = mainView.findViewById(R.id.songlist_shuffle_size);
+        filter = mainView.findViewById(R.id.songlist_filter_holder);
+        filterTitle = mainView.findViewById(R.id.songlist_filter_title);
 
-        filterTitle.setText(listFilterType.getId());
+        songListAdapter = new SongListAdapter(requireContext(), songList);
 
-        LinearLayout linearLayout = view2.findViewById(R.id.side_index);
-        FrameLayout indexZoomHolder = view2.findViewById(R.id.songlist_indexzoom_holder);
-        TextView indexZoom = view2.findViewById(R.id.songlist_indexzoom);
-        listViewManager = new LinearLayoutManager(requireContext());
-        sideIndex = new SideIndex(requireActivity(), linearLayout, indexZoomHolder, indexZoom, listViewManager);
-
-        listView.setLayoutAnimation(AnimationUtils.loadLayoutAnimation(requireContext(), R.anim.layout_animation_fall_down));
-        listView.setHasFixedSize(true);
-        listView.setLayoutManager(listViewManager);
-
-        listView.addOnScrollListener(new RecyclerView.OnScrollListener() {
-            @Override
-            public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
-                if (newState == 0) {
-                    songListAdapter.isScrolling(false);
-                    if (currentScrollingSpeed > 8) {
-                        songListAdapter.notifyItemRangeChanged(0, songList.size(), "SCROLL");
-                    }
-                    currentScrollingSpeed = 0;
-                }
-                super.onScrollStateChanged(recyclerView, newState);
-            }
-
-            @Override
-            public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
-                int dyAbs = Math.abs(dy);
-                songListAdapter.isScrolling(dyAbs > 50);
-
-                if (!(currentScrollingSpeed > 25 && dy < 5) && !((currentScrollingSpeed - dyAbs) > 60 && dyAbs < 20)) {
-                    currentScrollingSpeed = dyAbs;
-                }
-
-                System.out.println(dy);
-                super.onScrolled(recyclerView, dx, dy);
-            }
-        });
-
-        songListAdapter = new SongListAdapter(requireContext(), songList, listFilterType);
-        songListAdapter.setCurrentPlayingIndex(currentPlayingSongId);
         songListAdapter.setOnItemClickedListener((pos) -> {
             List<Track> songListAsTracks = songList.stream().map(TrackDTO::getTrack).collect(Collectors.toList());
+            playbackControlInterface.onPlaybackBehaviourChangeListener(PlaybackBehaviour.REPEAT_LIST);
             songInterface.onSongListCreatedListener(songListAsTracks, ListType.TRACK, false);
             songInterface.onSongSelectedListener(songList.get(pos).getTrack());
         });
+
         songListAdapter.setOnItemOptionClickedListener((view, position, inQueue) -> {
             PopupMenu popupMenu = new PopupMenu(requireContext(), view);
             popupMenu.getMenuInflater().inflate(R.menu.songlist_item_more, popupMenu.getMenu());
 
-            if (inQueue) {
-                popupMenu.getMenu().getItem(0).setTitle("Remove from queue");
-            }
+            if (inQueue) popupMenu.getMenu().getItem(0).setTitle("Remove from queue");
 
             popupMenu.setOnMenuItemClickListener(item -> {
                 if (item.getItemId() == R.id.action_songlist_item_add_to_queue) {
@@ -275,7 +210,7 @@ public class SongList extends Fragment {
 
                     if (!inQueue) {
                         songInterface.onAddSongsToSonglistListener(track, false);
-                        playbackControlInterface.onPlaybackBehaviourChangeListener(PlaybackBehaviourState.REPEAT_LIST);
+                        playbackControlInterface.onPlaybackBehaviourChangeListener(PlaybackBehaviour.REPEAT_LIST);
                     } else {
                         songInterface.onSongsRemoveListener(track);
                     }
@@ -283,11 +218,11 @@ public class SongList extends Fragment {
                     List<Track> track = new ArrayList<>();
                     track.add(songList.get(position).getTrack());
                     songInterface.onAddSongsToSonglistListener(track, true);
-                    playbackControlInterface.onPlaybackBehaviourChangeListener(PlaybackBehaviourState.REPEAT_LIST);
+                    playbackControlInterface.onPlaybackBehaviourChangeListener(PlaybackBehaviour.REPEAT_LIST);
                 } else if (item.getItemId() == R.id.action_songlist_item_new_queue) {
                     List<Track> tracks = new ArrayList<>();
                     tracks.add(songList.get(position).getTrack());
-                    playbackControlInterface.onPlaybackBehaviourChangeListener(PlaybackBehaviourState.REPEAT_LIST);
+                    playbackControlInterface.onPlaybackBehaviourChangeListener(PlaybackBehaviour.REPEAT_LIST);
                     songInterface.onSongListCreatedListener(tracks, ListType.TRACK, true);
                 } else if (item.getItemId() == R.id.action_songlist_item_delete) {
                     DeleteDialog dialog = new DeleteDialog(requireContext());
@@ -300,8 +235,6 @@ public class SongList extends Fragment {
                         songInterface.onSongsRemoveListener(del);
                         songList.remove(position);
                         songListAdapter.notifyItemRemoved(position);
-                        int time = songList.stream().map(TrackDTO::getTrack).map(Track::getTDuration).reduce(0, Integer::sum);
-                        shuffle_size.setText(songList.size() + " songs - " + GeneralUtils.convertTimeWithUnit(time));
                     });
                     dialog.show();
                 }
@@ -312,8 +245,51 @@ public class SongList extends Fragment {
 
         listView.setAdapter(songListAdapter);
 
+        songlistViewModel.getFilter().observe(getViewLifecycleOwner(), filter -> {
+            filterTitle.setText(ListFilterType.Companion.getFilterTypeAsString(filter));
+            songListAdapter.setListFilterType(filter);
+            listViewManager.scrollToPosition(0);
+            if (filter.equals(ListFilterType.ALPHABETICAL)) sideIndex.setVisible();
+            else sideIndex.setVisibilityGone();
+        });
+
+        applicationDataViewModel.getTrackImages().observe(getViewLifecycleOwner(), hashmap -> {
+            songListAdapter.setDrawableHashMap(hashmap);
+            songListAdapter.notifyItemRangeChanged(0, songListAdapter.getItemCount(), "RELOAD_IMAGES");
+        });
+
+        songlistViewModel.getSongList().observe(getViewLifecycleOwner(), songList -> {
+            ArrayList<TrackDTO> oldList = new ArrayList<>(this.songList);
+            this.songList.clear();
+            this.songList.addAll(songList);
+
+            int time = songList.stream().map(TrackDTO::getTrack).map(Track::getTDuration).reduce(0, Integer::sum);
+            shuffle_size.setText(songList.size() + " songs - " + GeneralUtils.convertTimeWithUnit(time));
+
+            sideIndex.setIndexList(songList).displayIndex();
+            if (AdapterUtils.moveItemToNewPositionList(oldList, songList, songListAdapter) == 0)
+                listViewManager.scrollToPosition(0);
+
+            int sizeDiff = songList.size() - oldList.size();
+            if (sizeDiff > 0) songListAdapter.notifyItemRangeInserted(oldList.size(), sizeDiff);
+            else if (sizeDiff < 0)
+                songListAdapter.notifyItemRangeRemoved(songList.size(), sizeDiff * -1);
+
+            songListAdapter.notifyItemRangeChanged(0, songList.size());
+        });
+
+        LinearLayout linearLayout = mainView.findViewById(R.id.side_index);
+        FrameLayout indexZoomHolder = mainView.findViewById(R.id.songlist_indexzoom_holder);
+        TextView indexZoom = mainView.findViewById(R.id.songlist_indexzoom);
+        listViewManager = new LinearLayoutManager(requireContext());
+        sideIndex = new SideIndex(requireActivity(), linearLayout, indexZoomHolder, indexZoom, listViewManager);
+
+        listView.setLayoutAnimation(AnimationUtils.loadLayoutAnimation(requireContext(), R.anim.layout_animation_fall_down));
+        listView.setHasFixedSize(true);
+        listView.setLayoutManager(listViewManager);
+
         shuffle.setOnClickListener(view -> {
-            playbackControlInterface.onPlaybackBehaviourChangeListener(PlaybackBehaviourState.SHUFFLE);
+            playbackControlInterface.onPlaybackBehaviourChangeListener(PlaybackBehaviour.SHUFFLE);
             List<Track> songListAsTracks = songList.stream().map(TrackDTO::getTrack).collect(Collectors.toList());
             songInterface.onSongListCreatedListener(songListAsTracks, ListType.TRACK, true);
         });
@@ -325,38 +301,35 @@ public class SongList extends Fragment {
             PopupWindow filterMenu = new PopupWindow(menuLayout, wrapContent, wrapContent, true);
 
             menuLayout.findViewById(R.id.songlist_filter_menu_az).setOnClickListener(view1 -> {
-                musicplayerViewModel.getTrackListByFilter(listFilterType).removeObservers(getViewLifecycleOwner());
-                listFilterType = ListFilterType.ALPHABETICAL;
-                onMenuClick(filterMenu);
+                songlistViewModel.setListFilterType(ListFilterType.ALPHABETICAL);
+                filterMenu.dismiss();
             });
 
             menuLayout.findViewById(R.id.songlist_filter_menu_lastplayed).setOnClickListener(view1 -> {
-                musicplayerViewModel.getTrackListByFilter(listFilterType).removeObservers(getViewLifecycleOwner());
-                listFilterType = ListFilterType.LAST_PLAYED;
-                onMenuClick(filterMenu);
+                songlistViewModel.setListFilterType(ListFilterType.LAST_PLAYED);
+                filterMenu.dismiss();
             });
 
             menuLayout.findViewById(R.id.songlist_filter_menu_timeplayed).setOnClickListener(view1 -> {
-                musicplayerViewModel.getTrackListByFilter(listFilterType).removeObservers(getViewLifecycleOwner());
-                listFilterType = ListFilterType.TIME_PLAYED;
-                onMenuClick(filterMenu);
+                songlistViewModel.setListFilterType(ListFilterType.TIME_PLAYED);
+                filterMenu.dismiss();
             });
 
             menuLayout.findViewById(R.id.songlist_filter_menu_timesplayed).setOnClickListener(view1 -> {
-                musicplayerViewModel.getTrackListByFilter(listFilterType).removeObservers(getViewLifecycleOwner());
-                listFilterType = ListFilterType.TIMES_PLAYED;
-                onMenuClick(filterMenu);
+                songlistViewModel.setListFilterType(ListFilterType.TIMES_PLAYED);
+                filterMenu.dismiss();
             });
 
             menuLayout.findViewById(R.id.songlist_filter_menu_created).setOnClickListener(view1 -> {
-                musicplayerViewModel.getTrackListByFilter(listFilterType).removeObservers(getViewLifecycleOwner());
-                listFilterType = ListFilterType.LAST_CREATED;
-                onMenuClick(filterMenu);
+                songlistViewModel.setListFilterType(ListFilterType.LAST_CREATED);
+                filterMenu.dismiss();
             });
 
             filterMenu.setContentView(menuLayout);
             filterMenu.setOutsideTouchable(true);
             filterMenu.showAsDropDown(filter);
+
+            serviceTriggerInterface.triggerCurrentDataBroadcast();
         });
 
         search.addTextChangedListener(new TextWatcher() {
@@ -373,91 +346,14 @@ public class SongList extends Fragment {
             public void afterTextChanged(Editable editable) {
             }
         });
-
-        loadSonglist();
-        return view2;
-    }
-
-    private void onMenuClick(PopupWindow filterMenu) {
-        filterTitle.setText(listFilterType.getId());
-        listChange = true;
-        loadSonglist();
-        filterMenu.dismiss();
-
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putInt(getResources().getString(R.string.preference_songlist_filter_type), listFilterType.getFilterType());
-        editor.apply();
-    }
-
-    private void loadSonglist() {
-        applicationDataViewModel.getTrackImages().observe(getViewLifecycleOwner(), hashmap -> {
-            applicationDataViewModel.getTrackImages().removeObservers(getViewLifecycleOwner());
-            songListAdapter.setDrawableHashMap(hashmap);
-
-            musicplayerViewModel.getTrackListByFilter(listFilterType).observe(getViewLifecycleOwner(), tracks -> {
-                ArrayList<TrackDTO> oldList = new ArrayList<>(this.songList);
-                this.songList.clear();
-                this.songList.addAll(tracks);
-
-                if (firstLoad) {
-                    songListAdapter.notifyItemRangeInserted(0, tracks.size());
-                    int time = tracks.stream().map(TrackDTO::getTrack).map(Track::getTDuration).reduce(0, Integer::sum);
-                    shuffle_size.setText(tracks.size() + " songs - " + GeneralUtils.convertTimeWithUnit(time));
-                    firstLoad = false;
-                }
-
-                if (listFilterType.equals(ListFilterType.ALPHABETICAL)) {
-                    sideIndex.setVisible();
-                    sideIndex.setIndexList(songList).displayIndex();
-                } else if (listFilterType.equals(ListFilterType.LAST_PLAYED)
-                        || listFilterType.equals(ListFilterType.TIMES_PLAYED)
-                        || listFilterType.equals(ListFilterType.TIME_PLAYED)) {
-                    sideIndex.setVisibilityGone();
-                    if (oldList.size() == tracks.size()) {
-                        int toPos = 0, targetId = -1;
-                        for (int i = 0; i < oldList.size(); i++) {
-                            if (!tracks.get(i).getTrack().getTId().equals(oldList.get(i).getTrack().getTId())) {
-                                toPos = i;
-                                targetId = tracks.get(i).getTrack().getTId();
-                                break;
-                            }
-                        }
-
-                        if (targetId >= 0) {
-                            int fromPos = 0;
-                            for (int i = 0; i < oldList.size(); i++) {
-                                if (oldList.get(i).getTrack().getTId().equals(targetId)) {
-                                    fromPos = i;
-                                    break;
-                                }
-                            }
-
-                            songListAdapter.notifyItemMoved(fromPos, toPos);
-
-                            if (toPos == 0) {
-                                listViewManager.scrollToPosition(0);
-                            }
-                        }
-                    }
-                }
-
-                songListAdapter.setListFilterType(listFilterType);
-                if (listChange) {
-                    listViewManager.scrollToPosition(0);
-                    songListAdapter.notifyDataSetChanged();
-                    listChange = false;
-                } else {
-                    songListAdapter.notifyItemRangeChanged(0, tracks.size() - 1, "");
-                }
-            });
-        });
+        return mainView;
     }
 
     private void jumpToCurrentPlayingSong() {
         int targetIndex = -1;
         for (int i = 0; i < songList.size(); i++) {
             Track track = songList.get(i).getTrack();
-            if (track.getTId().equals(currentPlayingSongId)) {
+            if (track.getTId().equals(songListAdapter.getCurrentPlayingIndex())) {
                 targetIndex = i;
                 break;
             }
@@ -475,14 +371,12 @@ public class SongList extends Fragment {
         public void onReceive(Context context, Intent intent) {
             if (intent.getAction().equals(getResources().getString(R.string.musicservice_song_prepared))) {
                 Bundle bundle = intent.getExtras();
-                currentPlayingSongId = bundle.getInt("ID", -1);
-                songListAdapter.setCurrentPlayingIndex(currentPlayingSongId);
+                songListAdapter.setCurrentPlayingIndex(bundle.getInt("ID", -1));
             } else if (intent.getAction().equals(getResources().getString(R.string.playback_control_values))) {
                 Bundle bundle = intent.getExtras();
-                currentPlayingSongId = (int) bundle.getLong("ID", -1);
-                songListAdapter.setCurrentPlayingIndex(currentPlayingSongId);
+                songListAdapter.setCurrentPlayingIndex(bundle.getInt("ID", -1));
                 ArrayList<Track> t = bundle.getParcelableArrayList(getResources().getString(R.string.parcelable_track_list));
-                songListAdapter.setPlaybackBehaviour(PlaybackBehaviour.getStateFromInteger(bundle.getInt("BEHAVIOUR_STATE")));
+                songListAdapter.setPlaybackBehaviour(PlaybackBehaviour.Companion.getStateFromInteger(bundle.getInt("BEHAVIOUR_STATE")));
                 songListAdapter.setQueueList(t);
             }
         }

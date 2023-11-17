@@ -1,13 +1,7 @@
 package com.lohni.musicplayer.adapter;
 
-import android.content.ContentUris;
 import android.content.Context;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.drawable.Drawable;
-import android.media.MediaMetadataRetriever;
-import android.net.Uri;
-import android.provider.MediaStore;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,8 +13,7 @@ import android.widget.TextView;
 import com.lohni.musicplayer.R;
 import com.lohni.musicplayer.database.entity.Track;
 import com.lohni.musicplayer.interfaces.QueueControlInterface;
-import com.lohni.musicplayer.utils.enums.PlaybackBehaviourState;
-import com.lohni.musicplayer.utils.images.ImageUtil;
+import com.lohni.musicplayer.utils.enums.PlaybackBehaviour;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -32,16 +25,16 @@ import androidx.core.content.res.ResourcesCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 public class QueueAdapter extends RecyclerView.Adapter<QueueAdapter.ViewHolder> {
-    private ArrayList<Track> queueList;
+    private final ArrayList<Track> queueList;
     private int queuePosition;
     private Context context;
-    private PlaybackBehaviourState playbackBehaviour;
+    private PlaybackBehaviour playbackBehaviour;
     private QueueControlInterface songInterface;
 
     private final Drawable customCoverImage, customCoverBackground;
-    private HashMap<Integer, Drawable> loadedCovers = new HashMap<>();
+    private HashMap<Integer, Drawable> drawableHashMap = new HashMap<>();
 
-    public QueueAdapter(Context c, ArrayList<Track> queueList, int queuePosition, PlaybackBehaviourState playbackBehaviour, QueueControlInterface songInterface) {
+    public QueueAdapter(Context c, ArrayList<Track> queueList, int queuePosition, PlaybackBehaviour playbackBehaviour, QueueControlInterface songInterface) {
         this.queueList = queueList;
         this.queuePosition = queuePosition;
         this.context = c;
@@ -80,9 +73,9 @@ public class QueueAdapter extends RecyclerView.Adapter<QueueAdapter.ViewHolder> 
     }
 
     private String getIndexTextForPosition(int position) {
-        if (position == queuePosition && playbackBehaviour != PlaybackBehaviourState.SHUFFLE) {
+        if (position == queuePosition && playbackBehaviour != PlaybackBehaviour.SHUFFLE) {
             return String.valueOf(0);
-        } else if (position >= queuePosition && playbackBehaviour == PlaybackBehaviourState.REPEAT_LIST) {
+        } else if (position >= queuePosition && playbackBehaviour == PlaybackBehaviour.REPEAT_LIST) {
             return String.valueOf(position - queuePosition);
         } else {
             return "~";
@@ -103,19 +96,19 @@ public class QueueAdapter extends RecyclerView.Adapter<QueueAdapter.ViewHolder> 
         }
 
         Integer trackId = track.getTId();
-        if (loadedCovers.containsKey(trackId) && holder != null) {
+        if (drawableHashMap.containsKey(trackId) && holder != null) {
             Animation fadeIn = new AlphaAnimation(0, 1);
             fadeIn.setInterpolator(new DecelerateInterpolator());
             fadeIn.setDuration(100);
             holder.coverImage.setAnimation(fadeIn);
             holder.coverImage.setClipToOutline(true);
             holder.coverImage.setForeground(null);
-            holder.coverImage.setBackground(loadedCovers.get(trackId));
+            holder.coverImage.setBackground(drawableHashMap.get(trackId));
         }
     }
 
     private void setColors(int position, ViewHolder holder) {
-        if (position >= queuePosition || !(playbackBehaviour == PlaybackBehaviourState.REPEAT_LIST)) {
+        if (position >= queuePosition || !(playbackBehaviour == PlaybackBehaviour.REPEAT_LIST)) {
             if (position == queuePosition) {
                 holder.itemView.setBackgroundTintList(ContextCompat.getColorStateList(context, R.color.colorTertiaryContainer));
                 holder.title.setTextColor(ContextCompat.getColorStateList(context, R.color.colorOnTertiaryContainer));
@@ -143,41 +136,14 @@ public class QueueAdapter extends RecyclerView.Adapter<QueueAdapter.ViewHolder> 
         notifyItemRangeChanged(0, queueList.size(), "REFRESH_INDEX");
     }
 
-    public void updatePlaybackBehaviourState(PlaybackBehaviourState newState) {
+    public void updatePlaybackBehaviourState(PlaybackBehaviour newState) {
         playbackBehaviour = newState;
         notifyItemRangeChanged(0, queueList.size(), "REFRESH_INDEX");
     }
 
-    public void getAllBackgroundImages(List<Track> newList) {
-        new Thread(() -> {
-            List<Track> t = new ArrayList<>();
-            t.addAll(newList);
-            MediaMetadataRetriever mmr = new MediaMetadataRetriever();
-            for (int i = 0; i < t.size(); i++) {
-                Track track = t.get(i);
-                Integer trackId = track.getTId();
-                Uri trackUri = ContentUris.withAppendedId(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, trackId);
-                try {
-                    if (!loadedCovers.containsKey(trackId)) {
-                        mmr.setDataSource(context, trackUri);
-                        byte[] thumbnail = mmr.getEmbeddedPicture();
-                        if (thumbnail != null) {
-                            Bitmap cover = BitmapFactory.decodeByteArray(thumbnail, 0, thumbnail.length);
-                            Drawable drawable = ImageUtil.roundCorners(cover, context.getResources());
-                            loadedCovers.put(trackId, drawable);
-                        }
-                    }
-                } catch (IllegalArgumentException e) {
-                    System.out.println("MediaMetadataRetriever IllegalArgument");
-                }
-            }
-            try {
-                Thread.sleep(200);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-            notifyItemRangeChanged(0, queueList.size());
-        }).start();
+
+    public void setDrawableHashMap(HashMap<Integer, Drawable> drawableHashMap) {
+        this.drawableHashMap = drawableHashMap;
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {

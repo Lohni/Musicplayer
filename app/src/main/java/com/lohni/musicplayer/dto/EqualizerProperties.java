@@ -2,18 +2,12 @@ package com.lohni.musicplayer.dto;
 
 public class EqualizerProperties {
 
-    private final short numberFreqBands;
     private final short[] bandLevelRange;
     private final int[] centerFreqs;
 
-    public EqualizerProperties(short numberFreqBands, short[] bandLevelRange, int[] centerFreqs) {
-        this.numberFreqBands = numberFreqBands;
+    public EqualizerProperties(short[] bandLevelRange, int[] centerFreqs) {
         this.bandLevelRange = bandLevelRange;
         this.centerFreqs = centerFreqs;
-    }
-
-    public short getNumberFreqBands() {
-        return numberFreqBands;
     }
 
     public short getLowerBandLevel() {
@@ -24,13 +18,6 @@ public class EqualizerProperties {
         return bandLevelRange[1];
     }
 
-    public short[] getBandLevelRange() {
-        return bandLevelRange;
-    }
-
-    public int[] getCenterFreqs() {
-        return centerFreqs;
-    }
 
     public int getCenterFreqAtIndex(int index) {
         if (index >= 0 && index < centerFreqs.length) {

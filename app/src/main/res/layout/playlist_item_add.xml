@@ -1,19 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="64dp"
+    android:layout_height="60dp"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
-    android:focusable="false"
-    android:focusableInTouchMode="false">
+    android:focusable="true"
+    android:clickable="true"
+    android:foreground="@drawable/shuffle_ripple">
 
     <LinearLayout
         android:id="@+id/playlist_item_holder"
         android:layout_width="0dp"
-        android:layout_height="64dp"
+        android:layout_height="60dp"
         android:orientation="vertical"
-        android:paddingStart="16dp"
-        android:paddingEnd="16dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -23,7 +24,7 @@
         android:id="@+id/playlist_item_title"
         android:layout_width="match_parent"
         android:layout_height="28dp"
-        android:layout_marginTop="7dp"
+        android:layout_marginTop="6dp"
         android:gravity="bottom"
         android:singleLine="true"
         android:textColor="@color/colorOnBackground"
@@ -44,13 +45,10 @@
         android:layout_height="48dp"
         android:layout_marginTop="8dp"
         android:layout_marginBottom="8dp"
-        android:background="@color/colorTransparent"
-        android:buttonTint="@color/colorPrimary"
-        android:clickable="false"
-        android:duplicateParentState="false"
-        android:focusable="false"
-        android:focusableInTouchMode="false"
+        android:buttonTint="@color/equalizer_background"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        android:background="@android:color/transparent"
+        android:clickable="false"/>
 </androidx.constraintlayout.widget.ConstraintLayout>

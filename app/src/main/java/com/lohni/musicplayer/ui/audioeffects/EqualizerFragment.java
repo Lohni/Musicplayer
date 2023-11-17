@@ -31,6 +31,7 @@ import com.lohni.musicplayer.database.dao.AudioEffectDataAccess;
 import com.lohni.musicplayer.database.entity.EqualizerPreset;
 import com.lohni.musicplayer.database.viewmodel.AudioEffectViewModel;
 import com.lohni.musicplayer.dto.EqualizerProperties;
+import com.lohni.musicplayer.utils.enums.AudioEffectType;
 
 import java.util.ArrayList;
 import java.util.Optional;
@@ -80,7 +81,9 @@ public class EqualizerFragment extends Fragment {
 
         enableSwitchMenu.setOnCheckedChangeListener((compoundButton, b) -> {
             sharedPreferences.edit().putBoolean(getResources().getString(R.string.preference_equalizer_isenabled), b).apply();
-            requireActivity().sendBroadcast(new Intent(getString(R.string.musicservice_equalizer_enabled)).putExtra("ENABLED", b));
+            requireActivity().sendBroadcast(new Intent(getString(R.string.musicservice_audioeffect))
+                    .putExtra("EFFECT_TYPE", AudioEffectType.Companion.getIntFromAudioEffectType(AudioEffectType.EQUALIZER))
+                    .putExtra("ENABLED", b));
             equalizerEnabled = b;
             setViewsEnabled();
         });
@@ -169,7 +172,7 @@ public class EqualizerFragment extends Fragment {
                 bandlevel[4] = equalizerSettings.getEqLevel5().shortValue();
 
                 updateSeekbars();
-                requireActivity().sendBroadcast(new Intent(getString(R.string.musicservice_equalizer_values)).putExtra("VALUES", equalizerSettings));
+                requireActivity().sendBroadcast(new Intent(getString(R.string.musicservice_audioeffect)).putExtra("EQUALIZER", equalizerSettings));
 
                 presetDelete.setEnabled(targetActive.equals(1));
                 break;
@@ -295,7 +298,9 @@ public class EqualizerFragment extends Fragment {
                         equalizerSettings.setEqLevel5((int) bandlevel[4]);
 
                         audioEffectViewModel.updateEqualizerPreset(equalizerSettings);
-                        requireActivity().sendBroadcast(new Intent(getString(R.string.musicservice_equalizer_values)).putExtra("VALUES", equalizerSettings));
+                        requireActivity().sendBroadcast(new Intent(getString(R.string.musicservice_audioeffect))
+                                .putExtra("VALUES", equalizerSettings)
+                                .putExtra("EFFECT_TYPE", AudioEffectType.Companion.getIntFromAudioEffectType(AudioEffectType.EQUALIZER)));
                     }
                 }
             });

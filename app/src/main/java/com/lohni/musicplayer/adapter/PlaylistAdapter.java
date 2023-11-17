@@ -15,8 +15,8 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 public class PlaylistAdapter extends RecyclerView.Adapter<PlaylistAdapter.ViewHolder> {
-    private ArrayList<PlaylistDTO> playlistWithSize;
-    private PlaylistInterface playlistInterface;
+    private final ArrayList<PlaylistDTO> playlistWithSize;
+    private final PlaylistInterface playlistInterface;
     private boolean onItemClickEnabled = true;
 
     public PlaylistAdapter(ArrayList<PlaylistDTO> playlistWithSize, PlaylistInterface playlistInterface) {
@@ -34,7 +34,7 @@ public class PlaylistAdapter extends RecyclerView.Adapter<PlaylistAdapter.ViewHo
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         holder.name.setText(playlistWithSize.get(position).getPlaylist().getPName());
-        holder.size.setText(playlistWithSize.get(position).getSize().toString() + " songs");
+        holder.size.setText(playlistWithSize.get(position).getSize() + " songs");
         holder.itemView.setOnClickListener(view -> {
             if (onItemClickEnabled) {
                 view.setTransitionName("playlist_detail");

@@ -25,7 +25,6 @@ public class AlbumDetailAdapter extends RecyclerView.Adapter<AlbumDetailAdapter.
     private final ArrayList<Track> albumSongList;
     private final Drawable customCoverDrawable;
     private final AlbumDetailAdapterListener albumDetailAdapterListener;
-    private final Context context;
     private HashMap<Integer, Drawable> drawableHashMap = new HashMap<>();
 
     public interface AlbumDetailAdapterListener {
@@ -33,7 +32,6 @@ public class AlbumDetailAdapter extends RecyclerView.Adapter<AlbumDetailAdapter.
     }
 
     public AlbumDetailAdapter(Context context, ArrayList<Track> albumSongList, AlbumDetailAdapterListener albumDetailAdapterListener) {
-        this.context = context;
         this.albumSongList = albumSongList;
         this.albumDetailAdapterListener = albumDetailAdapterListener;
         customCoverDrawable = ResourcesCompat.getDrawable(context.getResources(), R.drawable.ic_album_black_24dp, null);
