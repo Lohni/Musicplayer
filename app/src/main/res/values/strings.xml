@@ -100,6 +100,9 @@
     <string name="db_preference_include_from">INCLUDE_DURATION_FROM</string>
     <string name="db_preference_include_to">INCLUDE_DURATION_TO</string>
 
+    <!-- Default values -->
+    <string name="wa_audio_regex">^AUD-[0-9]{8}-WA[0-9]{4}$</string>
+
     <string-array name="AlbumOption">
         <item>Play</item>
         <item>Shuffle</item>

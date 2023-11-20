@@ -1,18 +1,20 @@
 package com.lohni.musicplayer.core
 
-import android.content.ContentResolver
 import android.content.Context
 import android.database.Cursor
 import android.net.Uri
 import android.os.Build
 import android.provider.MediaStore
 import com.lohni.musicplayer.database.entity.Album
+import com.lohni.musicplayer.database.entity.Preference
 import com.lohni.musicplayer.database.entity.Track
 import com.lohni.musicplayer.utils.GeneralUtils
 
 class MediaStoreSync {
     companion object {
-        fun syncMediaStoreTracks(applicationContext: Context, tracksDB: List<Track>): ArrayList<Track> {
+        fun syncMediaStoreTracks(applicationContext: Context, tracksDB: List<Track>, excludeWaPref: Preference): ArrayList<Track> {
+            val waRegex = if (excludeWaPref.prefValue.isNotEmpty()) Regex(excludeWaPref.prefValue) else null
+
             val fromMediaStore = ArrayList<Track>()
             val musicUri: Uri =
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) MediaStore.Audio.Media.getContentUri(MediaStore.VOLUME_EXTERNAL)
@@ -55,7 +57,9 @@ class MediaStoreSync {
                     track.tDeleted = it.tDeleted
                 }
 
-                fromMediaStore.add(track)
+                if (waRegex == null || !track.tTitle.matches(waRegex)) {
+                    fromMediaStore.add(track)
+                }
             } while (musicCursor.moveToNext())
             musicCursor.close()
             return fromMediaStore
