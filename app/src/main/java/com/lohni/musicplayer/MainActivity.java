@@ -23,10 +23,13 @@ import com.lohni.musicplayer.core.MusicplayerServiceConnection;
 import com.lohni.musicplayer.database.MusicplayerApplication;
 import com.lohni.musicplayer.database.dao.AudioEffectDataAccess;
 import com.lohni.musicplayer.database.dao.MusicplayerDataAccess;
+import com.lohni.musicplayer.database.dao.PreferenceDataAccess;
 import com.lohni.musicplayer.database.entity.Album;
 import com.lohni.musicplayer.database.entity.Track;
+import com.lohni.musicplayer.database.enums.PreferenceEnum;
 import com.lohni.musicplayer.database.viewmodel.AudioEffectViewModel;
 import com.lohni.musicplayer.database.viewmodel.MusicplayerViewModel;
+import com.lohni.musicplayer.database.viewmodel.PreferenceViewModel;
 import com.lohni.musicplayer.interfaces.NavigationControlInterface;
 import com.lohni.musicplayer.interfaces.PlaybackControlInterface;
 import com.lohni.musicplayer.interfaces.QueueControlInterface;
@@ -73,6 +76,7 @@ public class MainActivity extends AppCompatActivity implements PlaybackControlIn
 
     private AudioEffectViewModel audioEffectViewModel;
     private MusicplayerViewModel musicplayerViewModel;
+    private PreferenceViewModel preferenceViewModel;
 
     private ActionBarDrawerToggle toggle;
     private MusicplayerServiceConnection serviceConnection;
@@ -106,6 +110,10 @@ public class MainActivity extends AppCompatActivity implements PlaybackControlIn
         audioEffectViewModel = new ViewModelProvider(this, new AudioEffectViewModel.AudioEffectViewModelFactory(aod)).get(AudioEffectViewModel.class);
         MusicplayerDataAccess mda = ((MusicplayerApplication) getApplication()).getDatabase().musicplayerDao();
         musicplayerViewModel = new ViewModelProvider(this, new MusicplayerViewModel.MusicplayerViewModelFactory(mda)).get(MusicplayerViewModel.class);
+
+        PreferenceDataAccess pda = ((MusicplayerApplication) getApplication()).getDatabase().preferenceDao();
+        preferenceViewModel = new ViewModelProvider(this, new PreferenceViewModel.PreferenceViewModelFactory(pda)).get(PreferenceViewModel.class);
+
 
         Intent service = new Intent(this, MusicService.class);
 
@@ -164,14 +172,16 @@ public class MainActivity extends AppCompatActivity implements PlaybackControlIn
     }
 
     private void compareTracksToDatabase(ArrayList<Track> tracks) {
-        ArrayList<Track> toInsert = MediaStoreSync.Companion.syncMediaStoreTracks(getApplicationContext(), tracks);
+        preferenceViewModel.observeOnce(preferenceViewModel.getPreferenceById(PreferenceEnum.WA_AUDIO_REGEX.getId()), this, pref -> {
+            ArrayList<Track> toInsert = MediaStoreSync.Companion.syncMediaStoreTracks(getApplicationContext(), tracks, pref);
 
-        AdapterUtils.loadCoverImagesAsync(getBaseContext(), toInsert, new ViewModelProvider(this).get(ApplicationDataViewModel.class));
+            AdapterUtils.loadCoverImagesAsync(getBaseContext(), toInsert, new ViewModelProvider(this).get(ApplicationDataViewModel.class));
 
-        ArrayList<Track> toDelete = tracks.stream().filter(track -> !toInsert.contains(track)).collect(Collectors.toCollection(ArrayList::new));
-        if (!toDelete.isEmpty()) musicplayerViewModel.deleteTracks(toDelete);
+            ArrayList<Track> toDelete = tracks.stream().filter(track -> !toInsert.contains(track)).collect(Collectors.toCollection(ArrayList::new));
+            if (!toDelete.isEmpty()) musicplayerViewModel.deleteTracks(toDelete);
 
-        musicplayerViewModel.insertTracks(toInsert);
+            musicplayerViewModel.insertTracks(toInsert);
+        });
     }
 
     private void compareAlbumsToDatabase(ArrayList<Album> albums) {

@@ -1,11 +1,11 @@
 package com.lohni.musicplayer.ui.settings;
 
 import android.os.Bundle;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.google.android.material.switchmaterial.SwitchMaterial;
 import com.lohni.musicplayer.R;
 import com.lohni.musicplayer.database.MusicplayerApplication;
 import com.lohni.musicplayer.database.dao.MusicplayerDataAccess;
@@ -24,10 +24,8 @@ import java.util.Optional;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
-import androidx.transition.Slide;
 
 public class SettingFragment extends Fragment {
-    private RangeSeekbar rangeSeekbar;
     private PreferenceViewModel preferenceViewModel;
     private MusicplayerViewModel musicplayerViewModel;
     private List<Preference> preferenceList;
@@ -46,9 +44,10 @@ public class SettingFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_setting, container, false);
-        rangeSeekbar = view.findViewById(R.id.settings_range_seekbar);
+        RangeSeekbar rangeSeekbar = view.findViewById(R.id.settings_range_seekbar);
+        SwitchMaterial switchWA = view.findViewById(R.id.settings_exclude_wa_switch);
 
-        init();
+        init(rangeSeekbar, switchWA);
 
         rangeSeekbar.setOnValueChangedListener((value, dragHandle) -> {
             PreferenceEnum targetPref = (dragHandle == RangeSeekbar.DragHandle.FROM)
@@ -61,6 +60,20 @@ public class SettingFragment extends Fragment {
 
             toUpdate.ifPresent(pref -> {
                 pref.setPrefValue(String.valueOf(value));
+                preferenceViewModel.updatePreference(pref);
+            });
+        });
+
+        switchWA.setOnClickListener(v -> {
+            Optional<Preference> toUpdate = preferenceList.stream()
+                    .filter(pref -> pref.getPrefId().equals(PreferenceEnum.WA_AUDIO_REGEX.getId()))
+                    .findFirst();
+
+            toUpdate.ifPresent(pref -> {
+                if (pref.getPrefValue().isEmpty())
+                    pref.setPrefValue(requireContext().getString(R.string.wa_audio_regex));
+                else pref.setPrefValue("");
+                switchWA.setChecked(pref.getPrefValue().isEmpty());
                 preferenceViewModel.updatePreference(pref);
             });
         });
@@ -83,7 +96,7 @@ public class SettingFragment extends Fragment {
         return view;
     }
 
-    private void init() {
+    private void init(RangeSeekbar rangeSeekbar, SwitchMaterial switchWA) {
         preferenceViewModel.observeOnce(preferenceViewModel.getAllPreferences(), getViewLifecycleOwner(), preferences -> {
             preferenceList = preferences;
 
@@ -97,8 +110,14 @@ public class SettingFragment extends Fragment {
                     .map(Preference::getPrefValue)
                     .findFirst();
 
+            Optional<String> excludeWa = preferenceList.stream()
+                    .filter(pref -> pref.getPrefId().equals(PreferenceEnum.WA_AUDIO_REGEX.getId()))
+                    .map(Preference::getPrefValue)
+                    .findFirst();
+
             includeFrom.ifPresent(s -> rangeSeekbar.setFrom(Long.parseLong(s)));
             includeTo.ifPresent(s -> rangeSeekbar.setTo(Long.parseLong(s)));
+            excludeWa.ifPresent(s -> switchWA.setChecked(!s.isEmpty()));
         });
     }
 }
