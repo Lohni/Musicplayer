@@ -182,4 +182,24 @@ interface MusicplayerDataAccess {
             "GROUP BY pp_p_id " +
             "ORDER BY sum(tp_time_played) DESC")
     fun getPlaylistsByTimePlayed(): Flow<List<PlaylistDTO>>
+
+
+     @Transaction
+     @Query("select tp_id as id, t_title as title, t_artist as subtitle, tp_time_played as timeplayed, tp_played as credat, 0 as type, " +
+             " case when atp_ap_id is not null then atp_ap_id when ptp_pp_id is not null then ptp_pp_id else null end as refid, " +
+             " case when atp_ap_id is not null then 2 when ptp_pp_id is not null then 1 else null end as reftype " +
+             " from TrackPlayed " +
+             " join Track on tp_t_id = t_id " +
+             " left join AlbumTrackPlayed on atp_tp_id = tp_id " +
+             " left join PlaylistTrackPlayed on ptp_tp_id = tp_id " +
+             "UNION ALL " +
+             "select ap_id as id, a_name as title, a_artist_name as subtitle, null as timeplayed, ap_played as credat, 2 as type, null as refid, null as reftype " +
+             " from AlbumPlayed " +
+             " join Album on ap_a_id = a_id " +
+             "UNION ALL " +
+             " select pp_id as id, p_name as title, \"\" as subtitle, null as timeplayed, pp_played as credat, 1 as type, null as refid, null as reftype " +
+             " from PlaylistPlayed " +
+             " join Playlist on pp_p_id = p_id " +
+             "ORDER BY credat desc")
+     fun getItemPlayedInOrder(): Flow<List<ItemPlayedDTO>>
 }

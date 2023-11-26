@@ -2,10 +2,7 @@ package com.lohni.musicplayer.database.viewmodel
 
 import androidx.lifecycle.*
 import com.lohni.musicplayer.database.dao.MusicplayerDataAccess
-import com.lohni.musicplayer.database.dto.AlbumDTO
-import com.lohni.musicplayer.database.dto.AlbumTrackDTO
-import com.lohni.musicplayer.database.dto.StatisticDTO
-import com.lohni.musicplayer.database.dto.TrackDTO
+import com.lohni.musicplayer.database.dto.*
 import com.lohni.musicplayer.database.entity.*
 import com.lohni.musicplayer.utils.GeneralUtils
 import com.lohni.musicplayer.utils.enums.ListFilterType
@@ -20,6 +17,7 @@ class MusicplayerViewModel(private val dao: MusicplayerDataAccess) : ExtendedBas
     val trackAlphabetical: LiveData<List<TrackDTO>> = dao.getTracksAlphabetical().asLiveData()
     val allAlbumsWithTracks: LiveData<List<AlbumTrackDTO>> = dao.getAlbumsWithTracks().asLiveData()
     val lastTrackPlayed: LiveData<TrackPlayed> = dao.getLastTrackPlayed().asLiveData()
+    val itemPlayedOrdered: LiveData<List<ItemPlayedDTO>> = dao.getItemPlayedInOrder().asLiveData()
 
     private val lastPlayedTracks: LiveData<List<TrackDTO>> = dao.getTracksByLastPlayed().asLiveData()
     private val favouriteTracks: LiveData<List<TrackDTO>> = dao.getFavouriteTracks().asLiveData()

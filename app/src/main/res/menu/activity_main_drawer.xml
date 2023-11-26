@@ -32,5 +32,10 @@
             android:icon="@drawable/ic_round_settings_24"
             android:id="@+id/nav_settings"
             android:title="Settings"/>
+
+        <item
+            android:icon="@drawable/round_history_24"
+            android:id="@+id/nav_database_viewer"
+            android:title="History"/>
     </group>
 </menu>

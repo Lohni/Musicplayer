@@ -42,6 +42,7 @@ import com.lohni.musicplayer.ui.dashboard.DashboardFragment;
 import com.lohni.musicplayer.ui.playbackcontrol.ExpandedPlaybackControl;
 import com.lohni.musicplayer.ui.playbackcontrol.PlaybackControl;
 import com.lohni.musicplayer.ui.playlist.PlaylistFragment;
+import com.lohni.musicplayer.ui.settings.DatabaseViewerFragment;
 import com.lohni.musicplayer.ui.settings.SettingFragment;
 import com.lohni.musicplayer.ui.songlist.SongList;
 import com.lohni.musicplayer.utils.AdapterUtils;
@@ -348,6 +349,8 @@ public class MainActivity extends AppCompatActivity implements PlaybackControlIn
             selectedDrawerFragment = equalizerFragment;
         } else if (item.getItemId() == R.id.nav_settings) {
             selectedDrawerFragment = new SettingFragment();
+        } else if (item.getItemId() == R.id.nav_database_viewer) {
+            selectedDrawerFragment = new DatabaseViewerFragment();
         }
 
         drawer.closeDrawer(GravityCompat.START);
