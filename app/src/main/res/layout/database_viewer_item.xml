@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="60dp"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_marginStart="8dp"
+    android:layout_marginTop="2dp"
+    android:layout_marginEnd="8dp"
+    android:backgroundTint="@color/colorTransparent"
+    android:background="@drawable/background_button_secondary"
+    android:foreground="@drawable/shuffle_ripple"
+    android:focusable="false">
+
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/database_viewer_id"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:singleLine="true"
+        android:textColor="@color/colorOnSurfaceVariant"
+        android:textSize="16sp"
+        android:alpha="0.8"
+        android:text="3008"
+        app:layout_constraintWidth_default="wrap"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"/>
+
+    <View
+        android:id="@+id/database_viewer_type"
+        android:layout_width="28dp"
+        android:layout_height="28dp"
+        android:layout_gravity="center_vertical"
+        android:layout_marginStart="5dp"
+        android:backgroundTint="@color/colorSecondary"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toEndOf="@id/database_viewer_id"
+        app:layout_constraintBottom_toBottomOf="parent"/>
+
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/database_viewer_title"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:singleLine="true"
+        android:textColor="@color/colorOnSurfaceVariant"
+        android:textSize="16sp"
+        android:layout_marginTop="8dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="4dp"
+        android:text="Test"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toEndOf="@id/database_viewer_type"
+        app:layout_constraintBottom_toTopOf="@id/database_viewer_subtitle"
+        app:layout_constraintEnd_toStartOf="@id/database_viewer_credat"/>
+
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/database_viewer_subtitle"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:textColor="@color/colorOnSurfaceVariant"
+        android:alpha="0.8"
+        android:textSize="14sp"
+        android:layout_marginBottom="8dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="4dp"
+        android:lines="1"
+        android:text="Subtitle"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/database_viewer_title"
+        app:layout_constraintStart_toEndOf="@id/database_viewer_type"
+        app:layout_constraintEnd_toStartOf="@id/database_viewer_timeplayed"/>
+
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/database_viewer_credat"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:textColor="@color/colorOnSurfaceVariant"
+        android:alpha="0.8"
+        android:textSize="14sp"
+        android:layout_marginTop="8dp"
+        android:lines="1"
+        android:text="2023-11-25 18:38:11"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/database_viewer_timeplayed"/>
+
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/database_viewer_timeplayed"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:textColor="@color/colorOnSurfaceVariant"
+        android:alpha="0.8"
+        android:textSize="14sp"
+        android:layout_marginBottom="8dp"
+        android:lines="1"
+        android:text="30min 27s"
+        app:layout_constraintTop_toBottomOf="@id/database_viewer_credat"
+        app:layout_constraintStart_toStartOf="@id/database_viewer_credat"
+        app:layout_constraintBottom_toBottomOf="parent"/>
+
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/database_viewer_refid"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:textColor="@color/colorOnSurfaceVariant"
+        android:alpha="0.8"
+        android:textSize="14sp"
+        android:layout_marginBottom="8dp"
+        android:layout_marginEnd="4dp"
+        android:lines="1"
+        android:text="3008"
+        app:layout_constraintTop_toBottomOf="@id/database_viewer_credat"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/database_viewer_reftype"/>
+
+    <View
+        android:id="@+id/database_viewer_reftype"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        android:layout_gravity="center_vertical"
+        android:layout_marginBottom="8dp"
+        app:layout_constraintTop_toBottomOf="@id/database_viewer_credat"
+        android:backgroundTint="@color/colorSecondary"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
