@@ -92,7 +92,7 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
         MediaSessionCallback sessionCallback = new MediaSessionCallback();
         sessionCallback.setOnSkipListener(this::skip);
         sessionCallback.setOnPauseListener(this::pause);
-        sessionCallback.setOnPlayListener(this::play);
+        sessionCallback.setOnPlayListener(this::resume);
         sessionCallback.setOnMediaButtonListener(() -> {
             if (!player.isPlaying()) resume();
             else pause();
@@ -172,9 +172,7 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
                     skip(PlaybackAction.SKIP_PREVIOUS);
                 } else if (intent.getAction().equals(AudioManager.ACTION_HEADSET_PLUG)) {
                     int mode = intent.getIntExtra("state", 0);
-                    if (mode == 0) {
-                        pause();
-                    }
+                    if (mode == 0) pause();
                 } else if (intent.getAction().equals(getString(R.string.musicservice_audioeffect))) {
                     audioEffectSession.setValueFromBundle(intent);
                 } else if (intent.getAction().equals(getString(R.string.musicservice_play_list))) {
