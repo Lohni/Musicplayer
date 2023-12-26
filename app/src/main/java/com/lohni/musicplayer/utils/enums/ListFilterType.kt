@@ -1,5 +1,7 @@
 package com.lohni.musicplayer.utils.enums
 
+import com.lohni.musicplayer.R
+
 enum class ListFilterType {
     FAVOURITE, LAST_PLAYED, TIMES_PLAYED, ALPHABETICAL, TIME_PLAYED, LAST_CREATED;
 
@@ -47,6 +49,17 @@ enum class ListFilterType {
                 TIME_PLAYED -> "Time played"
                 LAST_CREATED -> "Last created"
                 else -> "Times played"
+            }
+        }
+
+        fun getDrawableForFilterType(filterType: ListFilterType): Int {
+            return when (filterType) {
+                FAVOURITE -> R.drawable.ic_filter_az
+                LAST_PLAYED -> R.drawable.ic_filter_last
+                ALPHABETICAL -> R.drawable.ic_filter_az
+                TIME_PLAYED -> R.drawable.ic_filter_time
+                LAST_CREATED -> R.drawable.ic_filter_create
+                else -> R.drawable.ic_filter_times
             }
         }
     }

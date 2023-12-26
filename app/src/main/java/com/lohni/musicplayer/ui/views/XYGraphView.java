@@ -51,8 +51,12 @@ public class XYGraphView extends View {
     protected void onDraw(Canvas canvas) {
         if (values != null) {
             switch (statisticType) {
-                case PER_PERIOD: perPeriod(canvas);break;
-                case OVER_TIME: overTime(canvas);break;
+                case PER_PERIOD:
+                    perPeriod(canvas);
+                    break;
+                case OVER_TIME:
+                    overTime(canvas);
+                    break;
             }
         } else {
             super.onDraw(canvas);
@@ -122,7 +126,7 @@ public class XYGraphView extends View {
             if (value.getTime_played() > maxValue) maxValue = value.getTime_played();
         }
 
-        float xStep = (width - padding*4) / (xScaledValues.length - 1);
+        float xStep = (width - padding * 4) / (xScaledValues.length - 1);
         yScale = (height - (textHeight * 4)) / (float) (maxValue);
 
         LocalDate ld = LocalDate.now(ZoneOffset.UTC);

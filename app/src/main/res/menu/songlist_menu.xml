@@ -4,14 +4,22 @@
     <item
         android:id="@+id/action_songlist_search"
         android:icon="@drawable/ic_search_black_24dp"
-        android:iconTint="@android:color/white"
+        android:iconTint="@color/colorOnSurface"
         android:title="songlist_search_toggle"
-        app:showAsAction="ifRoom" />
+        app:showAsAction="collapseActionView|ifRoom"
+        app:actionViewClass="androidx.appcompat.widget.SearchView" />
 
     <item
         android:id="@+id/action_songlist_jumpto"
         android:icon="@drawable/ic_loupe_note"
-        android:iconTint="@android:color/white"
+        android:iconTint="@color/colorOnSurface"
         android:title="songlist_jumpto"
         app:showAsAction="ifRoom" />
+
+    <item
+        android:id="@+id/action_songlist_filter"
+        android:icon="@drawable/ic_filter_az"
+        android:iconTint="@color/colorOnSurface"
+        android:title="songlist_filter"
+        app:showAsAction="ifRoom"/>
 </menu>
