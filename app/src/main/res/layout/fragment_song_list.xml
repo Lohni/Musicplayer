@@ -30,11 +30,14 @@
 
     <LinearLayout
         android:id="@+id/side_index"
-        android:layout_width="20dp"
+        android:layout_width="24dp"
         android:layout_height="0dp"
-        android:layout_marginTop="12dp"
-        android:layout_marginRight="1dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp"
+        android:paddingTop="8dp"
+        android:paddingBottom="8dp"
         android:orientation="vertical"
+        android:background="@drawable/background_dialog"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toBottomOf="@id/songlist_shuffle_container" />
@@ -48,7 +51,7 @@
         app:layout_constraintBottom_toTopOf="@id/songList"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toStartOf="@id/songlist_filter_holder">
+        app:layout_constraintEnd_toEndOf="parent">
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/songlist_shuffle"
@@ -92,73 +95,6 @@
                 app:layout_constraintEnd_toStartOf="@id/songlist_shuffle_size"/>
 
         </androidx.constraintlayout.widget.ConstraintLayout>
-
-        <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/songlist_search_layout"
-            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:foregroundTint="@color/colorOnBackground"
-            android:visibility="gone"
-            app:boxStrokeColor="@color/chip_text"
-            app:endIconDrawable="@drawable/ic_outline_cancel_24"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toStartOf="@id/songlist_shuffle"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:startIconDrawable="@drawable/ic_search_black_24dp"
-            app:startIconTint="@color/colorOnBackground">
-
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/songlist_search"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:textColor="@color/colorOnBackground" />
-
-        </com.google.android.material.textfield.TextInputLayout>
-    </androidx.constraintlayout.widget.ConstraintLayout>
-
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/songlist_filter_holder"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        app:layout_constraintDimensionRatio="1"
-        app:layout_constraintBottom_toTopOf="@id/songList"
-        android:layout_marginBottom="6dp"
-        android:layout_marginTop="4dp"
-        android:layout_marginStart="4dp"
-        android:layout_marginEnd="4dp"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:clickable="true"
-        android:focusable="true"
-        android:foreground="@drawable/circle_ripple">
-
-        <TextView
-            android:id="@+id/songlist_filter_title"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            app:layout_constraintTop_toTopOf="parent"
-            android:textSize="10sp"
-            android:text="A-Z"
-            android:layout_marginTop="4dp"
-            android:textColor="@color/colorOnBackground"
-            android:gravity="center"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"/>
-
-        <View
-            android:id="@+id/songlist_filter"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:layout_marginTop="12dp"
-            android:background="@drawable/ic_baseline_filter_list_24"
-            app:layout_constraintDimensionRatio="1"
-            android:backgroundTint="@color/colorOnBackground"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent"/>
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <androidx.recyclerview.widget.RecyclerView
@@ -166,13 +102,11 @@
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_marginTop="8dp"
-        android:layout_marginEnd="4dp"
-        android:layout_marginStart="4dp"
         android:orientation="vertical"
-        android:scrollbars="vertical"
         android:scrollbarThumbVertical="@drawable/custom_scrollbar_thumb"
+        android:scrollbars="vertical"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toLeftOf="@id/side_index"
         app:layout_constraintTop_toBottomOf="@id/songlist_shuffle_container" />

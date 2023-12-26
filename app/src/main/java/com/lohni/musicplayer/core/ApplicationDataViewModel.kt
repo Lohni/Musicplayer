@@ -4,9 +4,6 @@ import android.graphics.drawable.Drawable
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.asFlow
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.flow.first
 
 class ApplicationDataViewModel : ViewModel() {
     private val _trackImages = MutableLiveData<HashMap<Int, Drawable>>(HashMap())
@@ -20,9 +17,11 @@ class ApplicationDataViewModel : ViewModel() {
     }
 
     fun addImageDrawables(hm: HashMap<Int, Drawable>) {
-        _trackImages.value?.let {
-            hm.putAll(it)
-            _trackImages.postValue(hm)
+        synchronized(_trackImages) {
+            _trackImages.value?.let {
+                hm.putAll(it)
+                _trackImages.postValue(hm)
+            }
         }
     }
 

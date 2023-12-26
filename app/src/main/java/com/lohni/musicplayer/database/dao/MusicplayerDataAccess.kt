@@ -17,7 +17,7 @@ interface MusicplayerDataAccess {
 
     @Query("SELECT t.*, null FROM Track as t JOIN Preference as p1 JOIN Preference as p2 " +
             "WHERE t.t_deleted = 0 AND p1.pref_id = 1 and p2.pref_id = 2 " +
-            "and t_duration BETWEEN p1.pref_value AND p2.pref_value ORDER BY t_title ASC")
+            "and t_duration BETWEEN p1.pref_value AND p2.pref_value ORDER BY upper(t_title) ASC")
     fun getTracksAlphabetical(): Flow<List<TrackDTO>>
 
     @Query("SELECT t.* FROM PlaylistItem JOIN TRACK as t on pi_t_id = t_id WHERE pi_p_id = :playlistId ORDER BY pi_custom_ordinal ASC")

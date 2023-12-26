@@ -11,26 +11,23 @@ import android.view.animation.Animation;
 import android.view.animation.DecelerateInterpolator;
 import android.widget.Filter;
 import android.widget.Filterable;
-import android.widget.ImageButton;
 import android.widget.TextView;
-
-import com.lohni.musicplayer.R;
-import com.lohni.musicplayer.database.dto.TrackDTO;
-import com.lohni.musicplayer.database.entity.Track;
-import com.lohni.musicplayer.utils.GeneralUtils;
-import com.lohni.musicplayer.utils.enums.ListFilterType;
-import com.lohni.musicplayer.utils.enums.PlaybackBehaviour;
-
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Optional;
 
 import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
 import androidx.core.content.res.ResourcesCompat;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.lohni.musicplayer.R;
+import com.lohni.musicplayer.database.dto.TrackDTO;
+import com.lohni.musicplayer.database.entity.Track;
+import com.lohni.musicplayer.utils.enums.ListFilterType;
+import com.lohni.musicplayer.utils.enums.PlaybackBehaviour;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Optional;
 
 public class SongListAdapter extends RecyclerView.Adapter<SongListAdapter.ViewHolder> implements Filterable {
 
@@ -66,8 +63,9 @@ public class SongListAdapter extends RecyclerView.Adapter<SongListAdapter.ViewHo
 
         this.refreshInfotextHandler = new Handler();
         this.refreshInfotextRunnable = () -> {
-            if (ListFilterType.LAST_PLAYED.equals(listFilterType)) notifyItemRangeChanged(0, getItemCount(), "");
-            refreshInfotextHandler.postDelayed(refreshInfotextRunnable, 1000);
+            if (ListFilterType.LAST_PLAYED.equals(listFilterType))
+                notifyItemRangeChanged(0, getItemCount(), "");
+            refreshInfotextHandler.postDelayed(refreshInfotextRunnable, 10000);
         };
         this.refreshInfotextHandler.postDelayed(refreshInfotextRunnable, 1000);
     }
@@ -101,7 +99,8 @@ public class SongListAdapter extends RecyclerView.Adapter<SongListAdapter.ViewHo
             if (onItemClickedListener != null) onItemClickedListener.onItemClicked(position);
         });
         holder.more.setOnClickListener((view) -> {
-            if (onItemOptionClickedListener != null) onItemOptionClickedListener.onItemOptionClicked(view, position, queue.contains(track));
+            if (onItemOptionClickedListener != null)
+                onItemOptionClickedListener.onItemOptionClicked(view, position, queue.contains(track));
         });
 
         int colorRes = (currPlayingSongIndex >= 0 && track.equals(currPlaying))
@@ -112,15 +111,9 @@ public class SongListAdapter extends RecyclerView.Adapter<SongListAdapter.ViewHo
         int colorMore = (queue.contains(track)) ? R.color.colorPrimary : R.color.colorOnSurface;
         holder.more.setBackgroundTintList(ContextCompat.getColorStateList(context, colorMore));
 
-        int currQueueIndex = queue.indexOf(currPlaying);
-        if (playbackBehaviour == PlaybackBehaviour.REPEAT_LIST
-                && currPlaying != null
-                && currQueueIndex >= 0 && currQueueIndex + 1 < queue.size()
-                && track.equals(queue.get(currQueueIndex + 1))) {
-            holder.isNext.setVisibility(View.VISIBLE);
-        } else {
-            holder.isNext.setVisibility(View.GONE);
-        }
+        int currPlayingQueueIndex = queue.indexOf(currPlaying);
+        if (isNextPlaying(track, currPlayingQueueIndex)) holder.isNext.setVisibility(View.VISIBLE);
+        else holder.isNext.setVisibility(View.GONE);
 
         holder.title.setText(track.getTTitle());
     }
@@ -139,6 +132,10 @@ public class SongListAdapter extends RecyclerView.Adapter<SongListAdapter.ViewHo
     @Override
     public int getItemCount() {
         return mDisplayedValues.size();
+    }
+
+    public int getQueueItemCount() {
+        return queue.size();
     }
 
     @Override
@@ -173,27 +170,16 @@ public class SongListAdapter extends RecyclerView.Adapter<SongListAdapter.ViewHo
         };
     }
 
-    private void setDefaultBackground(ViewHolder holder) {
-        holder.coverImage.setBackground(customCoverImage);
-        holder.coverImage.setBackgroundTintList(ContextCompat.getColorStateList(context, R.color.colorSecondary));
-        holder.more.setBackgroundTintList(ContextCompat.getColorStateList(context, R.color.colorOnSurface));
-    }
-
-    private void setCoverImage(ViewHolder holder, int position) {
-        Integer trackId = mDisplayedValues.get(position).getTrack().getTId();
-        Drawable drawable = drawableHashMap.getOrDefault(trackId, null);
-
-        if (drawable != null) holder.coverImage.setBackground(drawable);
-    }
-
     public void setListFilterType(ListFilterType listFilterType) {
         this.listFilterType = listFilterType;
         notifyItemRangeChanged(0, getItemCount(), "RELOAD_IMAGES");
     }
 
     public void setCurrentPlayingIndex(int currentPlayingIndex) {
+        updateCurrAndNextItem(this.currPlayingSongIndex);
+
         this.currPlayingSongIndex = currentPlayingIndex;
-        notifyItemRangeChanged(0, getItemCount(), "");
+        updateCurrAndNextItem(currentPlayingIndex);
     }
 
     public int getCurrentPlayingIndex() {
@@ -209,15 +195,17 @@ public class SongListAdapter extends RecyclerView.Adapter<SongListAdapter.ViewHo
     }
 
     public void setQueueList(ArrayList<Track> queue) {
-        this.queue.clear();
-        this.queue.addAll(queue);
-        notifyItemRangeChanged(0, getItemCount(), "");
+        if (!compareLists(this.queue, queue)) {
+            this.queue.clear();
+            this.queue.addAll(queue);
+            notifyItemRangeChanged(0, getItemCount(), "");
+        }
     }
 
     public void setPlaybackBehaviour(PlaybackBehaviour newState) {
         this.playbackBehaviour = newState;
         if (currPlayingSongIndex >= 0) {
-            notifyItemChanged(currPlayingSongIndex + 1);
+            updateCurrAndNextItem(currPlayingSongIndex);
         }
     }
 
@@ -227,8 +215,7 @@ public class SongListAdapter extends RecyclerView.Adapter<SongListAdapter.ViewHo
 
     public class ViewHolder extends RecyclerView.ViewHolder {
         TextView title, artist, info;
-        View coverImage, isNext;
-        ImageButton more;
+        View coverImage, isNext, more;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -245,5 +232,51 @@ public class SongListAdapter extends RecyclerView.Adapter<SongListAdapter.ViewHo
             coverImage.setAnimation(fadeIn);
             coverImage.setClipToOutline(true);
         }
+    }
+
+
+    private void setDefaultBackground(ViewHolder holder) {
+        holder.coverImage.setBackground(customCoverImage);
+        holder.coverImage.setBackgroundTintList(ContextCompat.getColorStateList(context, R.color.colorSecondary));
+        holder.more.setBackgroundTintList(ContextCompat.getColorStateList(context, R.color.colorOnSurface));
+    }
+
+    private void setCoverImage(ViewHolder holder, int position) {
+        Integer trackId = mDisplayedValues.get(position).getTrack().getTId();
+        Drawable drawable = drawableHashMap.getOrDefault(trackId, null);
+
+        if (drawable != null) holder.coverImage.setBackground(drawable);
+    }
+
+    private boolean isNextPlaying(Track track, int currPlayingQueueIndex) {
+        return playbackBehaviour == PlaybackBehaviour.REPEAT_LIST
+                && currPlayingQueueIndex >= 0 && currPlayingQueueIndex + 1 < queue.size()
+                && track.equals(queue.get(currPlayingQueueIndex + 1));
+    }
+
+    private void updateCurrAndNextItem(int currPlayingSongIndex) {
+        for (int x = 0; x < songList.size(); x++) {
+            if (songList.get(x).getTrack().getTId().equals(currPlayingSongIndex)) {
+                Track track = songList.get(x).getTrack();
+                int queueIndex = queue.indexOf(track);
+                if (queueIndex + 1 < queue.size()) {
+                    Track next = queue.get(queueIndex + 1);
+                    for (int i = 0; i < songList.size(); i++) {
+                        if (songList.get(i).getTrack().equals(next)) notifyItemChanged(i);
+                    }
+                }
+                notifyItemChanged(x);
+            }
+        }
+    }
+
+    private boolean compareLists(ArrayList<Track> first, ArrayList<Track> second) {
+        if (first.size() != second.size()) return false;
+
+        for (int i = 0; i < first.size(); i++) {
+            if (!first.get(i).equals(second.get(i))) return false;
+        }
+
+        return true;
     }
 }

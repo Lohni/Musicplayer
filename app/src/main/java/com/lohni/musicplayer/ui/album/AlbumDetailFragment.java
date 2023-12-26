@@ -145,7 +145,7 @@ public class AlbumDetailFragment extends Fragment implements AlbumDetailAdapter.
     @Override
     public void onItemClickListener(int position) {
         playbackControlInterface.onPlaybackBehaviourChangeListener(PlaybackBehaviour.REPEAT_LIST);
-        songInterface.onSongListCreatedListener(albumSongs, album, false);
+        songInterface.onSongListCreatedListener(albumSongs, album, true);
         songInterface.onSongSelectedListener(albumSongs.get(position));
     }
 }

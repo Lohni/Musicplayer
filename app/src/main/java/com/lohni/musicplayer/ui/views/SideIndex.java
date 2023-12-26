@@ -1,6 +1,7 @@
 package com.lohni.musicplayer.ui.views;
 
 import android.content.Context;
+import android.graphics.Paint;
 import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
@@ -28,11 +29,11 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 
 public class SideIndex {
 
-    private LinearLayout sideIndex;
-    private Context context;
-    private FrameLayout indexZoomHolder;
-    private TextView indexZoom;
-    private LinearLayoutManager listViewManager;
+    private final LinearLayout sideIndex;
+    private final Context context;
+    private final FrameLayout indexZoomHolder;
+    private final TextView indexZoom;
+    private final LinearLayoutManager listViewManager;
     private Map<String, Integer> mapIndex = new HashMap<>();
 
     public SideIndex(Context context, LinearLayout sideIndex, FrameLayout indexZoomHolder, TextView indexZoom, LinearLayoutManager listViewManager) {
@@ -70,22 +71,21 @@ public class SideIndex {
         };
         indexLayout.setOrientation(LinearLayout.VERTICAL);
 
-        int div = (int) (27);
-        float width = ImageUtil.convertPixelToSp(sideIndex.getWidth() - 9, context.getResources());
+        float padding = ImageUtil.convertDpToPixel(8f, context.getResources());
 
-        float textsize = ImageUtil.convertPixelToSp(sideIndex.getHeight() / (div), context.getResources());
-        textsize = Math.min(textsize, width);
+        Paint paint = new Paint();
+        int maxSizeToFitWidth = (int)(((float)sideIndex.getWidth() - padding) / paint.measureText("W") * paint.getTextSize());
+        maxSizeToFitWidth = Math.min(maxSizeToFitWidth, sideIndex.getHeight() / 27);
 
         MaterialTextView textView;
         List<String> indexList = new ArrayList<>(mapIndex.keySet());
         for (String index : indexList) {
             textView = new MaterialTextView(context);
-            textView.setTextSize(textsize);
+            textView.setTextSize(ImageUtil.convertPixelToSp(maxSizeToFitWidth, context.getResources()) - 1);
             textView.setTextColor(ContextCompat.getColor(context, R.color.colorOnBackground));
             textView.setText(index);
             textView.setFocusable(false);
             textView.setGravity(Gravity.CENTER);
-            textView.setPadding(0, 0, 8, 0);
             textView.setOnClickListener(view -> {
                 indexZoomHolder.setVisibility(View.VISIBLE);
                 TextView selectedIndex = (TextView) view;
