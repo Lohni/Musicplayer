@@ -1,145 +1,274 @@
-<?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
-    android:id="@+id/playbackcontrol_parent"
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/playback_control_sheet"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:filterTouchesWhenObscured="true"
-    tools:context=".ui.playbackcontrol.PlaybackControl"
-    android:transitionName="@string/transition_playback_layout">
+    android:background="@color/colorSurfaceLevel1"
+    app:layout_behavior="com.lohni.musicplayer.ui.playbackcontrol.PlaybackBottomSheetBehaviour">
 
-    <LinearLayout
-        android:id="@+id/playback_control_drag_holder"
+    <androidx.constraintlayout.motion.widget.MotionLayout
+        android:id="@+id/playback_control_motionlayout"
         android:layout_width="match_parent"
-        android:layout_height="6dp"
-        android:orientation="vertical"
-        android:backgroundTint="@color/colorTransparent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toTopOf="@id/new_seekbar"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent">
-        <View
-            android:layout_width="32dp"
-            android:layout_height="4dp"
-            android:layout_marginTop="2dp"
-            android:background="@drawable/background_button_secondary"
-            android:backgroundTint="@color/colorPrimary"
-            android:layout_gravity="center"/>
-    </LinearLayout>
+        android:layout_height="match_parent"
+        app:layoutDescription="@xml/fragment_playback_control_scene">
 
-    <com.lohni.musicplayer.ui.views.PlaybackControlSeekbar
-        android:id="@+id/new_seekbar"
-        android:layout_width="match_parent"
-        android:layout_height="10dp"
-        app:layout_constraintBottom_toTopOf="@id/playback_control_holder"
-        app:layout_constraintTop_toBottomOf="@id/playback_control_drag_holder"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"/>
-
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/playback_control_holder"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:background="@color/colorBackground"
-        app:layout_constraintTop_toBottomOf="@id/new_seekbar"
-        app:layout_constraintBottom_toBottomOf="parent">
-
-        <com.lohni.musicplayer.ui.views.AudioVisualizerView
-            android:id="@+id/playbackcontrol_visualizer"
+        <com.lohni.musicplayer.ui.views.PlaybackControlSeekbar
+            android:id="@+id/playback_control_collapsed_seekbar"
             android:layout_width="match_parent"
-            android:layout_height="56dp"
-            android:focusable="false"
-            app:visualizerColor="@color/colorSurfaceLevel1"
-            android:filterTouchesWhenObscured="true"
-            app:layout_constraintTop_toTopOf="parent"/>
-
-        <ImageButton
-            android:id="@+id/control_play"
-            android:layout_width="44dp"
-            android:layout_height="44dp"
-            android:clickable="true"
-            android:focusable="true"
-            android:background="@drawable/play_to_pause_anim"
-            android:backgroundTint="@color/colorOnBackground"
-            app:layout_constraintBottom_toBottomOf="@id/playbackcontrol_visualizer"
-            app:layout_constraintLeft_toRightOf="@id/control_title"
-            app:layout_constraintRight_toLeftOf="@id/control_skip"
-            app:layout_constraintTop_toTopOf="@id/playbackcontrol_visualizer" />
-
-        <ImageButton
-            android:id="@+id/control_skip"
-            android:layout_width="44dp"
-            android:layout_height="44dp"
-            android:background="@drawable/anim_skip_forward"
-            android:backgroundTint="@color/colorOnBackground"
-            app:layout_constraintBottom_toBottomOf="@id/playbackcontrol_visualizer"
-            app:layout_constraintLeft_toRightOf="@id/control_play"
-            app:layout_constraintRight_toRightOf="parent"
-            app:layout_constraintTop_toTopOf="@id/playbackcontrol_visualizer" />
-
-        <com.google.android.material.textview.MaterialTextView
-            android:id="@+id/control_title"
-            android:layout_width="0dp"
-            android:layout_height="24dp"
-            android:layout_marginStart="16dp"
-            android:textColor="@color/colorOnBackground"
-            android:focusable="false"
-            android:textSize="18sp"
-            android:ellipsize="marquee"
-            android:marqueeRepeatLimit="marquee_forever"
-            android:scrollHorizontally="true"
-            android:singleLine="true"
-            app:layout_constraintLeft_toRightOf="@id/control_queue"
-            app:layout_constraintRight_toLeftOf="@id/control_play"
-            app:layout_constraintTop_toTopOf="@id/control_play"
-            app:layout_constraintBottom_toTopOf="@id/control_artist"
-            android:transitionName="@string/transition_playback_title"/>
-
-        <com.google.android.material.textview.MaterialTextView
-            android:id="@+id/control_artist"
-            android:layout_width="0dp"
-            android:layout_height="24dp"
-            android:layout_marginStart="16dp"
-            android:layout_marginBottom="10dp"
-            android:textColor="@color/colorOnBackground"
-            android:alpha="0.8"
-            android:textSize="16sp"
-            android:focusable="false"
-            app:layout_constraintBottom_toBottomOf="@id/playbackcontrol_visualizer"
-            app:layout_constraintLeft_toRightOf="@id/control_queue"
-            app:layout_constraintRight_toLeftOf="@id/control_play"
-            app:layout_constraintTop_toBottomOf="@id/control_title" />
+            android:layout_height="4dp"
+            app:layout_constraintTop_toTopOf="parent" />
 
         <View
-            android:id="@+id/control_queue"
+            android:id="@+id/playback_control_skip"
             android:layout_width="34dp"
             android:layout_height="34dp"
-            android:layout_marginStart="12dp"
-            android:focusable="false"
+            android:layout_marginEnd="16dp"
+            android:background="@drawable/anim_skip_forward"
             android:backgroundTint="@color/colorOnBackground"
-            android:background="@drawable/ic_baseline_queue_music_24"
+            app:layout_constraintBottom_toBottomOf="@id/playback_control_cover"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/playback_control_collapsed_seekbar" />
+
+        <View
+            android:id="@+id/playback_control_play"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:layout_marginEnd="8dp"
+            android:background="@drawable/play_to_pause_anim"
+            android:backgroundTint="@color/colorOnBackground"
+            app:layout_constraintBottom_toBottomOf="@id/playback_control_cover"
+            app:layout_constraintEnd_toStartOf="@id/playback_control_skip"
+            app:layout_constraintTop_toBottomOf="@id/playback_control_collapsed_seekbar" />
+
+        <View
+            android:id="@+id/playback_control_cover"
+            android:layout_width="64dp"
+            android:layout_height="64dp"
+            android:backgroundTint="@color/colorOnSecondaryContainer"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/playback_control_collapsed_seekbar" />
+
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/playback_control_title"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginTop="12dp"
+            android:ellipsize="marquee"
+            android:focusable="false"
+            android:marqueeRepeatLimit="1"
+            android:scrollHorizontally="true"
+            android:singleLine="true"
+            android:text="Title"
+            android:textAlignment="textStart"
+            android:textColor="@color/colorOnBackground"
+            android:textSize="15sp"
+            app:layout_constraintBottom_toTopOf="@id/playback_control_subtitle"
+            app:layout_constraintEnd_toStartOf="@id/playback_control_play"
+            app:layout_constraintStart_toEndOf="@id/playback_control_cover"
+            app:layout_constraintTop_toTopOf="@id/playback_control_cover" />
+
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/playback_control_subtitle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="16dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginBottom="8dp"
+            android:alpha="0.8"
+            android:focusable="false"
+            android:singleLine="true"
+            android:text="Subtitle"
+            android:textAlignment="textStart"
+            android:textColor="@color/colorOnBackground"
+            android:textSize="13sp"
+            app:layout_constraintEnd_toStartOf="@id/playback_control_play"
+            app:layout_constraintStart_toEndOf="@id/playback_control_cover"
+            app:layout_constraintTop_toBottomOf="@id/playback_control_title" />
+
+        <!-- Expanded elements -->
+        
+        <com.google.android.material.bottomsheet.BottomSheetDragHandleView
+            android:id="@+id/playback_control_drag_indicator"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:elevation="1dp"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"/>
+        
+        <FrameLayout
+            android:id="@+id/playback_control_cover_layout"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:background="@color/colorSurface"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toBottomOf="@id/playback_control_guideline_hor_center"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <com.lohni.musicplayer.ui.views.AudioVisualizerView
+                android:id="@+id/playback_control_audio_vis"
+                android:layout_width="match_parent"
+                android:layout_height="100dp"
+                android:layout_gravity="bottom"
+                app:visualizerColor="@color/colorBackground" />
+
+            <androidx.viewpager2.widget.ViewPager2
+                android:id="@+id/playback_control_viewpager"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_gravity="bottom"
+                android:orientation="horizontal" />
+        </FrameLayout>
+
+        <View
+            android:id="@+id/playback_control_indicator_left"
+            android:layout_width="5dp"
+            android:layout_height="5dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="8dp"
+            android:background="@drawable/round_dot"
+            android:backgroundTint="@color/colorSurfaceVariant"
+            android:elevation="8dp"
+            app:layout_constraintEnd_toStartOf="@id/playback_control_indicator_middle"
+            app:layout_constraintTop_toBottomOf="@id/playback_control_cover_layout" />
+
+        <View
+            android:id="@+id/playback_control_indicator_middle"
+            android:layout_width="8dp"
+            android:layout_height="8dp"
+            android:layout_marginTop="8dp"
+            android:background="@drawable/round_dot"
+            android:backgroundTint="@color/colorPrimary"
+            android:elevation="8dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/playback_control_cover_layout" />
+
+        <View
+            android:id="@+id/playback_control_indicator_right"
+            android:layout_width="5dp"
+            android:layout_height="5dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            android:background="@drawable/round_dot"
+            android:backgroundTint="@color/colorSurfaceVariant"
+            android:elevation="8dp"
+            app:layout_constraintStart_toEndOf="@id/playback_control_indicator_middle"
+            app:layout_constraintTop_toBottomOf="@id/playback_control_cover_layout" />
+
+        <View
+            android:id="@+id/playback_control_skip_back"
+            android:layout_width="52dp"
+            android:layout_height="52dp"
+            android:layout_marginBottom="64dp"
+            android:background="@drawable/ic_round_skip_previous_24"
+            android:backgroundTint="@color/colorOnBackground"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/playback_control_guideline_vert_center"
+            app:layout_constraintStart_toStartOf="parent" />
+
+        <View
+            android:id="@+id/playback_control_behaviour"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:layout_marginStart="16dp"
+            android:background="@drawable/ic_round_repeat_24"
+            android:backgroundTint="@color/colorOnBackground"
+            android:foreground="@drawable/circle_ripple"
+            app:layout_constraintBottom_toBottomOf="@id/playback_control_favourite"
+            app:layout_constraintStart_toEndOf="@id/playback_control_add"
+            app:layout_constraintTop_toTopOf="@id/playback_control_favourite" />
+
+        <View
+            android:id="@+id/playback_control_favourite"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginBottom="24dp"
+            android:background="@drawable/ic_round_favorite_border_24"
+            android:backgroundTint="@color/colorOnBackground"
+            android:foreground="@drawable/circle_ripple"
+            app:layout_constraintBottom_toTopOf="@id/playback_control_expanded_seekbar"
+            app:layout_constraintEnd_toStartOf="@id/playback_control_add" />
+
+        <View
+            android:id="@+id/playback_control_add"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:background="@drawable/ic_round_add_24"
+            android:backgroundTint="@color/colorOnBackground"
+            android:foreground="@drawable/circle_ripple"
+            app:layout_constraintBottom_toBottomOf="@id/playback_control_favourite"
+            app:layout_constraintEnd_toEndOf="@id/playback_control_guideline_vert_center"
+            app:layout_constraintStart_toStartOf="@id/playback_control_guideline_vert_center"
+            app:layout_constraintTop_toTopOf="@id/playback_control_favourite" />
+
+        <SeekBar
+            android:id="@+id/playback_control_expanded_seekbar"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="8dp"
+            android:layout_marginBottom="48dp"
+            android:progressTint="@color/colorSecondary"
+            android:thumb="@drawable/round_dot"
+            android:thumbTint="@color/colorSecondary"
+            app:layout_constraintBottom_toTopOf="@id/playback_control_skip_back"
             app:layout_constraintLeft_toLeftOf="parent"
-            app:layout_constraintTop_toTopOf="@id/playbackcontrol_visualizer"
-            app:layout_constraintBottom_toBottomOf="@id/playbackcontrol_visualizer" />
+            app:layout_constraintRight_toRightOf="parent" />
 
         <TextView
-            android:id="@+id/playbackcontrol_queue_count"
+            android:id="@+id/playback_control_queue_count"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:background="@drawable/circular_badge"
-            android:backgroundTint="@color/colorTertiaryContainer"
-            android:textColor="@color/colorOnTertiaryContainer"
-            android:gravity="center"
-            android:paddingStart="4dp"
-            android:paddingTop="1dp"
-            android:paddingBottom="1dp"
-            android:paddingEnd="4dp"
-            android:textSize="11sp"
-            android:textStyle="bold"
-            app:layout_constraintEnd_toEndOf="@id/control_queue"
-            app:layout_constraintBottom_toBottomOf="@id/control_queue"/>
-    </androidx.constraintlayout.widget.ConstraintLayout>
+            android:layout_marginBottom="10dp"
+            android:textColor="@color/colorOnBackground"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent" />
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/playback_control_current_time"
+            android:layout_width="wrap_content"
+            android:layout_height="20dp"
+            android:layout_marginStart="24dp"
+            android:gravity="center"
+            android:text="00:00"
+            android:textAllCaps="false"
+            android:textColor="@color/colorSecondary"
+            android:textSize="16sp"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/playback_control_expanded_seekbar" />
+
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/playback_control_abs_time"
+            android:layout_width="wrap_content"
+            android:layout_height="20dp"
+            android:layout_marginEnd="24dp"
+            android:gravity="center"
+            android:text="00:00"
+            android:textAllCaps="false"
+            android:textColor="@color/colorSecondary"
+            android:textSize="16sp"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/playback_control_expanded_seekbar" />
+
+        <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/playback_control_guideline_hor_center"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            app:layout_constraintGuide_percent=".5" />
+
+        <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/playback_control_guideline_vert_center"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            app:layout_constraintGuide_percent=".5" />
+
+    </androidx.constraintlayout.motion.widget.MotionLayout>
+</FrameLayout>

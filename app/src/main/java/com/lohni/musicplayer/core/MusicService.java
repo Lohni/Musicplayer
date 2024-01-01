@@ -80,13 +80,15 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
         audioEffectSession = new AudioEffectSession(player.getAudioSessionId());
 
         IntentFilter filter = new IntentFilter();
-        filter.addAction(getString(R.string.notification_action_next));
-        filter.addAction(getString(R.string.notification_action_pause));
-        filter.addAction(getString(R.string.notification_action_play));
-        filter.addAction(getString(R.string.notification_action_previous));
+        filter.addAction(getString(R.string.playback_action_next));
+        filter.addAction(getString(R.string.playback_action_pause));
+        filter.addAction(getString(R.string.playback_action_play));
+        filter.addAction(getString(R.string.playback_action_previous));
         filter.addAction(AudioManager.ACTION_HEADSET_PLUG);
         filter.addAction(getString(R.string.musicservice_audioeffect));
         filter.addAction(getString(R.string.musicservice_play_list));
+        filter.addAction(getString(R.string.playback_set_progress));
+        filter.addAction(getString(R.string.playback_set_behaviour));
         this.registerReceiver(this.broadcastReceiver, filter);
 
         MediaSessionCallback sessionCallback = new MediaSessionCallback();
@@ -162,13 +164,13 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
         @Override
         public void onReceive(Context context, Intent intent) {
             if (intent.getAction() != null) {
-                if (intent.getAction().equals(getString(R.string.notification_action_play))) {
+                if (intent.getAction().equals(getString(R.string.playback_action_play))) {
                     resume();
-                } else if (intent.getAction().equals(getString(R.string.notification_action_pause))) {
+                } else if (intent.getAction().equals(getString(R.string.playback_action_pause))) {
                     pause();
-                } else if (intent.getAction().equals(getString(R.string.notification_action_next))) {
+                } else if (intent.getAction().equals(getString(R.string.playback_action_next))) {
                     skip(PlaybackAction.SKIP_NEXT);
-                } else if (intent.getAction().equals(getString(R.string.notification_action_previous))) {
+                } else if (intent.getAction().equals(getString(R.string.playback_action_previous))) {
                     skip(PlaybackAction.SKIP_PREVIOUS);
                 } else if (intent.getAction().equals(AudioManager.ACTION_HEADSET_PLUG)) {
                     int mode = intent.getIntExtra("state", 0);
@@ -181,6 +183,10 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
                     removeAllTracks();
                     addSongList(Arrays.stream(tracks).map(p -> (Track) p).collect(Collectors.toList()), true);
                     playSong((Track) tracks[index]);
+                } else if (intent.getAction().equals(getString(R.string.playback_set_progress))) {
+                    player.seekTo(intent.getIntExtra("PROGRESS", 0));
+                } else if (intent.getAction().equals(getString(R.string.playback_set_behaviour))) {
+                    setPlaybackBehaviour(PlaybackBehaviour.Companion.getStateFromInteger(intent.getIntExtra("BEHAVIOUR_STATE", 1)));
                 }
             }
         }
@@ -287,10 +293,6 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
         sendOnSongCompleted();
         playbackSession.setTrack(track);
         play();
-    }
-
-    public void setProgress(int progress) {
-        player.seekTo(progress);
     }
 
     public void setPlaybackBehaviour(PlaybackBehaviour newState) {

@@ -13,6 +13,18 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.FrameLayout;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.ActionBarDrawerToggle;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+import androidx.core.view.GravityCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
+import androidx.lifecycle.ViewModelProvider;
 
 import com.google.android.material.appbar.AppBarLayout;
 import com.google.android.material.navigation.NavigationView;
@@ -35,12 +47,10 @@ import com.lohni.musicplayer.interfaces.PlaybackControlInterface;
 import com.lohni.musicplayer.interfaces.QueueControlInterface;
 import com.lohni.musicplayer.interfaces.ServiceConnectionListener;
 import com.lohni.musicplayer.interfaces.ServiceTriggerInterface;
-import com.lohni.musicplayer.transition.MotionLayoutTransitionListenerImpl;
 import com.lohni.musicplayer.ui.album.AlbumFragment;
 import com.lohni.musicplayer.ui.audioeffects.EqualizerViewPager;
 import com.lohni.musicplayer.ui.dashboard.DashboardFragment;
-import com.lohni.musicplayer.ui.playbackcontrol.ExpandedPlaybackControl;
-import com.lohni.musicplayer.ui.playbackcontrol.PlaybackControl;
+import com.lohni.musicplayer.ui.playbackcontrol.PlaybackControlSheet;
 import com.lohni.musicplayer.ui.playlist.PlaylistFragment;
 import com.lohni.musicplayer.ui.settings.DatabaseViewerFragment;
 import com.lohni.musicplayer.ui.settings.SettingFragment;
@@ -55,18 +65,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
-
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.ActionBarDrawerToggle;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
-import androidx.constraintlayout.motion.widget.MotionLayout;
-import androidx.core.view.GravityCompat;
-import androidx.drawerlayout.widget.DrawerLayout;
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentTransaction;
-import androidx.lifecycle.ViewModelProvider;
 
 public class MainActivity extends AppCompatActivity implements PlaybackControlInterface, NavigationView.OnNavigationItemSelectedListener,
         NavigationControlInterface, QueueControlInterface, ServiceConnectionListener, ServiceTriggerInterface {
@@ -85,6 +83,7 @@ public class MainActivity extends AppCompatActivity implements PlaybackControlIn
     private final Handler mHandler = new Handler();
     private Runnable runnable;
     private Fragment selectedDrawerFragment;
+    private PlaybackControlSheet playbackControlSheet;
     private boolean destroyed = false;
 
     @Override
@@ -92,10 +91,12 @@ public class MainActivity extends AppCompatActivity implements PlaybackControlIn
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         drawer = findViewById(R.id.drawer_layout);
-        MotionLayout motionLayout = findViewById(R.id.parentContainer);
         Toolbar toolbar = findViewById(R.id.toolbar);
         appBarLayout = findViewById(R.id.appbar);
         NavigationView navigationView = findViewById(R.id.nav_view);
+
+        FrameLayout frameLayout = findViewById(R.id.playback_control_sheet);
+        playbackControlSheet = new PlaybackControlSheet(frameLayout, this);
 
         setSupportActionBar(toolbar);
         serviceConnection = new MusicplayerServiceConnection(this);
@@ -105,8 +106,6 @@ public class MainActivity extends AppCompatActivity implements PlaybackControlIn
         toggle.setToolbarNavigationClickListener(view -> onBackPressed());
         drawer.addDrawerListener(toggle);
 
-        motionLayout.setTransitionListener(new MotionLayoutTransitionListenerImpl(this, getSupportFragmentManager()));
-
         AudioEffectDataAccess aod = ((MusicplayerApplication) getApplication()).getDatabase().audioEffectDao();
         audioEffectViewModel = new ViewModelProvider(this, new AudioEffectViewModel.AudioEffectViewModelFactory(aod)).get(AudioEffectViewModel.class);
         MusicplayerDataAccess mda = ((MusicplayerApplication) getApplication()).getDatabase().musicplayerDao();
@@ -114,7 +113,6 @@ public class MainActivity extends AppCompatActivity implements PlaybackControlIn
 
         PreferenceDataAccess pda = ((MusicplayerApplication) getApplication()).getDatabase().preferenceDao();
         preferenceViewModel = new ViewModelProvider(this, new PreferenceViewModel.PreferenceViewModelFactory(pda)).get(PreferenceViewModel.class);
-
 
         Intent service = new Intent(this, MusicService.class);
 
@@ -160,7 +158,6 @@ public class MainActivity extends AppCompatActivity implements PlaybackControlIn
         musicplayerViewModel.getAllTracks().observe(this, tracks -> {
             compareTracksToDatabase((ArrayList<Track>) tracks);
             musicplayerViewModel.getAllTracks().removeObservers(this);
-            loadPlayControl();
             loadDashboard(new DashboardFragment());
         });
     }
@@ -199,13 +196,6 @@ public class MainActivity extends AppCompatActivity implements PlaybackControlIn
         FragmentManager fm = getSupportFragmentManager();
         FragmentTransaction ft = fm.beginTransaction();
         ft.add(R.id.nav_host_fragment, fragment);
-        ft.commit();
-    }
-
-    private void loadPlayControl() {
-        FragmentManager fm = getSupportFragmentManager();
-        FragmentTransaction ft = fm.beginTransaction();
-        ft.add(R.id.playbackcontrol_holder, new PlaybackControl(), getString(R.string.fragment_playbackControl));
         ft.commit();
     }
 
@@ -311,11 +301,6 @@ public class MainActivity extends AppCompatActivity implements PlaybackControlIn
         } else {
             musicService.resume();
         }
-    }
-
-    @Override
-    public void onProgressChangeListener(int progress) {
-        musicService.setProgress(progress);
     }
 
     @Override
@@ -457,19 +442,8 @@ public class MainActivity extends AppCompatActivity implements PlaybackControlIn
         initialiseAudioEffects();
 
         runnable = () -> {
-            PlaybackControl pc = (PlaybackControl) getSupportFragmentManager().findFragmentByTag(getString(R.string.fragment_playbackControl));
-            if (pc != null) {
-                pc.updateSeekbar(musicService.getCurrentPosition());
-            } else {
-                ExpandedPlaybackControl epc = (ExpandedPlaybackControl) getSupportFragmentManager().findFragmentByTag(getString(R.string.fragment_expandedPlaybackControl));
-                if (epc != null) {
-                    epc.updateSeekbar(musicService.getCurrentPosition());
-                }
-            }
-
-            if (!destroyed) {
-                mHandler.postDelayed(runnable, 200);
-            }
+            playbackControlSheet.updateSeekbar(musicService.getCurrentPosition());
+            if (!destroyed) mHandler.postDelayed(runnable, 200);
         };
 
         runnable.run();

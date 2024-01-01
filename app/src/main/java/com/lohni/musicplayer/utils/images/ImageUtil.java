@@ -12,6 +12,7 @@ import android.graphics.drawable.Drawable;
 import android.media.ThumbnailUtils;
 import android.util.DisplayMetrics;
 import android.util.TypedValue;
+import android.view.ViewGroup;
 
 import androidx.core.content.ContextCompat;
 import androidx.core.content.res.ResourcesCompat;
@@ -157,5 +158,13 @@ public class ImageUtil {
             sum += a[i] == b[i] ? 0 : 1;
         }
         return sum;
+    }
+
+
+    public static ViewGroup.LayoutParams getLayoutParamsWithSize(float dp, ViewGroup.LayoutParams layoutParams, Resources resources) {
+        int dpInPixel = (int) ImageUtil.convertDpToPixel(dp, resources);
+        layoutParams.width = dpInPixel;
+        layoutParams.height = dpInPixel;
+        return layoutParams;
     }
 }

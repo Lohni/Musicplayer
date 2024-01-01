@@ -10,25 +10,24 @@ import android.view.animation.Animation;
 import android.view.animation.DecelerateInterpolator;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
+import androidx.core.content.res.ResourcesCompat;
+import androidx.lifecycle.ViewModelProvider;
+
 import com.google.android.material.button.MaterialButton;
 import com.lohni.musicplayer.R;
 import com.lohni.musicplayer.core.ApplicationDataViewModel;
 import com.lohni.musicplayer.database.MusicplayerApplication;
-import com.lohni.musicplayer.database.dao.MusicplayerDataAccess;
 import com.lohni.musicplayer.database.dao.PlaylistDataAccess;
-import com.lohni.musicplayer.database.viewmodel.MusicplayerViewModel;
 import com.lohni.musicplayer.database.viewmodel.PlaylistViewModel;
 import com.lohni.musicplayer.utils.GeneralUtils;
 import com.lohni.musicplayer.utils.images.ImageUtil;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.core.content.ContextCompat;
-import androidx.core.content.res.ResourcesCompat;
-import androidx.lifecycle.ViewModelProvider;
+import java.util.Optional;
 
 public class PlaybackControlInfoFragment extends PlaybackControlDetailFragment {
 
@@ -69,10 +68,10 @@ public class PlaybackControlInfoFragment extends PlaybackControlDetailFragment {
 
     private void setCoverImage() {
         if (currentTrack != null && cover != null) {
-            Drawable drawable = applicationDataViewModel.getImageForTrack(currentTrack.getTId());
+            Optional<Drawable> drawable = applicationDataViewModel.getImageForTrack(currentTrack.getTId());
 
-            if (drawable != null) {
-                cover.setBackground(ImageUtil.roundCorners(ImageUtil.getBitmapFromDrawable(requireContext(), drawable), requireContext().getResources()));
+            if (drawable.isPresent()) {
+                cover.setBackground(ImageUtil.roundCorners(ImageUtil.getBitmapFromDrawable(requireContext(), drawable.get()), requireContext().getResources()));
                 cover.setForeground(null);
                 Animation fadeIn = new AlphaAnimation(0, 1);
                 fadeIn.setInterpolator(new DecelerateInterpolator());
