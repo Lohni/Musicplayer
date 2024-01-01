@@ -25,16 +25,16 @@
     <string name="musicservice_song_prepared">MUSICSERVICE_SONG_PREPARED</string>
     <string name="musicservice_song_ended">MUSICSERVICE_SONG_ENDED</string>
     <string name="musicservice_list_play">MUSICSERVICE_LIST_PLAY</string>
-
     <string name="musicservice_audioeffect">MUSICSERVICE_AUDIOEFFECT</string>
-
     <string name="musicservice_play_list">MUSICSERVICE_PLAY_LIST</string>
 
-    <!-- Notification Intent-Tags-->
-    <string name="notification_action_pause">NOTIFICATION_ACTION_PAUSE</string>
-    <string name="notification_action_play">NOTIFICATION_ACTION_PLAY</string>
-    <string name="notification_action_next">NOTIFICATION_ACTION_NEXT</string>
-    <string name="notification_action_previous">NOTIFICATION_ACTION_PREVIOUS</string>
+    <!-- Playback Intent-Tags -->
+    <string name="playback_action_pause">NOTIFICATION_ACTION_PAUSE</string>
+    <string name="playback_action_play">NOTIFICATION_ACTION_PLAY</string>
+    <string name="playback_action_next">NOTIFICATION_ACTION_NEXT</string>
+    <string name="playback_action_previous">NOTIFICATION_ACTION_PREVIOUS</string>
+    <string name="playback_set_progress">PLAYBACK_SET_PROGRESS</string>
+    <string name="playback_set_behaviour">PLAYBACK_SET_BEHAVIOUR</string>
 
     <!-- FragmentManager Tags -->
     <string name="fragment_expandedPlaybackControl">FRAGMENT_EXPANDEDPLAYBACKCONTROL</string>
@@ -64,7 +64,6 @@
     <string name="transition_album_size">TRANSITION_ALBUM_SIZE</string>
     <string name="transition_album_layout">TRANSITION_ALBUM_LAYOUT</string>
     <string name="transition_album_artist">TRANSITION_ALBUM_ARTIST</string>
-
     <string name="transition_playback_layout">TRANSITION_PLAYBACK_LAYOUT</string>
 
     <!-- PlaybackControl -->

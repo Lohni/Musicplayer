@@ -4,6 +4,7 @@ import android.graphics.drawable.Drawable
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import java.util.Optional
 
 class ApplicationDataViewModel : ViewModel() {
     private val _trackImages = MutableLiveData<HashMap<Int, Drawable>>(HashMap())
@@ -12,8 +13,8 @@ class ApplicationDataViewModel : ViewModel() {
     val trackImages: LiveData<HashMap<Int, Drawable>> = _trackImages
     val albumCovers: LiveData<HashMap<Int, Drawable>> = _albumCovers
 
-    fun getImageForTrack(trackId: Int) : Drawable? {
-        return trackImages.value?.getOrDefault(trackId, null)
+    fun getImageForTrack(trackId: Int) : Optional<Drawable> {
+        return Optional.ofNullable(trackImages.value?.get(trackId))
     }
 
     fun addImageDrawables(hm: HashMap<Int, Drawable>) {

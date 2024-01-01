@@ -21,8 +21,6 @@ import com.lohni.musicplayer.R;
 import com.lohni.musicplayer.database.entity.Track;
 import com.lohni.musicplayer.utils.images.BitmapColorExtractor;
 
-import java.io.IOException;
-
 import androidx.core.app.NotificationCompat;
 
 public class NotificationControl {
@@ -85,10 +83,10 @@ public class NotificationControl {
     public Notification createNotification(Context context, boolean isPlaying, MediaSessionCompat.Token sessionToken, Track track) {
         updateNotification(context, track);
 
-        Intent nextIntent = new Intent(context.getString(R.string.notification_action_next));
-        Intent pauseIntent = new Intent(context.getString(R.string.notification_action_pause));
-        Intent playIntent = new Intent(context.getString(R.string.notification_action_play));
-        Intent skipPreviousIntent = new Intent(context.getString(R.string.notification_action_previous));
+        Intent nextIntent = new Intent(context.getString(R.string.playback_action_next));
+        Intent pauseIntent = new Intent(context.getString(R.string.playback_action_pause));
+        Intent playIntent = new Intent(context.getString(R.string.playback_action_play));
+        Intent skipPreviousIntent = new Intent(context.getString(R.string.playback_action_previous));
         Intent controlIntent = isPlaying ? pauseIntent : playIntent;
 
         int controlIcon = (isPlaying) ? R.drawable.ic_pause_black_24dp : R.drawable.ic_play_arrow_black_24dp;

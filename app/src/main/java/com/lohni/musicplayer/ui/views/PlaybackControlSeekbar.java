@@ -10,15 +10,15 @@ import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
 
-import com.lohni.musicplayer.R;
-
 import androidx.annotation.Nullable;
+
+import com.lohni.musicplayer.R;
 
 public class PlaybackControlSeekbar extends View {
 
     private boolean mIsDragged = false, fromUser = true;
     private OnSeekbarChangeListener onSeekbarChangeListener;
-    private int size, progress, width, paddingTop;
+    private int size, progress, width;
     private final Rect clipBounds;
     private Paint progressPrimaryBackgroundTint;
     private Paint progressSecondaryBackgroundTint;
@@ -27,17 +27,13 @@ public class PlaybackControlSeekbar extends View {
 
     public PlaybackControlSeekbar(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
-        TypedArray attrib = context.getTheme().obtainStyledAttributes(attrs, R.styleable.PlaybackControlSeekbar, android.R.attr.paddingTop, 0);
-        attrib.recycle();
         clipBounds = new Rect();
     }
-
 
     @Override
     protected void onDraw(Canvas canvas) {
         canvas.getClipBounds(clipBounds);
         width = clipBounds.right;
-        int height = clipBounds.bottom / 2;
 
         float scale = 0;
         if (size > 0) {
@@ -46,16 +42,16 @@ public class PlaybackControlSeekbar extends View {
 
         //Draw Primary Progress
         progressPrimaryPath.reset();
-        progressPrimaryPath.moveTo(clipBounds.left, clipBounds.top + height);
-        progressPrimaryPath.lineTo(scale * progress, clipBounds.top + height);
+        progressPrimaryPath.moveTo(clipBounds.left, clipBounds.top);
+        progressPrimaryPath.lineTo(scale * progress, clipBounds.top);
         progressPrimaryPath.lineTo(scale * progress, clipBounds.bottom);
         progressPrimaryPath.lineTo(clipBounds.left, clipBounds.bottom);
         progressPrimaryPath.close();
 
         //Draw seconary progress
         progressSecondaryPath.reset();
-        progressSecondaryPath.moveTo(scale * progress, clipBounds.top + height);
-        progressSecondaryPath.lineTo(clipBounds.right, clipBounds.top + height);
+        progressSecondaryPath.moveTo(scale * progress, clipBounds.top);
+        progressSecondaryPath.lineTo(clipBounds.right, clipBounds.top);
         progressSecondaryPath.lineTo(clipBounds.right, clipBounds.bottom);
         progressSecondaryPath.lineTo(scale * progress, clipBounds.bottom);
         progressSecondaryPath.close();
@@ -110,8 +106,8 @@ public class PlaybackControlSeekbar extends View {
 
         this.progressPrimaryBackgroundTint = new Paint();
         this.progressSecondaryBackgroundTint = new Paint();
-        this.progressPrimaryBackgroundTint.setColor(getContext().getResources().getColor(progressPrimaryBackgroundTint));
-        this.progressSecondaryBackgroundTint.setColor(getContext().getResources().getColor(progressSecondaryBackgroundTint));
+        this.progressPrimaryBackgroundTint.setColor(getContext().getResources().getColor(progressPrimaryBackgroundTint, null));
+        this.progressSecondaryBackgroundTint.setColor(getContext().getResources().getColor(progressSecondaryBackgroundTint, null));
     }
 
     public void onStartTrackingTouch() {
@@ -141,8 +137,6 @@ public class PlaybackControlSeekbar extends View {
     public interface OnSeekbarChangeListener {
         default void onProgressChanged(PlaybackControlSeekbar seekbar, int progress, boolean fromUser) {
         }
-
-        ;
 
         void onStartTrackingTouch(PlaybackControlSeekbar seekbar);
 

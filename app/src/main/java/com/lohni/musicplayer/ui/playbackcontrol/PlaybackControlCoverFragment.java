@@ -19,6 +19,8 @@ import androidx.core.content.ContextCompat;
 import androidx.core.content.res.ResourcesCompat;
 import androidx.lifecycle.ViewModelProvider;
 
+import java.util.Optional;
+
 public class PlaybackControlCoverFragment extends PlaybackControlDetailFragment {
     private View cover;
     private Drawable customCoverImage;
@@ -28,6 +30,7 @@ public class PlaybackControlCoverFragment extends PlaybackControlDetailFragment 
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         applicationDataViewModel = new ViewModelProvider(requireActivity()).get(ApplicationDataViewModel.class);
+        customCoverImage = ResourcesCompat.getDrawable(requireContext().getResources(), R.drawable.ic_baseline_music_note_24, null);
     }
 
     @Nullable
@@ -35,18 +38,15 @@ public class PlaybackControlCoverFragment extends PlaybackControlDetailFragment 
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_playback_control_cover, container, false);
         cover = view.findViewById(R.id.playbackcontrol_cover);
-        customCoverImage = ResourcesCompat.getDrawable(requireContext().getResources(), R.drawable.ic_baseline_music_note_24, null);
-
-        setCoverImage();
         return view;
     }
 
     private void setCoverImage() {
         if (currentTrack != null && cover != null) {
-            Drawable drawable = applicationDataViewModel.getImageForTrack(currentTrack.getTId());
+            Optional<Drawable> drawable = applicationDataViewModel.getImageForTrack(currentTrack.getTId());
 
-            if (drawable != null) {
-                cover.setBackground(ImageUtil.roundCorners(ImageUtil.getBitmapFromDrawable(requireContext(), drawable), requireContext().getResources()));
+            if (drawable.isPresent()) {
+                cover.setBackground(ImageUtil.roundCorners(ImageUtil.getBitmapFromDrawable(requireContext(), drawable.get()), requireContext().getResources()));
                 cover.setForeground(null);
                 Animation fadeIn = new AlphaAnimation(0, 1);
                 fadeIn.setInterpolator(new DecelerateInterpolator());

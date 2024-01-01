@@ -126,7 +126,7 @@ public class AudioVisualizerView extends View {
         }
     }
 
-    public void setenableVisualizer(boolean state) {
+    public void setEnableVisualizer(boolean state) {
         if (visualizer != null){
             visualizer.setEnabled(state);
         }
