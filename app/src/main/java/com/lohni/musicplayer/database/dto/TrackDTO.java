@@ -5,6 +5,7 @@ import com.lohni.musicplayer.utils.GeneralUtils;
 import com.lohni.musicplayer.utils.enums.ListFilterType;
 
 import java.time.LocalDateTime;
+import java.util.Objects;
 
 import androidx.room.ColumnInfo;
 import androidx.room.Embedded;
@@ -57,5 +58,18 @@ public class TrackDTO extends DashboardDTO {
             }
         }
         return "";
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        TrackDTO trackDTO = (TrackDTO) o;
+        return Objects.equals(track, trackDTO.track) && Objects.equals(size, trackDTO.size);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(track, size);
     }
 }

@@ -160,4 +160,14 @@ public class AdapterUtils {
         }
         return toPos;
     }
+
+    public static <T> boolean compareLists(List<T> first, List<T> second) {
+        if (first.size() != second.size()) return false;
+
+        for (int i = 0; i < first.size(); i++) {
+            if (!first.get(i).equals(second.get(i))) return false;
+        }
+
+        return true;
+    }
 }

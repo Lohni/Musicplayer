@@ -207,7 +207,8 @@ public class SongList extends Fragment {
         songListAdapter.setOnItemClickedListener((pos) -> {
             List<Track> songListAsTracks = songList.stream().map(TrackDTO::getTrack).collect(Collectors.toList());
             playbackControlInterface.onPlaybackBehaviourChangeListener(PlaybackBehaviour.REPEAT_LIST);
-            if (songListAdapter.getQueueItemCount() == 0) songInterface.onSongListCreatedListener(songListAsTracks, ListType.TRACK, false);
+            if (songListAdapter.getQueueItemCount() == 0)
+                songInterface.onSongListCreatedListener(songListAsTracks, ListType.TRACK, false);
             songInterface.onSongSelectedListener(songList.get(pos).getTrack());
         });
 
@@ -273,22 +274,24 @@ public class SongList extends Fragment {
 
         songlistViewModel.getSongList().observe(getViewLifecycleOwner(), songList -> {
             ArrayList<TrackDTO> oldList = new ArrayList<>(this.songList);
-            this.songList.clear();
-            this.songList.addAll(songList);
+            if (!AdapterUtils.compareLists(oldList, songList)) {
+                this.songList.clear();
+                this.songList.addAll(songList);
 
-            int time = songList.stream().map(TrackDTO::getTrack).map(Track::getTDuration).reduce(0, Integer::sum);
-            shuffle_size.setText(songList.size() + " songs - " + GeneralUtils.convertTimeWithUnit(time));
+                int time = songList.stream().map(TrackDTO::getTrack).map(Track::getTDuration).reduce(0, Integer::sum);
+                shuffle_size.setText(songList.size() + " songs - " + GeneralUtils.convertTimeWithUnit(time));
 
-            sideIndex.setIndexList(songList).displayIndex();
-            if (AdapterUtils.moveItemToNewPositionList(oldList, songList, songListAdapter) == 0)
-                listViewManager.scrollToPosition(0);
+                sideIndex.setIndexList(songList).displayIndex();
+                if (AdapterUtils.moveItemToNewPositionList(oldList, songList, songListAdapter) == 0)
+                    listViewManager.scrollToPosition(0);
 
-            int sizeDiff = songList.size() - oldList.size();
-            if (sizeDiff > 0) songListAdapter.notifyItemRangeInserted(oldList.size(), sizeDiff);
-            else if (sizeDiff < 0)
-                songListAdapter.notifyItemRangeRemoved(songList.size(), sizeDiff * -1);
+                int sizeDiff = songList.size() - oldList.size();
+                if (sizeDiff > 0) songListAdapter.notifyItemRangeInserted(oldList.size(), sizeDiff);
+                else if (sizeDiff < 0)
+                    songListAdapter.notifyItemRangeRemoved(songList.size(), sizeDiff * -1);
 
-            songListAdapter.notifyItemRangeChanged(0, songList.size());
+                songListAdapter.notifyItemRangeChanged(0, songList.size());
+            }
         });
 
         LinearLayout linearLayout = mainView.findViewById(R.id.side_index);
