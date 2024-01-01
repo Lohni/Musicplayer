@@ -21,10 +21,12 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.lohni.musicplayer.R;
 import com.lohni.musicplayer.database.dto.TrackDTO;
 import com.lohni.musicplayer.database.entity.Track;
+import com.lohni.musicplayer.utils.AdapterUtils;
 import com.lohni.musicplayer.utils.enums.ListFilterType;
 import com.lohni.musicplayer.utils.enums.PlaybackBehaviour;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
@@ -195,7 +197,7 @@ public class SongListAdapter extends RecyclerView.Adapter<SongListAdapter.ViewHo
     }
 
     public void setQueueList(ArrayList<Track> queue) {
-        if (!compareLists(this.queue, queue)) {
+        if (!AdapterUtils.compareLists(this.queue, queue)) {
             this.queue.clear();
             this.queue.addAll(queue);
             notifyItemRangeChanged(0, getItemCount(), "");
@@ -268,15 +270,5 @@ public class SongListAdapter extends RecyclerView.Adapter<SongListAdapter.ViewHo
                 notifyItemChanged(x);
             }
         }
-    }
-
-    private boolean compareLists(ArrayList<Track> first, ArrayList<Track> second) {
-        if (first.size() != second.size()) return false;
-
-        for (int i = 0; i < first.size(); i++) {
-            if (!first.get(i).equals(second.get(i))) return false;
-        }
-
-        return true;
     }
 }
