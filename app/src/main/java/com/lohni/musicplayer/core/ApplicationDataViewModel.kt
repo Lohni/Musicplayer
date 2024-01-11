@@ -13,17 +13,12 @@ class ApplicationDataViewModel : ViewModel() {
     val trackImages: LiveData<HashMap<Int, Drawable>> = _trackImages
     val albumCovers: LiveData<HashMap<Int, Drawable>> = _albumCovers
 
-    fun getImageForTrack(trackId: Int) : Optional<Drawable> {
+    fun getImageForTrack(trackId: Int): Optional<Drawable> {
         return Optional.ofNullable(trackImages.value?.get(trackId))
     }
 
     fun addImageDrawables(hm: HashMap<Int, Drawable>) {
-        synchronized(_trackImages) {
-            _trackImages.value?.let {
-                hm.putAll(it)
-                _trackImages.postValue(hm)
-            }
-        }
+        _trackImages.postValue(hm)
     }
 
     fun addAlbumDrawable(map: HashMap<Int, Drawable>) {

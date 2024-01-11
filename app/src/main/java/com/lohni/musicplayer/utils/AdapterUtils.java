@@ -22,21 +22,23 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
 
 import androidx.recyclerview.widget.RecyclerView;
 
 public class AdapterUtils {
     public static void loadCoverImagesAsync(Context context, List<Track> newList, ApplicationDataViewModel vm) {
+        HashMap<Integer, Drawable> drawableHashMap = new HashMap<>(newList.size());
         int numThreads = (newList.size() < 50) ? 1 : Math.min(10, newList.size() / 50);
-        Executor executor = Executors.newFixedThreadPool(numThreads);
         int batch = (int) Math.ceil((float) newList.size() / numThreads);
+
+        ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(numThreads + 1);
         for (int i = 0; i < numThreads; i++) {
             List<Track> subList = newList.subList(i * batch, Math.min((i + 1) * batch, newList.size() - 1));
             executor.execute(() -> {
                 MediaMetadataRetriever mmr = new MediaMetadataRetriever();
-                HashMap<Integer, Drawable> drawableHashMap = new HashMap<>(newList.size());
+                HashMap<Integer, Drawable> threadHashMap = new HashMap<>(newList.size());
 
                 for (Track track : subList) {
                     Integer trackId = track.getTId();
@@ -47,19 +49,34 @@ public class AdapterUtils {
                         if (thumbnail != null) {
                             Bitmap cover = BitmapFactory.decodeByteArray(thumbnail, 0, thumbnail.length);
                             Drawable drawable = ImageUtil.roundCorners(cover, context.getResources());
-                            drawableHashMap.put(trackId, drawable);
+                            threadHashMap.put(trackId, drawable);
                         }
                     } catch (IllegalArgumentException ignored) {
                     }
                 }
                 try {
-                    vm.addImageDrawables(drawableHashMap);
+                    addDrawables(drawableHashMap, threadHashMap);
                     mmr.release();
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
             });
         }
+
+        executor.execute(() -> {
+            while (executor.getActiveCount() > 1) {
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+            vm.addImageDrawables(drawableHashMap);
+        });
+    }
+
+    private synchronized static void addDrawables(HashMap<Integer, Drawable> drawableHashMap, HashMap<Integer, Drawable> threadHashMap) {
+        drawableHashMap.putAll(threadHashMap);
     }
 
     public static void loadAlbumCoverImagesAsync(Context context, List<AlbumTrackDTO> newList, ApplicationDataViewModel vm) {
