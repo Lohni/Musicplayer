@@ -271,6 +271,7 @@ public class MainActivity extends AppCompatActivity implements PlaybackControlIn
             musicService.sendOnSongCompleted();
         }
         destroyed = true;
+        playbackControlSheet.setActive(false);
         super.onPause();
     }
 
@@ -280,7 +281,8 @@ public class MainActivity extends AppCompatActivity implements PlaybackControlIn
             destroyed = false;
             mHandler.post(runnable);
         }
-
+        playbackControlSheet.setActive(true);
+        triggerCurrentDataBroadcast();
         super.onResume();
     }
 

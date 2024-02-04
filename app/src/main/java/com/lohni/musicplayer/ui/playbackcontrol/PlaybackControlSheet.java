@@ -48,9 +48,9 @@ public class PlaybackControlSheet {
     private final AudioVisualizerView audioVisualizerView;
 
     private final PlaybackBottomSheetBehaviour bottomSheetBehavior;
-    private boolean isPause = true, seekbarUserAction = false;
+    private boolean isPause = true, seekbarUserAction = false, isActive = false;
     private final ApplicationDataViewModel applicationDataViewModel;
-    private final MusicplayerViewModel musicplayerViewModel;
+    private MusicplayerViewModel musicplayerViewModel;
     private final Drawable customCoverImage;
     private Track currTrack;
     private PlaybackBehaviour playbackBehaviour;
@@ -61,7 +61,7 @@ public class PlaybackControlSheet {
 
         applicationDataViewModel = new ViewModelProvider((FragmentActivity) context).get(ApplicationDataViewModel.class);
         MusicplayerDataAccess mda = ((MusicplayerApplication) ((FragmentActivity) context).getApplication()).getDatabase().musicplayerDao();
-        musicplayerViewModel = new ViewModelProvider((FragmentActivity) context, new MusicplayerViewModel.MusicplayerViewModelFactory(mda)).get(MusicplayerViewModel.class);
+        musicplayerViewModel = new ViewModelProvider(((FragmentActivity) context).getViewModelStore() , new MusicplayerViewModel.MusicplayerViewModelFactory(mda)).get(MusicplayerViewModel.class);
 
         IntentFilter filter = new IntentFilter();
         filter.addAction(context.getString(R.string.playback_control_values));
@@ -112,6 +112,8 @@ public class PlaybackControlSheet {
                 musicplayerViewModel.updateTrack(currTrack);
                 setFavouriteBackground();
             }
+        });
+        add.setOnClickListener((view1) -> {
         });
         bottomSheetBehavior.addBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback() {
             @Override
@@ -200,6 +202,10 @@ public class PlaybackControlSheet {
         }
     }
 
+    public void setActive(boolean isActive) {
+        this.isActive = isActive;
+    }
+
     private void setControlButton(boolean isOnPause) {
         if (isOnPause != isPause) {
             int drawable = (!isOnPause) ? R.drawable.play_to_pause_anim : R.drawable.pause_to_play_anim;
@@ -225,22 +231,28 @@ public class PlaybackControlSheet {
         @Override
         public void onReceive(Context context, Intent intent) {
             int id = intent.getIntExtra("ID", -1);
-            if (Objects.equals(intent.getAction(), context.getString(R.string.playback_control_values)) && id >= 0) {
+            if (Objects.equals(intent.getAction(), context.getString(R.string.playback_control_values)) && id >= 0 && isActive) {
+                Bundle bundle = intent.getExtras();
+                playbackBehaviour = PlaybackBehaviour.Companion.getStateFromInteger(bundle.getInt("BEHAVIOUR_STATE"));
+                updateBehaviourDrawable();
+                setControlButton(bundle.getBoolean("ISONPAUSE"));
+
+                int queue_size = bundle.getInt("QUEUE_SIZE");
+                int queue_index = bundle.getInt("QUEUE_INDEX") + 1;
+                queue.setText(String.format("%d/%d", queue_index, queue_size));
+                audioVisualizerView.initVisualizer(bundle.getInt("SESSION_ID"));
+
                 musicplayerViewModel.observeOnce(musicplayerViewModel.getTrackById(id), (FragmentActivity) context, track -> {
                     currTrack = track;
-                    Bundle bundle = intent.getExtras();
-                    //AudioSessionId
-                    title.setText(bundle.getString("TITLE"));
-                    subtitle.setText(bundle.getString("ARTIST"));
-                    seekbar.setMax(bundle.getInt("DURATION"));
-                    expandedSeekbar.setMax(bundle.getInt("DURATION"));
-                    absTime.setText(GeneralUtils.convertTime(bundle.getInt("DURATION")));
-                    audioVisualizerView.initVisualizer(bundle.getInt("SESSION_ID"));
+                    title.setText(currTrack.getTTitle());
+                    subtitle.setText(currTrack.getTArtist());
+                    seekbar.setMax(currTrack.getTDuration());
+                    expandedSeekbar.setMax(currTrack.getTDuration());
+                    absTime.setText(GeneralUtils.convertTime(currTrack.getTDuration()));
 
-                    setControlButton(bundle.getBoolean("ISONPAUSE"));
                     setFavouriteBackground();
 
-                    Optional<Drawable> drawable = applicationDataViewModel.getImageForTrack(id);
+                    Optional<Drawable> drawable = applicationDataViewModel.getImageForTrack(currTrack.getTId());
                     if (drawable.isPresent()) {
                         RoundedBitmapDrawable bmp = RoundedBitmapDrawableFactory.create(context.getResources(), ((RoundedBitmapDrawable) drawable.get()).getBitmap());
                         bmp.setCornerRadius(0f);
@@ -249,13 +261,6 @@ public class PlaybackControlSheet {
                     } else {
                         cover.setBackground(customCoverImage);
                     }
-
-                    playbackBehaviour = PlaybackBehaviour.Companion.getStateFromInteger(bundle.getInt("BEHAVIOUR_STATE"));
-                    updateBehaviourDrawable();
-
-                    int queue_size = bundle.getInt("QUEUE_SIZE");
-                    int queue_index = bundle.getInt("QUEUE_INDEX") + 1;
-                    queue.setText(String.format("%d/%d", queue_index, queue_size));
                 });
             }
         }
