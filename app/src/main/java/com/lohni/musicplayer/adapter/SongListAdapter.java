@@ -13,11 +13,6 @@ import android.widget.Filter;
 import android.widget.Filterable;
 import android.widget.TextView;
 
-import androidx.annotation.NonNull;
-import androidx.core.content.ContextCompat;
-import androidx.core.content.res.ResourcesCompat;
-import androidx.recyclerview.widget.RecyclerView;
-
 import com.lohni.musicplayer.R;
 import com.lohni.musicplayer.database.dto.TrackDTO;
 import com.lohni.musicplayer.database.entity.Track;
@@ -26,10 +21,14 @@ import com.lohni.musicplayer.utils.enums.ListFilterType;
 import com.lohni.musicplayer.utils.enums.PlaybackBehaviour;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
+
+import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
+import androidx.core.content.res.ResourcesCompat;
+import androidx.recyclerview.widget.RecyclerView;
 
 public class SongListAdapter extends RecyclerView.Adapter<SongListAdapter.ViewHolder> implements Filterable {
 
@@ -98,11 +97,14 @@ public class SongListAdapter extends RecyclerView.Adapter<SongListAdapter.ViewHo
         holder.info.setText(songList.get(position).getAsInfoText(listFilterType));
 
         holder.itemView.setOnClickListener(view -> {
-            if (onItemClickedListener != null) onItemClickedListener.onItemClicked(position);
+            int pos = songList.indexOf(mDisplayedValues.get(position));
+            if (onItemClickedListener != null) onItemClickedListener.onItemClicked(pos);
         });
         holder.more.setOnClickListener((view) -> {
-            if (onItemOptionClickedListener != null)
-                onItemOptionClickedListener.onItemOptionClicked(view, position, queue.contains(track));
+            if (onItemOptionClickedListener != null) {
+                int pos = songList.indexOf(mDisplayedValues.get(position));
+                onItemOptionClickedListener.onItemOptionClicked(view, pos, queue.contains(track));
+            }
         });
 
         int colorRes = (currPlayingSongIndex >= 0 && track.equals(currPlaying))
