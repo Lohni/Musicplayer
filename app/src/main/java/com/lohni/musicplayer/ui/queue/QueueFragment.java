@@ -4,6 +4,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -152,7 +153,11 @@ public class QueueFragment extends Fragment {
         IntentFilter intentFilter = new IntentFilter(getResources().getString(R.string.playback_control_values));
         intentFilter.addAction(getResources().getString(R.string.musicservice_song_prepared));
 
-        requireActivity().registerReceiver(receiver, intentFilter);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            requireActivity().registerReceiver(receiver, intentFilter, Context.RECEIVER_EXPORTED);
+        } else {
+            requireActivity().registerReceiver(receiver, intentFilter);
+        }
     }
 
     @Override

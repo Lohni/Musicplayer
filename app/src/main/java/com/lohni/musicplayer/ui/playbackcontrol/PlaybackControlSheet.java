@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.drawable.AnimatedVectorDrawable;
 import android.graphics.drawable.Drawable;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.FrameLayout;
@@ -65,7 +66,12 @@ public class PlaybackControlSheet {
 
         IntentFilter filter = new IntentFilter();
         filter.addAction(context.getString(R.string.playback_control_values));
-        context.registerReceiver(broadcastReceiver, filter);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            context.registerReceiver(broadcastReceiver, filter, Context.RECEIVER_EXPORTED);
+        } else {
+            context.registerReceiver(broadcastReceiver, filter);
+        }
 
         MotionLayout motionLayout = view.findViewById(R.id.playback_control_motionlayout);
         ViewPager2 viewPager2 = view.findViewById(R.id.playback_control_viewpager);

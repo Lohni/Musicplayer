@@ -7,10 +7,12 @@ import android.content.ContentUris;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.ServiceInfo;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Binder;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -89,7 +91,12 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
         filter.addAction(getString(R.string.musicservice_play_list));
         filter.addAction(getString(R.string.playback_set_progress));
         filter.addAction(getString(R.string.playback_set_behaviour));
-        this.registerReceiver(this.broadcastReceiver, filter);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            this.registerReceiver(this.broadcastReceiver, filter, RECEIVER_EXPORTED);
+        } else {
+            this.registerReceiver(this.broadcastReceiver, filter);
+        }
 
         MediaSessionCallback sessionCallback = new MediaSessionCallback();
         sessionCallback.setOnSkipListener(this::skip);
@@ -148,7 +155,9 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
     private void createNotification() {
         mediaSession.setMetadata(notificationControl.createMediaMetadataFromTrack(playbackSession.getCurrentTrack().orElse(null)));
         mediaSession.setPlaybackState(createPlaybackState());
-        startForeground(notificationControl.getNOTIFICATION_ID(), notificationControl.createNotification(this, isPlaying(), mediaSession.getSessionToken(), playbackSession.getCurrentTrack().orElse(null)));
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            startForeground(notificationControl.getNOTIFICATION_ID(), notificationControl.createNotification(this, isPlaying(), mediaSession.getSessionToken(), playbackSession.getCurrentTrack().orElse(null)), ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK);
+        }
     }
 
     private PlaybackStateCompat createPlaybackState() {

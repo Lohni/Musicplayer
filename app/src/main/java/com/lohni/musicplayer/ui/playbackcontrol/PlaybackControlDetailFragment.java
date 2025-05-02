@@ -4,6 +4,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
 
@@ -47,7 +48,12 @@ public abstract class PlaybackControlDetailFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         IntentFilter intentFilter = new IntentFilter(getResources().getString(R.string.playback_control_values));
-        requireActivity().registerReceiver(receiver, intentFilter);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            requireActivity().registerReceiver(receiver, intentFilter, Context.RECEIVER_EXPORTED);
+        } else {
+            requireActivity().registerReceiver(receiver, intentFilter);
+        }
         serviceTriggerInterface.triggerCurrentDataBroadcast();
     }
 
